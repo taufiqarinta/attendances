@@ -68,14 +68,14 @@
             </div>
 
             {{-- Info Card --}}
-            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-r-lg">
+            <!-- <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-r-lg">
                 <div class="flex items-center">
                     <i class="fa fa-bullhorn mr-2 text-blue-500"></i>
                     <p class="text-blue-700">Sekarang Anda dapat mengisi <b>Absence & Attendance</b> dalam satu menu. 
                         <a href="{{ url('izin') }}" class="font-bold underline">Klik disini ya 🪄</a>
                     </p>
                 </div>
-            </div>
+            </div> -->
 
             {{-- Welcome Card --}}
             <div class="bg-white shadow-sm rounded-lg p-6 mb-6">
