@@ -299,7 +299,7 @@
                     {{ __('Profile') }}
                 </x-responsive-nav-link>
 
-                <form method="POST" action="{{ route('logout.get') }}">
+                <form method="GET" action="{{ route('logout.get') }}">
                     @csrf
                     <x-responsive-nav-link :href="route('logout.get')"
                         onclick="event.preventDefault(); this.closest('form').submit();"
