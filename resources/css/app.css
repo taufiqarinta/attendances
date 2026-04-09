@@ -1,0 +1,5 @@
+@import "flowbite/src/themes/default"; /* <- taruh paling atas! */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

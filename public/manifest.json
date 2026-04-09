@@ -1,0 +1,20 @@
+{
+    "name": "Customer Order",
+    "short_name": "Customer Order",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#0d6efd",
+    "icons": [
+      {
+        "src": "/icons/Kobin-Logo-192x192.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "/icons/Kobin-Logo-512x512.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  }
