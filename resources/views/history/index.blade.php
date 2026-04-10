@@ -345,8 +345,9 @@
             let html = '';
             
             data.forEach((item, index) => {
-                const badgeClass = getBadgeClass(item.status);
-                const statusText = getStatusText(item.status, item.approval, item.approval2);
+                // LANGSUNG ambil dari response API
+                const badgeClass = item.badge; // 'success', 'warning', 'danger'
+                const statusText = item.status_text; // 'Approved', 'Need Approve 1', 'Need Approve 2', 'Rejected'
                 
                 // File upload link
                 let fileHtml = '--';
@@ -377,12 +378,12 @@
                         <td class="px-4 py-3 text-center whitespace-nowrap">${formatAPIDate(item.crtd)}</td>
                         <td class="px-4 py-3 text-center whitespace-nowrap">${formatAPIDate(item.validfrom)}</td>
                         <td class="px-4 py-3 text-center whitespace-nowrap">${formatAPIDate(item.enddate)}</td>
-                        <td class="px-4 py-3 text-left max-w-xs break-words">${item.keterangan || '-'}</td>
+                        <td class="px-4 py-3 text-left max-w-xs break-words">${item.ShortText || '-'}</td>
                         <td class="px-4 py-3 text-center whitespace-nowrap">${item.approval1by || '—'}</td>
                         <td class="px-4 py-3 text-center whitespace-nowrap">${item.approval2by || '—'}</td>
                         <td class="px-4 py-3 text-center">${fileHtml}</td>
                         <td class="px-4 py-3 text-center">
-                            <span class="${badgeClass} text-white px-2 py-1 rounded-full text-xs whitespace-nowrap">${statusText}</span>
+                            <span class="badge-${badgeClass} text-white px-2 py-1 rounded-full text-xs whitespace-nowrap">${statusText}</span>
                         </td>
                     </tr>
                 `;
@@ -581,10 +582,17 @@
         }
 
         /* Status Badge Styling */
-        .bg-yellow-500 { background-color: #f59e0b; }
-        .bg-green-500 { background-color: #10b981; }
-        .bg-red-500 { background-color: #ef4444; }
-        .bg-gray-500 { background-color: #6b7280; }
+        .badge-success {
+            background-color: #10b981;
+        }
+
+        .badge-warning {
+            background-color: #f59e0b;
+        }
+
+        .badge-danger {
+            background-color: #ef4444;
+        }
 
         /* Scrollbar Styling */
         .scrollbar-thin::-webkit-scrollbar {
