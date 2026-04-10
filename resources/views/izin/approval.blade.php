@@ -337,6 +337,17 @@
             }, 2000);
         }
 
+        function toSortableTimestamp(dateStr) {
+            if (!dateStr) return '0';
+            try {
+                const date = new Date(dateStr);
+                if (isNaN(date.getTime())) return '0';
+                return date.getTime().toString();
+            } catch(e) {
+                return '0';
+            }
+        }
+
         // Render table
         function renderTable(data) {
             if (!data || data.length === 0) {
@@ -412,9 +423,9 @@
                     <tr>
                         <td class="px-4 py-3 text-center">${item.firstname || '-'}</td>
                         <td class="px-4 py-3 text-center">${item.tipe || '-'}</td>
-                        <td class="px-4 py-3 text-center">${formatAPIDate(item.crtd)}</td>
-                        <td class="px-4 py-3 text-center">${formatAPIDate(item.validfrom)}</td>
-                        <td class="px-4 py-3 text-center">${formatAPIDate(item.enddate)}</td>
+                        <td class="px-4 py-3 text-center" data-order="${toSortableTimestamp(item.crtd)}">${formatAPIDate(item.crtd)}</td>
+                        <td class="px-4 py-3 text-center" data-order="${toSortableTimestamp(item.validfrom)}">${formatAPIDate(item.validfrom)}</td>
+                        <td class="px-4 py-3 text-center" data-order="${toSortableTimestamp(item.enddate)}">${formatAPIDate(item.enddate)}</td>
                         <td class="px-4 py-3">${item.keterangan || '-'}</td>
                         <td class="px-4 py-3 text-center">${fileHtml}</td>
                         <td class="px-4 py-3 text-center whitespace-nowrap">

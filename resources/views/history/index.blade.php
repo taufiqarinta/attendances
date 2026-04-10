@@ -375,9 +375,9 @@
                     <tr class="hover:bg-gray-50 transition-colors duration-100">
                         <td class="px-4 py-3 text-center">${item.firstname || '-'}</td>
                         <td class="px-4 py-3 text-center">${item.tipe || '-'}</td>
-                        <td class="px-4 py-3 text-center whitespace-nowrap">${formatAPIDate(item.crtd)}</td>
-                        <td class="px-4 py-3 text-center whitespace-nowrap">${formatAPIDate(item.validfrom)}</td>
-                        <td class="px-4 py-3 text-center whitespace-nowrap">${formatAPIDate(item.enddate)}</td>
+                        <td class="px-4 py-3 text-center whitespace-nowrap" data-order="${toSortableTimestamp(item.crtd)}">${formatAPIDate(item.crtd)}</td>
+                        <td class="px-4 py-3 text-center whitespace-nowrap" data-order="${toSortableTimestamp(item.validfrom)}">${formatAPIDate(item.validfrom)}</td>
+                        <td class="px-4 py-3 text-center whitespace-nowrap" data-order="${toSortableTimestamp(item.enddate)}">${formatAPIDate(item.enddate)}</td>
                         <td class="px-4 py-3 text-left max-w-xs break-words">${item.ShortText || '-'}</td>
                         <td class="px-4 py-3 text-center whitespace-nowrap">${item.approval1by || '—'}</td>
                         <td class="px-4 py-3 text-center whitespace-nowrap">${item.approval2by || '—'}</td>
@@ -419,6 +419,17 @@
                     }
                 });
             }, 100);
+        }
+
+        function toSortableTimestamp(dateStr) {
+            if (!dateStr) return '0';
+            try {
+                const date = new Date(dateStr);
+                if (isNaN(date.getTime())) return '0';
+                return date.getTime().toString(); // pakai milliseconds, pasti akurat
+            } catch(e) {
+                return '0';
+            }
         }
 
         // Render empty table
