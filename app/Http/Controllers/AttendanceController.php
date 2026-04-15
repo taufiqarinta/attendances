@@ -45,10 +45,8 @@ class AttendanceController extends Controller
             $fileName = "attendance_{$personnelNo}_{$date->format('Ymd_His')}.jpg";
             $filePath = "attendances/{$year}/{$month}/{$fileName}";
 
-            // Simpan ke storage Laravel (public disk)
             Storage::disk('public')->put($filePath, $imageData);
 
-            // Buat symlink dulu: php artisan storage:link
             $photoUrl = Storage::url($filePath);
 
             return response()->json([
@@ -68,7 +66,6 @@ class AttendanceController extends Controller
         }
     }
 
-    // Method untuk mengakses foto
     public function getPhoto($path)
     {
         $path = str_replace(['..', './', '../'], '', $path);
