@@ -167,7 +167,7 @@
 
                         <div id="suratcontainer" style="display: none;">
                             <label class="block text-sm font-medium text-gray-700 mb-1"><span id="suratlabel">Surat Dokter</span> <span class="text-red-600">*</span></label>
-                            <input type="file" class="w-full border rounded-md p-2" name="buktiupload" id="buktiupload">
+                            <input type="file" class="w-full border rounded-md p-2" name="buktiupload" id="buktiupload" accept=".png,.pdf,.jpg,.jpeg,image/png,image/jpeg,application/pdf">
                         </div>
 
                         <div id="cuticontainer" style="display: none;">
@@ -1074,34 +1074,57 @@
 
         // Submit button handler - MODIFIED TO USE FETCH API
         $('#btnSubmitAbsence').click(async function() {
-            const tipe = $('#absencestype').val();
-            
-            if (!tipe) {
-                Swal.fire('Error', 'Pilih tipe terlebih dahulu', 'error');
-                return;
-            }
-            
-            // CEK APAKAH INI ATTENDANCE
-            const isAttendance = isAttendanceType(tipe);
-            
-            // Validasi khusus untuk attendance
-            if (isAttendance) {
-                if (!$('#keterangan').val()) {
-                    Swal.fire('Error', 'Keterangan Harus Diisi!', 'error');
-                    return;
-                }
-                
-                // Pastikan end date sama dengan start date untuk attendance
-                const startDate = $('#startdate').val();
-                $('#enddate').val(startDate);
-                
-                // Submit ke endpoint attendance
-                await submitAttendance(tipe);
+    const tipe = $('#absencestype').val();
+    
+    if (!tipe) {
+        Swal.fire('Error', 'Pilih tipe terlebih dahulu', 'error');
+        return;
+    }
+    
+    // CEK APAKAH INI ATTENDANCE
+    const isAttendance = isAttendanceType(tipe);
+    
+    // Validasi khusus untuk attendance
+    if (isAttendance) {
+        if (!$('#keterangan').val()) {
+            Swal.fire('Error', 'Keterangan Harus Diisi!', 'error');
+            return;
+        }
+        
+        // Pastikan end date sama dengan start date untuk attendance
+        const startDate = $('#startdate').val();
+        $('#enddate').val(startDate);
+        
+        // Submit ke endpoint attendance
+        await submitAttendance(tipe);
             } else {
                 // Validasi untuk absence (seperti biasa)
                 if (tipe === '1200' || tipe === '1300') {
-                    if (!$('#buktiupload')[0].files.length) {
+                    const fileInput = $('#buktiupload')[0];
+                    if (!fileInput.files.length) {
                         Swal.fire('Error', 'Upload Bukti File masih kosong!', 'error');
+                        return;
+                    }
+                    
+                    // Validate file type
+                    const file = fileInput.files[0];
+                    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'];
+                    const allowedExtensions = ['.png', '.jpg', '.jpeg', '.pdf'];
+                    const fileName = file.name;
+                    const fileExtension = '.' + fileName.split('.').pop().toLowerCase();
+                    const fileType = file.type;
+                    
+                    if (!allowedExtensions.includes(fileExtension) || !allowedTypes.includes(fileType)) {
+                        Swal.fire('Error', 'File harus berformat PNG, JPG, JPEG, atau PDF!', 'error');
+                        $('#buktiupload').val(''); // Clear the file input
+                        return;
+                    }
+                    
+                    // Optional: Validate file size (max 5MB)
+                    const maxSize = 5 * 1024 * 1024; // 5MB
+                    if (file.size > maxSize) {
+                        Swal.fire('Error', 'Ukuran file maksimal 5MB!', 'error');
+                        $('#buktiupload').val(''); // Clear the file input
                         return;
                     }
                 }
@@ -1222,6 +1245,23 @@
                 // Add file if type is 1200 or 1300
                 if (tipe === '1200' || tipe === '1300') {
                     const file = $('#buktiupload')[0].files[0];
+                    
+                    // Add validation here as well
+                    const allowedExtensions = ['.png', '.jpg', '.jpeg', '.pdf'];
+                    const fileName = file.name;
+                    const fileExtension = '.' + fileName.split('.').pop().toLowerCase();
+                    
+                    if (!allowedExtensions.includes(fileExtension)) {
+                        Swal.fire('Error', 'File harus berformat PNG, JPG, JPEG, atau PDF!', 'error');
+                        return;
+                    }
+                    
+                    // Optional: Validate file size (max 5MB)
+                    const maxSize = 5 * 1024 * 1024; // 5MB
+                    if (file.size > maxSize) {
+                        Swal.fire('Error', 'Ukuran file maksimal 5MB!', 'error');
+                        return;
+                    }
                     
                     // Upload file ke Laravel
                     const laravelFormData = new FormData();
