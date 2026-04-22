@@ -1398,6 +1398,12 @@
     </script>
 
     <style>
+        #tblabsences th:nth-child(7), /* Status */
+        #tblabsences td:nth-child(7) {
+            width: 100px;
+            min-width: 100px;
+        }
+
         /* DataTables Custom Styling */
         .dataTables_wrapper {
             padding: 1rem !important;
