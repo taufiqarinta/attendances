@@ -166,8 +166,14 @@
                         </div>
 
                         <div id="suratcontainer" style="display: none;">
-                            <label class="block text-sm font-medium text-gray-700 mb-1"><span id="suratlabel">Surat Dokter</span> <span class="text-red-600">*</span></label>
-                            <input type="file" class="w-full border rounded-md p-2" name="buktiupload" id="buktiupload" accept=".png,.pdf,.jpg,.jpeg,image/png,image/jpeg,application/pdf">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                <span id="suratlabel">Surat Dokter</span> 
+                                <span class="text-red-600">*</span>
+                            </label>
+                            <input type="file" class="w-full border rounded-md p-2" name="buktiupload" id="buktiupload" 
+                                accept=".png,.pdf,.jpg,.jpeg,image/png,image/jpeg,application/pdf">
+                            <small class="text-gray-500 text-xs">Maksimal ukuran file: 10MB (format: JPG, JPEG, PNG, PDF)</small>
+                            <small class="text-yellow-600 text-xs block">Tips: Untuk file gambar besar, kompres terlebih dahulu agar upload lebih cepat</small>
                         </div>
 
                         <div id="cuticontainer" style="display: none;">
@@ -1120,11 +1126,11 @@
                         return;
                     }
                     
-                    // Optional: Validate file size (max 5MB)
-                    const maxSize = 5 * 1024 * 1024; // 5MB
+                    // Optional: Validate file size (max 10MB)
+                    const maxSize = 10 * 1024 * 1024; // 10MB
                     if (file.size > maxSize) {
-                        Swal.fire('Error', 'Ukuran file maksimal 5MB!', 'error');
-                        $('#buktiupload').val(''); // Clear the file input
+                        Swal.fire('Error', 'Ukuran file maksimal 10MB!', 'error');
+                        $('#buktiupload').val('');
                         return;
                     }
                 }

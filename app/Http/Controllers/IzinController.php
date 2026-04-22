@@ -30,7 +30,7 @@ class IzinController extends Controller
             Log::info('Validating request...');
             
             $validator = \Validator::make($request->all(), [
-                'file' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+                'file' => 'required|file|mimes:jpg,jpeg,png,pdf|max:10240',
                 'nik' => 'required',
                 'tipe' => 'required|in:1200,1300',
                 'startdate' => 'required',
