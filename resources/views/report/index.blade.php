@@ -326,31 +326,22 @@
                 input.value = formatPeriodeDisplay(periodeAktif);
             }
             
-            if (typeof monthSelectPlugin !== 'undefined') {
-                flatpickr(input, {
-                    plugins: [
-                        monthSelectPlugin({
-                            shorthand: true,
-                            dateFormat: "m/Y",
-                            altFormat: "F Y",
-                            theme: "red"
-                        })
-                    ],
-                    dateFormat: "m/Y",
-                    allowInput: true,
-                    onChange: function(selectedDates, dateStr, instance) {
-                        console.log('Periode changed:', dateStr);
-                    }
-                });
-            } else {
-                flatpickr(input, {
-                    dateFormat: "m/Y",
-                    allowInput: true,
-                    onChange: function(selectedDates, dateStr, instance) {
-                        console.log('Periode changed:', dateStr);
-                    }
-                });
-            }
+            // Inisialisasi Flatpickr dengan monthSelect plugin yang benar
+            flatpickr(input, {
+                plugins: [
+                    new monthSelectPlugin({
+                        shorthand: true,      // Tampilkan format singkat (Jan, Feb, dll)
+                        dateFormat: "m/Y",    // Format tanggal yang akan disimpan
+                        altFormat: "F Y",     // Format yang ditampilkan (January 2024)
+                        theme: "red"          // Tema warna
+                    })
+                ],
+                dateFormat: "m/Y",           // Format input value (MM/YYYY)
+                allowInput: true,            // Izinkan input manual
+                onChange: function(selectedDates, dateStr, instance) {
+                    console.log('Periode changed:', dateStr);
+                }
+            });
         }
         
         // ==================== LOAD REPORT ====================
