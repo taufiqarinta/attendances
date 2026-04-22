@@ -55,12 +55,34 @@
                         </x-dropdown>
                     </div>
 
-                    <x-nav-link :href="route('absensi.index')" :active="request()->routeIs('absensi.index')"
-                        class="text-white"
-                        onmouseover="this.style.color='#dc2626'"
-                        onmouseout="this.style.color='white'">
-                        {{ __('Data Absensi') }}
-                    </x-nav-link>
+                    <div class="hidden sm:flex sm:items-center sm:ms-10 granitfiesta">
+                        <x-dropdown align="right" width="48">
+                            <x-slot name="trigger">
+                                <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('daftartoko.*') ? 'text-white' : '' }}"
+                                    onmouseover="this.style.color='#dc2626'"
+                                    onmouseout="this.style.color='white'">
+                                    <div>{{ __('Data Absensi') }}</div>
+
+                                    <div class="ml-1">
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </button>
+                            </x-slot>
+
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('absensi.index')" :active="request()->routeIs('absensi.index')">
+                                    {{ __('Absensi') }}
+                                </x-dropdown-link>
+                                @if(session('comp') == '0001' && session('nik') == '924330')
+                                <x-dropdown-link :href="route('allabsensi.index')" :active="request()->routeIs('allabsensi.index')">
+                                    {{ __('Absensi Seluruh Karyawan') }}
+                                </x-dropdown-link>
+                                @endif
+                            </x-slot>
+                        </x-dropdown>
+                    </div>
 
                     <div class="hidden sm:flex sm:items-center sm:ms-10 granitfiesta">
                         <x-dropdown align="right" width="48">
@@ -237,8 +259,17 @@
             style="{{ request()->routeIs('absensi.index') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
             onmouseover="this.style.color='#dc2626'"
             onmouseout="this.style.color='{{ request()->routeIs('absensi.index') ? '#dc2626' : 'white' }}'">
-            {{ __('Data Absensi') }}
+            {{ __('Absensi') }}
         </x-responsive-nav-link>
+        
+        @if(session('comp') == '0001' && session('nik') == '924330')
+        <x-responsive-nav-link :href="route('allabsensi.index')" :active="request()->routeIs('allabsensi.index')"
+            style="{{ request()->routeIs('absensi.index') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
+            onmouseover="this.style.color='#dc2626'"
+            onmouseout="this.style.color='{{ request()->routeIs('allabsensi.index') ? '#dc2626' : 'white' }}'">
+            {{ __('Absensi Seluruh Karyawan') }}
+        </x-responsive-nav-link>
+        @endif
         
         <x-responsive-nav-link :href="route('izin.index')" :active="request()->routeIs('izin.index')"
             style="{{ request()->routeIs('izin.index') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"

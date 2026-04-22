@@ -2,16 +2,16 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Data Absensi Karyawan') }}
+                {{ __('Data Absensi Seluruh Karyawan') }}
             </h2>
             <div class="flex space-x-2">
-                <a href="{{ route('absensi.create') }}"
+                <!-- <a href="{{ route('absensi.create') }}"
                     class="inline-flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-all duration-200 shadow-sm hover:shadow-md">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                     </svg>
                     Absensi
-                </a>
+                </a> -->
                 <button onclick="refreshData()"
                     class="inline-flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 font-semibold py-2 px-4 rounded-lg text-sm border border-gray-200 transition-all duration-200 shadow-sm hover:shadow-md">
                     <svg class="w-4 h-4 refresh-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -182,7 +182,7 @@
     let serverStartDate = '';
     let serverEndDate = '';
 
-    const API_BASE_URL = 'https://web.kobin.co.id/api/hris/absensi/get_self_absensi.php';
+    const API_BASE_URL = 'https://web.kobin.co.id/api/hris/absensi/get_all_absensi.php';
 
     // ===== DOM =====
     const tableBody = document.getElementById('tableBody');

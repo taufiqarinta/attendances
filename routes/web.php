@@ -68,6 +68,10 @@ Route::middleware(['web', 'check.api.session'])->group(function () {
     Route::get('/absensi', function () {
         return view('absensi.index');
     })->name('absensi.index');
+    
+    Route::get('/allabsensi', function () {
+        return view('absensi.allabsensi');
+    })->name('allabsensi.index');
 
     Route::get('/absensi/create', function () {
         return view('absensi.create');
@@ -80,7 +84,6 @@ Route::middleware(['web', 'check.api.session'])->group(function () {
         return view('izin.approval');
     })->name('approval.page');
 
-    
     Route::get('/izin', [IzinController::class, 'index'])->name('izin.index');
     Route::post('/izin/upload-file', [IzinController::class, 'uploadFile'])->name('izin.upload');
     Route::get('/izin/file/{filename}', [IzinController::class, 'getFile'])->name('izin.file');
