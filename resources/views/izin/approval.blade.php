@@ -58,7 +58,7 @@
                     </div>
 
                     <!-- Filter Section -->
-                    <div class="mb-6">
+                    <div class="mb-6 hidden">
                         <form id="filterForm" class="flex items-end gap-3">
                             <!-- Filter Tanggal Mulai -->
                             <div class="flex-1">
