@@ -49,22 +49,6 @@
             <div id="alertError"
                 class="mb-4 hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
                 <span id="errorMessage"></span>
-                <button onclick="this.parentElement.classList.add('hidden')" class="absolute top-0 right-0 px-3 py-2">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                    </svg>
-                </button>
-            </div>
-
-            {{-- Alert Success --}}
-            <div id="alertSuccess"
-                class="mb-4 hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
-                <span id="successMessage"></span>
-                <button onclick="this.parentElement.classList.add('hidden')" class="absolute top-0 right-0 px-3 py-2">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                    </svg>
-                </button>
             </div>
 
             {{-- Filter Card --}}
@@ -84,12 +68,10 @@
                         <div class="field-spacer"></div>
                     </div>
 
-                    {{-- Periode (Dropdown) --}}
+                    {{-- Periode --}}
                     <div class="field">
                         <label>Periode</label>
-                        <select id="periodeSelect" class="w-full rounded-md border-gray-300">
-                            <option value="">Memuat data...</option>
-                        </select>
+                        <input type="text" id="periode" placeholder="MM/YYYY">
                         <div class="field-spacer"></div>
                     </div>
 
@@ -159,7 +141,11 @@
 
     {{-- Include SheetJS for Excel export --}}
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    {{-- Include Flatpickr and MonthSelect Plugin --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
 
     <script>
         // ==================== KONFIGURASI ====================
@@ -196,15 +182,6 @@
                 setTimeout(() => el.classList.add('hidden'), 5000);
             }
         }
-
-        function showSuccess(msg) {
-            const el = document.getElementById('alertSuccess');
-            if (el) {
-                document.getElementById('successMessage').textContent = msg;
-                el.classList.remove('hidden');
-                setTimeout(() => el.classList.add('hidden'), 3000);
-            }
-        }
         
         async function fetchAPI(action, params = {}) {
             const url = new URL(API_BASE);
@@ -232,13 +209,33 @@
             }
         }
         
-        // Format periode untuk API (YYYYMM -> YYYY-MM-01)
-        function formatPeriodeForAPI(periode) {
+        // Format periode untuk tampilan (YYYYMM -> MM/YYYY)
+        function formatPeriodeDisplay(periode) {
             if (!periode) return '';
             if (periode.match(/^\d{6}$/)) {
-                return periode.substring(0, 4) + '-' + periode.substring(4, 6) + '-01';
+                return periode.substring(4, 6) + '/' + periode.substring(0, 4);
+            }
+            if (periode.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                const [year, month] = periode.split('-');
+                return month + '/' + year;
             }
             return periode;
+        }
+        
+        // Format periode untuk API (MM/YYYY -> YYYY-MM-01)
+        function formatPeriodeForAPI(periodeDisplay) {
+            if (!periodeDisplay) return '';
+            if (periodeDisplay.match(/^\d{2}\/\d{4}$/)) {
+                const [month, year] = periodeDisplay.split('/');
+                return `${year}-${month}-01`;
+            }
+            if (periodeDisplay.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                return periodeDisplay;
+            }
+            if (periodeDisplay.match(/^\d{6}$/)) {
+                return periodeDisplay.substring(0, 4) + '-' + periodeDisplay.substring(4, 6) + '-01';
+            }
+            return periodeDisplay;
         }
         
         // ==================== SEARCH FUNCTION ====================
@@ -263,49 +260,6 @@
             renderTable(filteredData);
         }
         
-        // ==================== LOAD LIST PERIODE ====================
-        async function loadListPeriode() {
-            try {
-                const data = await fetchAPI('getListPeriode');
-                listPeriode = data;
-                console.log('List periode loaded:', listPeriode.length);
-                
-                const periodeSelect = document.getElementById('periodeSelect');
-                if (periodeSelect && data && data.length > 0) {
-                    let options = '<option value="">Pilih Periode</option>';
-                    let firstPeriode = null;
-                    
-                    data.forEach(item => {
-                        let periodeValue = item.Periode || item.periode || item.CGroup;
-                        let nameValue = item.Name || item.name || item.CGroup;
-                        
-                        if (periodeValue) {
-                            options += `<option value="${periodeValue}">${nameValue || periodeValue}</option>`;
-                            if (!firstPeriode) firstPeriode = periodeValue;
-                        }
-                    });
-                    
-                    periodeSelect.innerHTML = options;
-                    
-                    // Set periode aktif jika ada
-                    if (periodeAktif && periodeAktif !== '') {
-                        periodeSelect.value = periodeAktif;
-                    } else if (firstPeriode) {
-                        periodeSelect.value = firstPeriode;
-                    }
-                }
-                
-                return listPeriode;
-            } catch (err) {
-                console.error('Gagal load list periode:', err);
-                const periodeSelect = document.getElementById('periodeSelect');
-                if (periodeSelect) {
-                    periodeSelect.innerHTML = '<option value="">Error loading data</option>';
-                }
-                return [];
-            }
-        }
-        
         // ==================== LOAD PERIODE AKTIF ====================
         async function loadPeriodeAktif() {
             try {
@@ -328,20 +282,91 @@
             }
         }
         
+        // ==================== LOAD LIST PERIODE ====================
+        async function loadListPeriode() {
+            try {
+                const data = await fetchAPI('getListPeriode');
+                listPeriode = data;
+                console.log('List periode loaded:', listPeriode.length);
+                return listPeriode;
+            } catch (err) {
+                console.error('Gagal load list periode:', err);
+                return [];
+            }
+        }
+        
+        // ==================== LOAD PLANT LIST ====================
+        // async function loadPlantList() {
+        //     try {
+        //         const data = await fetchAPI('getPlant');
+        //         const select = document.getElementById('plantSelect');
+        //         if (select && data && data.length > 0) {
+        //             select.innerHTML = '';
+        //             data.forEach(item => {
+        //                 const option = document.createElement('option');
+        //                 option.value = item.code;
+        //                 option.textContent = item.nama;
+        //                 if (item.code === SESSION_PLANT) {
+        //                     option.selected = true;
+        //                 }
+        //                 select.appendChild(option);
+        //             });
+        //         }
+        //     } catch (err) {
+        //         console.error('Gagal load plant:', err);
+        //     }
+        // }
+        
+        // ==================== INIT DATE PICKER ====================
+        function initDatePicker() {
+            const input = document.getElementById('periode');
+            if (!input) return;
+            
+            if (periodeAktif) {
+                input.value = formatPeriodeDisplay(periodeAktif);
+            }
+            
+            if (typeof monthSelectPlugin !== 'undefined') {
+                flatpickr(input, {
+                    plugins: [
+                        monthSelectPlugin({
+                            shorthand: true,
+                            dateFormat: "m/Y",
+                            altFormat: "F Y",
+                            theme: "red"
+                        })
+                    ],
+                    dateFormat: "m/Y",
+                    allowInput: true,
+                    onChange: function(selectedDates, dateStr, instance) {
+                        console.log('Periode changed:', dateStr);
+                    }
+                });
+            } else {
+                flatpickr(input, {
+                    dateFormat: "m/Y",
+                    allowInput: true,
+                    onChange: function(selectedDates, dateStr, instance) {
+                        console.log('Periode changed:', dateStr);
+                    }
+                });
+            }
+        }
+        
         // ==================== LOAD REPORT ====================
         async function loadReport() {
-            const periodeSelect = document.getElementById('periodeSelect');
-            if (!periodeSelect || !periodeSelect.value) {
+            const periodeInput = document.getElementById('periode');
+            if (!periodeInput || !periodeInput.value) {
                 showError('Silakan pilih periode terlebih dahulu');
                 return;
             }
             
-            const periodeValue = periodeSelect.value;
-            const periodeForAPI = formatPeriodeForAPI(periodeValue);
+            const periodeDisplay = periodeInput.value;
+            const periodeForAPI = formatPeriodeForAPI(periodeDisplay);
             const plant = document.getElementById('plantSelect')?.value || '1000';
             const comp = '0001';
             
-            console.log('Loading report for periode:', periodeValue, '-> API:', periodeForAPI);
+            console.log('Loading report for periode:', periodeDisplay, '-> API:', periodeForAPI);
             
             showLoading();
             try {
@@ -363,10 +388,9 @@
                 
                 if (data.length === 0) {
                     renderEmpty('Tidak ada data untuk periode ini');
-                    showError('Tidak ada data untuk periode ' + periodeValue);
+                    showError('Tidak ada data untuk periode ' + periodeDisplay);
                 } else {
                     renderTable(data);
-                    showSuccess(`Berhasil memuat ${data.length} data karyawan`);
                 }
             } catch (err) {
                 console.error('Error loading report:', err);
@@ -402,7 +426,7 @@
                             <tr class="bg-gray-100 font-bold">
                                 <td colspan="14" class="px-3 py-2 text-sm text-gray-700">
                                     Total ${currentDept}: ${deptCount} karyawan
-                                </td>
+                                 </td>
                             </tr>
                         `;
                         deptCount = 0;
@@ -533,16 +557,20 @@
             // Create workbook
             const wb = XLSX.utils.book_new();
             
-            const periode = document.getElementById('periodeSelect')?.options[document.getElementById('periodeSelect')?.selectedIndex]?.text || 'report';
+            // Sanitize sheet name (remove invalid characters: : \ / ? * [ ])
+            const periode = document.getElementById('periode')?.value || 'report';
             const searchTerm = document.getElementById('searchInput')?.value || '';
             
+            // Fungsi untuk membersihkan nama sheet
             function sanitizeSheetName(name) {
                 if (!name) return 'Report';
+                // Replace invalid characters with underscore
                 return name
-                    .replace(/[/\\?*[\]:]/g, '_')
-                    .substring(0, 31);
+                    .replace(/[/\\?*[\]:]/g, '_')  // Replace : \ / ? * [ ] with _
+                    .substring(0, 31);              // Max 31 characters
             }
             
+            // Buat nama sheet berdasarkan kondisi
             let sheetName = 'Summary Report';
             if (searchTerm) {
                 const cleanSearch = sanitizeSheetName(searchTerm);
@@ -552,9 +580,12 @@
                 sheetName = `Report_${cleanPeriode}`;
             }
             
+            // Final sanitize
             sheetName = sanitizeSheetName(sheetName);
+            
             XLSX.utils.book_append_sheet(wb, ws, sheetName);
             
+            // Sanitize filename
             function sanitizeFilename(name) {
                 if (!name) return 'Summary_Report';
                 return name
@@ -567,7 +598,25 @@
                 : `Summary_Report_${periode.replace(/\//g, '-')}.xlsx`;
             
             XLSX.writeFile(wb, fileName);
+            
+            // Show success message
             showSuccess(`Berhasil mengeksport ${dataToExport.length} data ke Excel`);
+        }
+
+        // Tambahkan fungsi showSuccess
+        function showSuccess(msg) {
+            const el = document.getElementById('alertError');
+            if (el) {
+                document.getElementById('errorMessage').textContent = msg;
+                el.classList.remove('hidden');
+                el.classList.remove('bg-red-100', 'border-red-400', 'text-red-700');
+                el.classList.add('bg-green-100', 'border-green-400', 'text-green-700');
+                setTimeout(() => {
+                    el.classList.add('hidden');
+                    el.classList.remove('bg-green-100', 'border-green-400', 'text-green-700');
+                    el.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
+                }, 3000);
+            }
         }
         
         // ==================== REFRESH DATA ====================
@@ -579,12 +628,14 @@
             try {
                 await loadPeriodeAktif();
                 await loadListPeriode();
+                // await loadPlantList();
+                initDatePicker();
                 
-                // Auto load report jika periode sudah dipilih
-                const periodeSelect = document.getElementById('periodeSelect');
-                if (periodeSelect && periodeSelect.value) {
-                    await loadReport();
+                if (periodeAktif && document.getElementById('periode')) {
+                    document.getElementById('periode').value = formatPeriodeDisplay(periodeAktif);
                 }
+                
+                await loadReport();
             } catch (err) {
                 showError('Gagal refresh data: ' + err.message);
             } finally {
@@ -593,13 +644,6 @@
             }
         }
         
-        // Event listener untuk periode change
-        document.getElementById('periodeSelect')?.addEventListener('change', function() {
-            if (this.value) {
-                loadReport();
-            }
-        });
-        
         // ==================== INITIALIZATION ====================
         async function init() {
             console.log('=== INITIALIZING REPORT PAGE ===');
@@ -607,6 +651,18 @@
             try {
                 await loadPeriodeAktif();
                 await loadListPeriode();
+                // await loadPlantList();
+                initDatePicker();
+                
+                if (periodeAktif && document.getElementById('periode')) {
+                    const displayValue = formatPeriodeDisplay(periodeAktif);
+                    document.getElementById('periode').value = displayValue;
+                    console.log('Set periode to:', displayValue);
+                    await loadReport();
+                } else {
+                    console.log('No active period found');
+                    renderEmpty('Pilih periode dan klik Tampilkan');
+                }
                 
                 // Setup search on input
                 const searchInput = document.getElementById('searchInput');
@@ -614,14 +670,6 @@
                     searchInput.addEventListener('input', (e) => {
                         filterData(e.target.value);
                     });
-                }
-                
-                // Auto load report jika periode sudah terpilih
-                const periodeSelect = document.getElementById('periodeSelect');
-                if (periodeSelect && periodeSelect.value) {
-                    await loadReport();
-                } else {
-                    renderEmpty('Pilih periode dan klik Tampilkan');
                 }
                 
                 console.log('=== REPORT PAGE INITIALIZED SUCCESSFULLY ===');
@@ -647,6 +695,18 @@
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         #loadingOverlay { transition: opacity 0.2s ease; }
         #loadingOverlay.hidden { opacity: 0; pointer-events: none; }
+        
+        /* Flatpickr custom styling */
+        .flatpickr-monthSelect-month {
+            background-color: #f3f4f6;
+            border-radius: 8px;
+            padding: 8px;
+            margin: 2px;
+        }
+        .flatpickr-monthSelect-month.selected {
+            background-color: #dc2626;
+            color: white;
+        }
         
         /* Search input styling */
         #searchInput:focus {
@@ -698,9 +758,10 @@
             font-size: 11px;
             color: #6B7280;
             margin-top: 4px;
-            min-height: 16px;
+            min-height: 16px; /* biar selalu ada tingginya walau kosong */
         }
 
+        /* spacer di Location & Periode agar sama tinggi dengan kolom search yang ada hint-nya */
         .field-spacer {
             font-size: 11px;
             min-height: 16px;
