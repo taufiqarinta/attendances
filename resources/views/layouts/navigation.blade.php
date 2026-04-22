@@ -225,14 +225,14 @@
             onmouseout="this.style.color='{{ request()->routeIs('biodata') ? '#dc2626' : 'white' }}'">
             {{ __('Biodata') }}
         </x-responsive-nav-link>
-        
+        @if(session('comp') == '0001' && session('nik') == '924330')
         <x-responsive-nav-link :href="route('approval.biodata')" :active="request()->routeIs('approval.biodata')"
             style="{{ request()->routeIs('approval.biodata') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
             onmouseover="this.style.color='#dc2626'"
             onmouseout="this.style.color='{{ request()->routeIs('approval.biodata') ? '#dc2626' : 'white' }}'">
             {{ __('Approval Biodata') }}
         </x-responsive-nav-link>
-        
+        @endif
         <x-responsive-nav-link :href="route('absensi.index')" :active="request()->routeIs('absensi.index')"
             style="{{ request()->routeIs('absensi.index') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
             onmouseover="this.style.color='#dc2626'"
@@ -254,6 +254,7 @@
             {{ __('Report') }}
         </x-responsive-nav-link>
         
+        @if(session('comp') == '0001' && session('nik') == '924330')
         <x-responsive-nav-link :href="route('report.index')" :active="request()->routeIs('report.index')"
             style="{{ request()->routeIs('report.index') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
             onmouseover="this.style.color='#dc2626'"
@@ -281,6 +282,7 @@
             onmouseout="this.style.color='{{ request()->routeIs('history.index') ? '#dc2626' : 'white' }}'">
             {{ __('History Approval') }}
         </x-responsive-nav-link>
+        @endif
 
         <!-- Responsive Settings Options -->
         <div class="pt-4 pb-1 border-t border-gray-200">
