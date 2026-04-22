@@ -128,7 +128,7 @@
         <div class="text-center mt-3">
             <div class="flex items-center justify-center gap-3 animate-heading">
                 <h3 class="text-xl tracking-wide text-white">
-                    HRIS Kobin
+                    Kobin Attendance System
                 </h3>
             </div>
         </div>

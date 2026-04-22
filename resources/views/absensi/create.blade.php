@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
 
-    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
     <div class="py-12">
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
@@ -50,7 +50,8 @@
                         <div class="mb-4">
                             <label class="block text-sm font-medium text-gray-700">Jenis Absensi</label>
                             <select id="CheckType" required 
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                                <option value="">Pilih Jenis Absensi</option>
                                 <option value="IN">Masuk</option>
                                 <option value="OUT">Pulang</option>
                             </select>
@@ -93,7 +94,7 @@
 
                                 <div class="mt-4">
                                     <button type="button" id="captureBtn" 
-                                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                        class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
                                         Ambil Foto
                                     </button>
                                 </div>
@@ -106,7 +107,7 @@
                         <div class="mt-6">
                             <button type="button" id="submitBtn" disabled
                                 onclick="submitAttendance()"
-                                class="w-full bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-4 rounded">
+                                class="w-full bg-red-500 hover:bg-red-700 text-white font-bold py-3 px-4 rounded">
                                 Submit Absensi
                             </button>
                         </div>
