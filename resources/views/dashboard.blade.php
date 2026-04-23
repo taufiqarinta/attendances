@@ -80,7 +80,12 @@
             {{-- Welcome Card --}}
             <div class="bg-white shadow-sm rounded-lg p-6 mb-6">
                 <h3 class="text-2xl font-bold text-gray-800">Welcome, {{ session('username') }}</h3>
-                <p class="text-gray-500 mt-1">Dashboard monitoring kehadiran dan ketidakhadiran</p>
+                <p class="text-gray-500 mt-1">Sudah kah anda melakukan absensi hari ini?</p>
+                <br>
+                <button onclick="window.location.href='{{ url('/absensi/create') }}'"
+                class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded flex items-center gap-2">
+                + Absen
+            </button>
             </div>
 
             {{-- Admin Section (untuk user dengan comp = 0001 dan roles admin) --}}
