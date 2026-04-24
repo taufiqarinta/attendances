@@ -139,7 +139,7 @@
                 </div>
 
                 {{-- ── Checkbox Agreement & Submit ──────────────────────── --}}
-                <div style="margin-top:8px;padding-top:16px;border-top:1px solid #e5e7eb;">
+                <!-- <div style="margin-top:8px;padding-top:16px;border-top:1px solid #e5e7eb;">
                     <label id="agreement_wrap" style="font-size:13px;cursor:pointer;font-weight:500;">
                         <input type="checkbox" id="agreement_check" disabled>
                         Dengan ini saya menyatakan bahwa informasi yang saya berikan adalah benar beserta lampiran-lampirannya.
@@ -153,7 +153,7 @@
                         onmouseout="this.style.background='#ef4444'">
                         Update Data
                     </button>
-                </div>
+                </div> -->
             </div>
 
         </div>

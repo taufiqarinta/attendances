@@ -25,8 +25,15 @@
                         onmouseout="this.style.color='white'">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    
+                    <x-nav-link :href="route('biodata')" :active="request()->routeIs('biodata')"
+                        class="text-white"
+                        onmouseover="this.style.color='#dc2626'"
+                        onmouseout="this.style.color='white'">
+                        {{ __('Biodata') }}
+                    </x-nav-link>
 
-                    <div class="hidden sm:flex sm:items-center sm:ms-10 granitfiesta">
+                    <!-- <div class="hidden sm:flex sm:items-center sm:ms-10 granitfiesta">
                         <x-dropdown align="right" width="48">
                             <x-slot name="trigger">
                                 <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('daftartoko.*') ? 'text-white' : '' }}"
@@ -53,7 +60,7 @@
                                 @endif
                             </x-slot>
                         </x-dropdown>
-                    </div>
+                    </div> -->
 
                     <div class="hidden sm:flex sm:items-center sm:ms-10 granitfiesta">
                         <x-dropdown align="right" width="48">
@@ -248,12 +255,12 @@
             {{ __('Biodata') }}
         </x-responsive-nav-link>
         @if(session('comp') == '0001' && session('nik') == '924330')
-        <x-responsive-nav-link :href="route('approval.biodata')" :active="request()->routeIs('approval.biodata')"
+        <!-- <x-responsive-nav-link :href="route('approval.biodata')" :active="request()->routeIs('approval.biodata')"
             style="{{ request()->routeIs('approval.biodata') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
             onmouseover="this.style.color='#dc2626'"
             onmouseout="this.style.color='{{ request()->routeIs('approval.biodata') ? '#dc2626' : 'white' }}'">
             {{ __('Approval Biodata') }}
-        </x-responsive-nav-link>
+        </x-responsive-nav-link> -->
         @endif
         <x-responsive-nav-link :href="route('absensi.index')" :active="request()->routeIs('absensi.index')"
             style="{{ request()->routeIs('absensi.index') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"

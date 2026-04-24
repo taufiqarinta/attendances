@@ -210,10 +210,13 @@
     function formatDisplayDate(str) {
         if (!str) return '-';
         const d = new Date(str);
-        return d.toLocaleString('id-ID', {
+        let formatted = d.toLocaleString('id-ID', {
             day: '2-digit', month: '2-digit', year: 'numeric',
             hour: '2-digit', minute: '2-digit', second: '2-digit'
         });
+        // Ganti pemisah jam-menit dari titik menjadi titik dua
+        formatted = formatted.replace(/(\d{2})\.(\d{2})\.(\d{2})$/, '$1:$2:$3');
+        return formatted;
     }
 
     // ===== FETCH — ambil SEMUA data sekaligus (tidak ada pagination server) =====

@@ -62,7 +62,7 @@
                             </div>
 
                             <!-- Search -->
-                            <div class="col-span-2 lg:col-span-1">
+                            <div class="col-span-2 lg:col-span-1 hidden">
                                 <label class="block text-xs font-medium text-gray-500 mb-1.5">Cari Karyawan</label>
                                 <div class="relative">
                                     <svg class="w-4 h-4 absolute left-3 top-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -210,10 +210,13 @@
     function formatDisplayDate(str) {
         if (!str) return '-';
         const d = new Date(str);
-        return d.toLocaleString('id-ID', {
+        let formatted = d.toLocaleString('id-ID', {
             day: '2-digit', month: '2-digit', year: 'numeric',
             hour: '2-digit', minute: '2-digit', second: '2-digit'
         });
+        // Ganti pemisah jam-menit dari titik menjadi titik dua
+        formatted = formatted.replace(/(\d{2})\.(\d{2})\.(\d{2})$/, '$1:$2:$3');
+        return formatted;
     }
 
     // ===== FETCH — ambil SEMUA data sekaligus (tidak ada pagination server) =====

@@ -80,12 +80,25 @@
             {{-- Welcome Card --}}
             <div class="bg-white shadow-sm rounded-lg p-6 mb-6">
                 <h3 class="text-2xl font-bold text-gray-800">Welcome, {{ session('username') }}</h3>
-                <p class="text-gray-500 mt-1">Sudah kah anda melakukan absensi hari ini?</p>
+                
+                {{-- Working Hours Info --}}
+                <div id="workingHoursInfo" class="mt-2 p-2 bg-gray-50 rounded-lg border border-gray-200">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span class="text-gray-700 font-medium">Working Office Hour:</span>
+                        <span id="workingHoursText" class="text-gray-600">Loading...</span>
+                    </div>
+                </div>
+                
+                <p class="text-gray-500 mt-3">Sudah kah anda melakukan absensi hari ini?</p>
                 <br>
                 <button onclick="window.location.href='{{ url('/absensi/create') }}'"
-                class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded flex items-center gap-2">
-                + Absen
-            </button>
+                    class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded flex items-center gap-2">
+                    + Absen
+                </button>
             </div>
 
             {{-- Admin Section (untuk user dengan comp = 0001 dan roles admin) --}}
@@ -267,7 +280,84 @@
             }
         }
 
-        // === TAMBAHKAN FUNGSI INI ===
+        async function fetchWorkingHours() {
+            const nik = SESSION_NIK;
+            const today = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
+            
+            try {
+                const url = `https://web.kobin.co.id/api/hris/harikerja/getharikerja.php?personnelNo=${nik}&validFrom=${today}`;
+                const response = await fetch(url);
+                const result = await response.json();
+                
+                if (result.success && result.data && result.data.length > 0) {
+                    const workingData = result.data[0];
+                    const plannedStart = workingData.PlannedStart;
+                    const plannedFinish = workingData.PlannedFinish;
+                    
+                    // Extract time from datetime (format: 2026-05-25 08:00:00)
+                    const startTime = plannedStart ? plannedStart.split(' ')[1].substring(0, 5) : '--:--';
+                    const finishTime = plannedFinish ? plannedFinish.split(' ')[1].substring(0, 5) : '--:--';
+                    
+                    return {
+                        startTime: startTime,
+                        finishTime: finishTime,
+                        fullStart: plannedStart,
+                        fullFinish: plannedFinish,
+                        workSchedule: workingData.WorkSchedule,
+                        dailyWS: workingData.DailyWS
+                    };
+                }
+                return null;
+            } catch (err) {
+                console.error('Error fetching working hours:', err);
+                return null;
+            }
+        }
+
+        // Fungsi untuk memuat dan menampilkan jam kerja
+        async function loadWorkingHours() {
+            const workingHoursText = document.getElementById('workingHoursText');
+            if (!workingHoursText) return;
+            
+            try {
+                const workingHours = await fetchWorkingHours();
+                
+                if (workingHours && workingHours.startTime !== '--:--') {
+                    workingHoursText.textContent = `${workingHours.startTime} - ${workingHours.finishTime}`;
+                    
+                    // Optional: Tambahkan tooltip dengan informasi lebih detail
+                    workingHoursText.title = `Schedule: ${workingHours.workSchedule || '-'} | Daily: ${workingHours.dailyWS || '-'}`;
+                    
+                    // Optional: Ubah warna berdasarkan status jam kerja saat ini
+                    const now = new Date();
+                    const currentTime = now.getHours() * 60 + now.getMinutes();
+                    const startMinutes = parseInt(workingHours.startTime.split(':')[0]) * 60 + parseInt(workingHours.startTime.split(':')[1]);
+                    const finishMinutes = parseInt(workingHours.finishTime.split(':')[0]) * 60 + parseInt(workingHours.finishTime.split(':')[1]);
+                    
+                    if (currentTime < startMinutes) {
+                        // Belum jam kerja
+                        workingHoursText.classList.add('text-blue-600');
+                        workingHoursText.parentElement.parentElement.classList.add('border-blue-400', 'bg-blue-400');
+                    } else if (currentTime >= startMinutes && currentTime <= finishMinutes) {
+                        // Jam kerja
+                        workingHoursText.classList.add('text-green-600');
+                        workingHoursText.parentElement.parentElement.classList.add('border-green-400', 'bg-green-400');
+                    } else {
+                        // Sudah lewat jam kerja
+                        workingHoursText.classList.add('text-orange-600');
+                        workingHoursText.parentElement.parentElement.classList.add('border-orange-400', 'bg-orange-400');
+                    }
+                } else {
+                    workingHoursText.textContent = 'Tidak tersedia';
+                    workingHoursText.classList.add('text-red-600');
+                }
+            } catch (err) {
+                console.error('Error loading working hours:', err);
+                workingHoursText.textContent = 'Gagal memuat data';
+                workingHoursText.classList.add('text-red-600');
+            }
+        }
+
         function formatPeriodeForAPI(periode) {
             if (!periode) return '';
             
@@ -959,7 +1049,8 @@
                     await loadSelfChart();
                     await loadAtasanChart();
                     await loadAdminChart();
-                    console.log('=== DASHBOARD INITIALIZED SUCCESSFULLY ===');
+                    await loadWorkingHours();
+                    // console.log('=== DASHBOARD INITIALIZED SUCCESSFULLY ===');
                 }, 200);
                 
             } catch (err) {

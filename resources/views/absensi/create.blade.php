@@ -5,6 +5,9 @@
         </h2>
     </x-slot>
 
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script src="https://cdn.tailwindcss.com"></script>
 
     <div class="py-12">
@@ -20,10 +23,6 @@
                     {{ session('error') }}
                 </div>
             @endif
-
-            <!-- Alert untuk JavaScript -->
-            <div id="alertSuccess" class="mb-4 hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded"></div>
-            <div id="alertError" class="mb-4 hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"></div>
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
@@ -172,31 +171,68 @@
 
                 updateStatus('Kamera siap!', 'success');
                 captureBtn.disabled = false;
+                
+                // Tampilkan notifikasi kamera siap
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Kamera Siap!',
+                    text: 'Silakan ambil foto selfie Anda',
+                    timer: 2500,
+                    showConfirmButton: false
+                });
 
             } catch (error) {
                 updateStatus('Gagal akses kamera: ' + error.message, 'error');
                 captureBtn.disabled = true;
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal Akses Kamera',
+                    text: error.message + '\n\nPastikan Anda telah mengizinkan akses kamera.',
+                    confirmButtonColor: '#ef4444',
+                    confirmButtonText: 'OK'
+                });
             }
         }
 
         // Capture photo
         function capturePhoto() {
-            if (isPhotoTaken) return;
-        
+            if (isPhotoTaken) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Foto Sudah Diambil',
+                    text: 'Anda sudah mengambil foto. Silakan submit absensi atau refresh halaman untuk mengambil ulang.',
+                    confirmButtonColor: '#ef4444',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+            
             captureBtn.disabled = true;
             updateStatus('Mengambil foto...', 'info');
-        
+            
+            // Tampilkan loading sebentar
+            Swal.fire({
+                title: 'Mengambil Foto...',
+                text: 'Harap tunggu',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                willOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
             try {
                 const videoWidth = videoElement.videoWidth;
                 const videoHeight = videoElement.videoHeight;
-        
+            
                 canvasElement.width = videoWidth;
                 canvasElement.height = videoHeight;
-        
+            
                 setTimeout(() => {
                     const ctx = canvasElement.getContext('2d');
                     ctx.drawImage(videoElement, 0, 0, videoWidth, videoHeight);
-        
+            
                     const photoDataUrl = canvasElement.toDataURL('image/jpeg', 0.85);
                     
                     videoElement.style.display = 'none';
@@ -211,33 +247,92 @@
                     submitBtn.disabled = false;
                     
                     updateStatus('Foto berhasil! Silakan submit', 'success');
-        
+                    
+                    // Tutup loading dan tampilkan success
+                    Swal.close();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Foto Berhasil!',
+                        text: 'Silakan klik tombol Submit Absensi',
+                        timer: 2500,
+                        showConfirmButton: false
+                    });
+            
                 }, 100);
-        
+            
             } catch (error) {
+                Swal.close();
                 updateStatus('Gagal: ' + error.message, 'error');
                 captureBtn.disabled = false;
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal Mengambil Foto',
+                    text: error.message,
+                    confirmButtonColor: '#ef4444',
+                    confirmButtonText: 'OK'
+                });
             }
         }
 
         // Get location
         function requestLocation() {
             if (!navigator.geolocation) {
-                console.error('Geolocation tidak didukung');
+                showAlert('error', 'Browser Anda tidak mendukung geolokasi. Silakan gunakan browser modern.', 'Geolokasi Tidak Didukung');
                 return;
             }
 
+            // Show loading location
+            Swal.fire({
+                title: 'Mendapatkan Lokasi...',
+                text: 'Mohon izinkan akses lokasi untuk melanjutkan absensi',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
             navigator.geolocation.getCurrentPosition(
                 function(position) {
+                    // Close loading
+                    Swal.close();
+                    
                     currentLocation.latitude = position.coords.latitude;
                     currentLocation.longitude = position.coords.longitude;
                     
                     latitudePreview.value = currentLocation.latitude;
                     longitudePreview.value = currentLocation.longitude;
+                    
+                    // Optional: Tampilkan konfirmasi lokasi
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Lokasi Terdeteksi!',
+                        html: `Latitude: ${currentLocation.latitude}<br>Longitude: ${currentLocation.longitude}`,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
                 },
                 function(error) {
-                    console.error('Location error:', error.message);
-                    showAlert('error', 'Gagal mendapatkan lokasi: ' + error.message);
+                    // Close loading
+                    Swal.close();
+                    
+                    let errorMessage = '';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage = 'Izin lokasi ditolak. Silakan izinkan akses lokasi di pengaturan browser.';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage = 'Informasi lokasi tidak tersedia. Pastikan GPS aktif.';
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage = 'Waktu permintaan lokasi habis. Silakan coba lagi.';
+                            break;
+                        default:
+                            errorMessage = error.message;
+                    }
+                    
+                    showAlert('error', errorMessage, 'Gagal Mendapatkan Lokasi');
                 },
                 {
                     enableHighAccuracy: true,
@@ -251,12 +346,12 @@
         async function submitAttendance() {
             // Validasi
             if (!isPhotoTaken || !capturedPhotoData) {
-                showAlert('error', 'Silakan ambil foto terlebih dahulu');
+                showAlert('error', 'Silakan ambil foto terlebih dahulu', 'Foto Belum Diambil');
                 return;
             }
 
             if (!currentLocation.latitude || !currentLocation.longitude) {
-                showAlert('error', 'Lokasi belum terdeteksi. Pastikan GPS aktif.');
+                showAlert('error', 'Lokasi belum terdeteksi. Pastikan GPS aktif.', 'Lokasi Tidak Ditemukan');
                 return;
             }
 
@@ -264,13 +359,16 @@
             const checkType = document.getElementById('CheckType').value;
 
             if (!personnelNo || !checkType) {
-                showAlert('error', 'Data tidak lengkap');
+                showAlert('error', 'Data tidak lengkap. Silakan pilih jenis absensi.', 'Data Tidak Lengkap');
                 return;
             }
 
             // Disable button
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<svg class="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+            
+            // Show loading
+            showLoadingAlert();
 
             try {
                 // Prepare data
@@ -281,9 +379,9 @@
                     CheckType: checkType,
                     Latitude: currentLocation.latitude.toString(),
                     Longitude: currentLocation.longitude.toString(),
-                    LocalDateTime: localTime.datetime, // Waktu lokal perangkat
-                    LocalTimezone: localTime.timezone, // Informasi timezone
-                    UTCTimestamp: localTime.timestamp, // UTC timestamp untuk referensi
+                    LocalDateTime: localTime.datetime,
+                    LocalTimezone: localTime.timezone,
+                    UTCTimestamp: localTime.timestamp,
                     photoData: capturedPhotoData,
                     IP: '{{ request()->ip() }}'
                 };
@@ -303,6 +401,9 @@
                 console.log('📥 Response from PHP:', result);
 
                 if (result.success) {
+                    // Close loading
+                    closeLoadingAlert();
+                    
                     // 2. Jika sukses, kirim foto ke Laravel untuk disimpan di storage
                     console.log('📤 Saving photo to Laravel storage...');
                     
@@ -327,10 +428,25 @@
                         console.log('✅ Foto berhasil disimpan di:', laravelResult.data.file_path);
                     } else {
                         console.warn('⚠️ Gagal simpan foto di storage:', laravelResult.message);
-                        // Tetap lanjut karena yang penting data sudah masuk ke database
                     }
 
-                    showAlert('success', 'Absensi berhasil! Redirecting...');
+                    // Tampilkan notifikasi sukses dengan SweetAlert2
+                    const checkTypeName = checkType === 'IN' ? 'Masuk' : 'Pulang';
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Absensi Berhasil!',
+                        html: `
+                            <div class="text-left">
+                                <p><strong>Jenis:</strong> ${checkTypeName}</p>
+                                <p><strong>Waktu:</strong> ${localTime.datetime}</p>
+                                <p><strong>Lokasi:</strong> ${currentLocation.latitude}, ${currentLocation.longitude}</p>
+                            </div>
+                        `,
+                        confirmButtonColor: '#ef4444',
+                        confirmButtonText: 'OK',
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
                     
                     // Stop camera
                     stopCamera();
@@ -345,7 +461,8 @@
 
             } catch (error) {
                 console.error('❌ Error:', error);
-                showAlert('error', 'Gagal: ' + error.message);
+                closeLoadingAlert();
+                showAlert('error', error.message, 'Submit Gagal');
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = 'Submit Absensi';
             }
@@ -401,24 +518,60 @@
         }
 
         // Show alert
-        function showAlert(type, message) {
+        function showAlert(type, message, title = null) {
             if (type === 'success') {
-                alertSuccess.innerHTML = message;
-                alertSuccess.classList.remove('hidden');
-                alertError.classList.add('hidden');
-                
-                setTimeout(() => {
-                    alertSuccess.classList.add('hidden');
-                }, 3000);
-            } else {
-                alertError.innerHTML = message;
-                alertError.classList.remove('hidden');
-                alertSuccess.classList.add('hidden');
-                
-                setTimeout(() => {
-                    alertError.classList.add('hidden');
-                }, 3000);
+                Swal.fire({
+                    icon: 'success',
+                    title: title || 'Berhasil!',
+                    text: message,
+                    timer: 2000,
+                    showConfirmButton: true,
+                    confirmButtonColor: '#ef4444',
+                    confirmButtonText: 'OK'
+                });
+            } else if (type === 'error') {
+                Swal.fire({
+                    icon: 'error',
+                    title: title || 'Gagal!',
+                    text: message,
+                    confirmButtonColor: '#ef4444',
+                    confirmButtonText: 'OK'
+                });
+            } else if (type === 'warning') {
+                Swal.fire({
+                    icon: 'warning',
+                    title: title || 'Peringatan!',
+                    text: message,
+                    confirmButtonColor: '#ef4444',
+                    confirmButtonText: 'OK'
+                });
+            } else if (type === 'info') {
+                Swal.fire({
+                    icon: 'info',
+                    title: title || 'Informasi',
+                    text: message,
+                    confirmButtonColor: '#ef4444',
+                    confirmButtonText: 'OK'
+                });
             }
+        }
+
+        // Fungsi untuk loading indicator
+        function showLoadingAlert(message = 'Memproses absensi...') {
+            Swal.fire({
+                title: 'Loading...',
+                text: message,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+        }
+
+        function closeLoadingAlert() {
+            Swal.close();
         }
 
         // Initialize

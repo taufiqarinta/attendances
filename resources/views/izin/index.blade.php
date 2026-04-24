@@ -299,12 +299,14 @@
 
         // Initialize datepickers
         function initializeDatepickers() {
+            const minAllowedDate = getMinAllowedDate();
+
             // Flatpickr untuk start date
             window.startDatePicker = flatpickr("#startdate", {
                 locale: "id",
                 dateFormat: "d/m/Y",
                 allowInput: true,
-                // minDate: "today",
+                minDate: minAllowedDate,
                 onChange: function(selectedDates, dateStr, instance) {
                     // Update end date jika tipe attendance
                     const tipe = $('#absencestype').val();
@@ -326,7 +328,7 @@
                 locale: "id",
                 dateFormat: "d/m/Y",
                 allowInput: true,
-                // minDate: "today"
+                minDate: minAllowedDate
             });
             
             // Tambahkan property untuk menandai status disabled
@@ -352,7 +354,7 @@
                     locale: "id",
                     dateFormat: "d/m/Y",
                     allowInput: true,
-                    // minDate: "today"
+                    minDate: getMinAllowedDate()
                 });
                 window.endDatePicker.isDisabled = false;
             } else if (!window.endDatePicker) {
@@ -360,14 +362,14 @@
                     locale: "id",
                     dateFormat: "d/m/Y",
                     allowInput: true,
-                    // minDate: "today"
+                    minDate: getMinAllowedDate()
                 });
                 window.endDatePicker.isDisabled = false;
             }
             
             if (window.endDatePicker) {
                 window.endDatePicker.setDate(today);
-                window.endDatePicker.set('minDate', today);
+                window.endDatePicker.set('minDate', getMinAllowedDate() || today);
             }
             
             $('#absencestype').val('');
@@ -380,6 +382,47 @@
             // Reset end date ke normal (tidak readonly)
             $('#enddate').prop('readonly', false);
             $('#enddate').removeClass('bg-gray-100');
+        }
+
+        function getMinAllowedDate() {
+            const today = new Date();
+
+            // Mulai tanggal 22, tanggal minimum yang bisa dipilih adalah tanggal 21 bulan ini.
+            if (today.getDate() >= 22) {
+                return new Date(today.getFullYear(), today.getMonth(), 21);
+            }
+
+            return null;
+        }
+
+        function parseFormDateToDate(dateStr) {
+            if (!dateStr) return null;
+
+            if (typeof dateStr === 'string' && dateStr.includes('/')) {
+                const parts = dateStr.split('/');
+                if (parts.length === 3) {
+                    const day = parseInt(parts[0], 10);
+                    const month = parseInt(parts[1], 10) - 1;
+                    const year = parseInt(parts[2], 10);
+                    const parsed = new Date(year, month, day);
+                    return isNaN(parsed.getTime()) ? null : parsed;
+                }
+            }
+
+            const parsed = new Date(dateStr);
+            return isNaN(parsed.getTime()) ? null : parsed;
+        }
+
+        function isDateBeforeMinAllowed(dateStr) {
+            const minAllowedDate = getMinAllowedDate();
+            if (!minAllowedDate) return false;
+
+            const selectedDate = parseFormDateToDate(dateStr);
+            if (!selectedDate) return false;
+
+            selectedDate.setHours(0, 0, 0, 0);
+            minAllowedDate.setHours(0, 0, 0, 0);
+            return selectedDate < minAllowedDate;
         }
 
         function formatDateToDMY(date) {
@@ -1051,7 +1094,7 @@
                         locale: "id",
                         dateFormat: "d/m/Y",
                         allowInput: true,
-                        // minDate: "today"
+                        minDate: getMinAllowedDate()
                     });
                     window.endDatePicker.isDisabled = false;
                 } else if (!window.endDatePicker) {
@@ -1060,7 +1103,7 @@
                         locale: "id",
                         dateFormat: "d/m/Y",
                         allowInput: true,
-                        // minDate: "today"
+                        minDate: getMinAllowedDate()
                     });
                     window.endDatePicker.isDisabled = false;
                 }
@@ -1089,6 +1132,13 @@
     
     // CEK APAKAH INI ATTENDANCE
     const isAttendance = isAttendanceType(tipe);
+
+    const startDateValue = $('#startdate').val();
+    const endDateValue = $('#enddate').val();
+    if (isDateBeforeMinAllowed(startDateValue) || isDateBeforeMinAllowed(endDateValue)) {
+        Swal.fire('Error', 'Mulai tanggal 22, hanya boleh pilih tanggal 21 bulan ini dan setelahnya.', 'error');
+        return;
+    }
     
     // Validasi khusus untuk attendance
     if (isAttendance) {
