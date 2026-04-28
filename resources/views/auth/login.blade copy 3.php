@@ -202,8 +202,7 @@
             // Ambil data form
             const formData = {
                 nik: document.getElementById('nik').value,
-                password: document.getElementById('password').value,
-                remember: document.getElementById('remember_me').checked ? 1 : 0
+                password: document.getElementById('password').value
             };
             
             // Kirim ke API

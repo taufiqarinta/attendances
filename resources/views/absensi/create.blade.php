@@ -173,13 +173,13 @@
                 captureBtn.disabled = false;
                 
                 // Tampilkan notifikasi kamera siap
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Kamera Siap!',
-                    text: 'Silakan ambil foto selfie Anda',
-                    timer: 2500,
-                    showConfirmButton: false
-                });
+                // Swal.fire({
+                //     icon: 'success',
+                //     title: 'Kamera Siap!',
+                //     text: 'Silakan ambil foto selfie Anda',
+                //     timer: 2500,
+                //     showConfirmButton: false
+                // });
 
             } catch (error) {
                 updateStatus('Gagal akses kamera: ' + error.message, 'error');
@@ -212,15 +212,15 @@
             updateStatus('Mengambil foto...', 'info');
             
             // Tampilkan loading sebentar
-            Swal.fire({
-                title: 'Mengambil Foto...',
-                text: 'Harap tunggu',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                willOpen: () => {
-                    Swal.showLoading();
-                }
-            });
+            // Swal.fire({
+            //     title: 'Mengambil Foto...',
+            //     text: 'Harap tunggu',
+            //     allowOutsideClick: false,
+            //     showConfirmButton: false,
+            //     willOpen: () => {
+            //         Swal.showLoading();
+            //     }
+            // });
 
             try {
                 const videoWidth = videoElement.videoWidth;
@@ -250,13 +250,13 @@
                     
                     // Tutup loading dan tampilkan success
                     Swal.close();
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Foto Berhasil!',
-                        text: 'Silakan klik tombol Submit Absensi',
-                        timer: 2500,
-                        showConfirmButton: false
-                    });
+                    // Swal.fire({
+                    //     icon: 'success',
+                    //     title: 'Foto Berhasil!',
+                    //     text: 'Silakan klik tombol Submit Absensi',
+                    //     timer: 2500,
+                    //     showConfirmButton: false
+                    // });
             
                 }, 100);
             
@@ -283,15 +283,15 @@
             }
 
             // Show loading location
-            Swal.fire({
-                title: 'Mendapatkan Lokasi...',
-                text: 'Mohon izinkan akses lokasi untuk melanjutkan absensi',
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
+            // Swal.fire({
+            //     title: 'Mendapatkan Lokasi...',
+            //     text: 'Mohon izinkan akses lokasi untuk melanjutkan absensi',
+            //     allowOutsideClick: false,
+            //     allowEscapeKey: false,
+            //     didOpen: () => {
+            //         Swal.showLoading();
+            //     }
+            // });
 
             navigator.geolocation.getCurrentPosition(
                 function(position) {
@@ -305,13 +305,13 @@
                     longitudePreview.value = currentLocation.longitude;
                     
                     // Optional: Tampilkan konfirmasi lokasi
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Lokasi Terdeteksi!',
-                        html: `Latitude: ${currentLocation.latitude}<br>Longitude: ${currentLocation.longitude}`,
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
+                    // Swal.fire({
+                    //     icon: 'success',
+                    //     title: 'Lokasi Terdeteksi!',
+                    //     html: `Latitude: ${currentLocation.latitude}<br>Longitude: ${currentLocation.longitude}`,
+                    //     timer: 1500,
+                    //     showConfirmButton: false
+                    // });
                 },
                 function(error) {
                     // Close loading
@@ -496,9 +496,9 @@
 
         // Contoh penggunaan:
         const localTime = getLocalDeviceTime();
-        console.log('Waktu lokal:', localTime.datetime);
-        console.log('Timezone:', localTime.timezone);
-        console.log('UTC Offset:', localTime.timezoneOffset, 'menit');
+        // console.log('Waktu lokal:', localTime.datetime);
+        // console.log('Timezone:', localTime.timezone);
+        // console.log('UTC Offset:', localTime.timezoneOffset, 'menit');
 
         // Stop camera
         function stopCamera() {
