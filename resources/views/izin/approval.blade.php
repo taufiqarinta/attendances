@@ -384,21 +384,7 @@
                 // File upload link
                 let fileHtml = '--';
                 if (item.fileupload && item.fileupload !== '') {
-                    const fileName = item.fileupload.split('/').pop();
-                    
-                    // Deteksi tipe dari prefix nama file
-                    let folder = 'cuti-khusus';
-                    if (fileName.startsWith('1200_')) {
-                        folder = 'sakit';
-                    } else if (fileName.startsWith('1300_')) {
-                        folder = 'cuti-khusus';
-                    }
-                    
-                    const dateMatch = fileName.match(/(\d{4})-(\d{2})-\d{2}/);
-                    const tahun = dateMatch ? dateMatch[1] : new Date().getFullYear();
-                    const bulan = dateMatch ? dateMatch[2] : String(new Date().getMonth() + 1).padStart(2, '0');
-                    
-                    const laravelFileUrl = `/storage/izin/${tahun}/${bulan}/${folder}/${fileName}`;
+                    const laravelFileUrl = `/storage/${item.fileupload}`;
                     
                     fileHtml = `<a href="${laravelFileUrl}" target="_blank" class="text-blue-600 hover:text-blue-800 underline">View</a>`;
                 }
