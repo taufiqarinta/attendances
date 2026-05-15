@@ -21,4 +21,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::post('/absensi/save-photo', [AttendanceController::class, 'savePhotoFromBackend']);
-Route::post('/izin/upload-file', [IzinController::class, 'uploadFile'])->name('izin.upload');
+// Route::post('/izin/upload-file', [IzinController::class, 'uploadFile'])->name('izin.upload');
+Route::post('/izin/upload-file', [IzinController::class, 'uploadFile'])->name('izin.upload.api');
