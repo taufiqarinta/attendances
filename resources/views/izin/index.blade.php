@@ -387,8 +387,8 @@
         function getMinAllowedDate() {
             const today = new Date();
 
-            // Mulai tanggal 22, tanggal minimum yang bisa dipilih adalah tanggal 21 bulan ini.
-            if (today.getDate() >= 22) {
+            // Mulai tanggal 23, tanggal minimum yang bisa dipilih adalah tanggal 21 bulan ini.
+            if (today.getDate() >= 23) {
                 return new Date(today.getFullYear(), today.getMonth(), 21);
             }
 
@@ -1136,7 +1136,7 @@
     const startDateValue = $('#startdate').val();
     const endDateValue = $('#enddate').val();
     if (isDateBeforeMinAllowed(startDateValue) || isDateBeforeMinAllowed(endDateValue)) {
-        Swal.fire('Error', 'Mulai tanggal 22, hanya boleh pilih tanggal 21 bulan ini dan setelahnya.', 'error');
+        Swal.fire('Error', 'Mulai tanggal 23, hanya boleh pilih tanggal 21 bulan ini dan setelahnya.', 'error');
         return;
     }
     
