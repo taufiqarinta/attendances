@@ -386,6 +386,9 @@
                 return;
             }
             
+            const totals = calculateTotals(data);
+            const totalAttendances = totals.l1 + totals.l2 + totals.l3 + totals.p;
+            const totalAbsences = totals.m + totals.i + totals.dis + totals.c + totals.s + totals.d;
             let html = '';
             let currentDept = '';
             let deptCount = 0;
@@ -448,6 +451,25 @@
                     </tr>
                 `;
             }
+
+            html += `
+                <tr class="bg-blue-50 font-bold border-t-2 border-blue-200">
+                    <td colspan="3" class="px-3 py-3 text-sm text-blue-700">
+                        Total seluruh karyawan: ${totals.employees} | Attendances: ${numberFormat(totalAttendances)} | Absences: ${numberFormat(totalAbsences)}
+                    </td>
+                    <td class="px-3 py-3 text-center text-sm text-blue-700">${numberFormat(totals.hk)}</td>
+                    <td class="px-3 py-3 text-center text-sm text-blue-700">${numberFormat(totals.l1)}</td>
+                    <td class="px-3 py-3 text-center text-sm text-blue-700">${numberFormat(totals.l2)}</td>
+                    <td class="px-3 py-3 text-center text-sm text-blue-700">${numberFormat(totals.l3)}</td>
+                    <td class="px-3 py-3 text-center text-sm text-blue-700">${numberFormat(totals.p)}</td>
+                    <td class="px-3 py-3 text-center text-sm text-blue-700">${numberFormat(totals.m)}</td>
+                    <td class="px-3 py-3 text-center text-sm text-blue-700">${numberFormat(totals.i)}</td>
+                    <td class="px-3 py-3 text-center text-sm text-blue-700">${numberFormat(totals.dis)}</td>
+                    <td class="px-3 py-3 text-center text-sm text-blue-700">${numberFormat(totals.c)}</td>
+                    <td class="px-3 py-3 text-center text-sm text-blue-700">${numberFormat(totals.s)}</td>
+                    <td class="px-3 py-3 text-center text-sm text-blue-700">${numberFormat(totals.d)}</td>
+                </tr>
+            `;
             
             tbody.innerHTML = html;
         }
@@ -478,6 +500,42 @@
         function numberFormat(value) {
             if (value === undefined || value === null) return '0';
             return new Intl.NumberFormat('id-ID').format(value);
+        }
+
+        function toNumber(value) {
+            if (value === undefined || value === null || value === '') return 0;
+            const numeric = parseFloat(String(value).replace(/,/g, '').trim());
+            return Number.isFinite(numeric) ? numeric : 0;
+        }
+
+        function calculateTotals(data) {
+            return data.reduce((totals, item) => {
+                totals.hk += toNumber(item.hk);
+                totals.l1 += toNumber(item.l1);
+                totals.l2 += toNumber(item.l2);
+                totals.l3 += toNumber(item.l3);
+                totals.p += toNumber(item.p);
+                totals.m += toNumber(item.m);
+                totals.i += toNumber(item.i);
+                totals.dis += toNumber(item.dis);
+                totals.c += toNumber(item.c);
+                totals.s += toNumber(item.s);
+                totals.d += toNumber(item.d);
+                return totals;
+            }, {
+                employees: data.length,
+                hk: 0,
+                l1: 0,
+                l2: 0,
+                l3: 0,
+                p: 0,
+                m: 0,
+                i: 0,
+                dis: 0,
+                c: 0,
+                s: 0,
+                d: 0,
+            });
         }
         
         // ==================== EXPORT TO EXCEL ====================

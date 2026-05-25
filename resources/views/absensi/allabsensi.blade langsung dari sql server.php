@@ -2,16 +2,16 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Data Absensi Karyawan') }}
+                {{ __('Data Absensi Seluruh Karyawan') }}
             </h2>
             <div class="flex space-x-2">
-                <a href="{{ route('absensi.create') }}"
+                <!-- <a href="{{ route('absensi.create') }}"
                     class="inline-flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-all duration-200 shadow-sm hover:shadow-md">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                     </svg>
                     Absensi
-                </a>
+                </a> -->
                 <button onclick="refreshData()"
                     class="inline-flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 font-semibold py-2 px-4 rounded-lg text-sm border border-gray-200 transition-all duration-200 shadow-sm hover:shadow-md">
                     <svg class="w-4 h-4 refresh-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,7 +62,7 @@
                             </div>
 
                             <!-- Search -->
-                            <div class="col-span-2 lg:col-span-1 hidden">
+                            <div class="col-span-2 lg:col-span-1">
                                 <label class="block text-xs font-medium text-gray-500 mb-1.5">Cari Karyawan</label>
                                 <div class="relative">
                                     <svg class="w-4 h-4 absolute left-3 top-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,7 +140,6 @@
                                 <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-28">In / Out</th>
                                 <th class="text-center px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-28">Foto</th>
                                 <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-36">Lokasi</th>
-                                <th class="text-center px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-28">Verified</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody">
@@ -183,7 +182,7 @@
     let serverStartDate = '';
     let serverEndDate = '';
 
-    const API_BASE_URL = 'https://web.kobin.co.id/api/hris/absensi/get_self_absensimysql.php';
+    const API_BASE_URL = 'https://web.kobin.co.id/api/hris/absensi/get_all_absensi.php';
 
     // ===== DOM =====
     const tableBody = document.getElementById('tableBody');
@@ -351,7 +350,7 @@
         if (!data || data.length === 0) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="7" class="text-center py-16 text-gray-400 text-sm">
+                    <td colspan="6" class="text-center py-16 text-gray-400 text-sm">
                         <div class="flex flex-col items-center gap-2">
                             <svg class="w-10 h-10 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -423,19 +422,10 @@
                     </td>
                     <td class="px-5 py-3.5 text-center">${fotoHtml}</td>
                     <td class="px-5 py-3.5">${lokasiHtml}</td>
-                    <td class="px-5 py-3.5 text-center">
-                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ${
-                            item.verified === 'success'
-                                ? 'bg-green-100 text-green-700 border border-green-200'
-                                : 'bg-yellow-100 text-yellow-700 border border-yellow-200'
-                        }">
-                            ${item.verified === 'success' ? '✓ Success' : '⏳ Pending'}
-                        </span>
-                    </td>
                 </tr>`;
         });
 
-    tableBody.innerHTML = html;
+        tableBody.innerHTML = html;
     }
 
     // ===== VERIFY =====

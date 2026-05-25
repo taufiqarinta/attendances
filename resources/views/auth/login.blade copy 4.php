@@ -218,9 +218,8 @@
             .then(data => {
                 if (data.success) {
                     // Login sukses - kirim ke server Laravel untuk buat session
-                    return fetch('/login/api-callback', {
+                    return fetch('{{ route("login.api-callback") }}', {
                         method: 'POST',
-                        credentials: 'same-origin',
                         headers: {
                             'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'

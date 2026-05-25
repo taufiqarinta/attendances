@@ -15,7 +15,7 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View|RedirectResponse
     {
-        if (filled(session('nik'))) {
+        if (session()->has('nik')) {
             return redirect($this->getRedirectPath(session('role')));
         }
         
@@ -29,27 +29,20 @@ class AuthenticatedSessionController extends Controller
     {
         try {
             $data = $request->all();
-
-            // Normalisasi agar tetap aman jika key dari API berubah casing/format.
-            $nik = trim((string) ($data['nik'] ?? $data['PersonnelNo'] ?? ''));
-            $nama = trim((string) ($data['nama'] ?? $data['Firstname'] ?? ''));
-
-            if ($nik === '' || $nama === '') {
+            
+            if (!isset($data['nik']) || !isset($data['nama'])) {
                 throw new \Exception('Data tidak lengkap dari API');
             }
             
             // Tentukan role dan posisi jika tidak dikirim dari API
             $role = $data['role'] ?? $this->determineRole($data);
             $posisi = $data['posisi'] ?? $this->determinePosisi($role, $data);
-
-            // Regenerate dulu, lalu isi data agar key session tidak tertinggal/overwritten.
-            $request->session()->regenerate();
             
             // Simpan data user ke session
-            $request->session()->put([
+            session([
                 'is_logged_in' => true,
-                'nik' => $nik,
-                'username' => $nama,
+                'nik' => $data['nik'],
+                'username' => $data['nama'],
                 'level' => $data['level'] ?? 'user',
                 'plant' => $data['plant'] ?? '',
                 'kode_jabatan' => $data['kode_jabatan'] ?? '',
@@ -63,9 +56,8 @@ class AuthenticatedSessionController extends Controller
                 'role' => $role,
                 'api_user_data' => $data
             ]);
-
-            // Pastikan session langsung dipersist sebelum response JSON dikirim.
-            $request->session()->save();
+            
+            $request->session()->regenerate();
             
             $redirect = $this->getRedirectPath($role);
             

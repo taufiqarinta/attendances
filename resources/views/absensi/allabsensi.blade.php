@@ -140,11 +140,12 @@
                                 <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-28">In / Out</th>
                                 <th class="text-center px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-28">Foto</th>
                                 <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-36">Lokasi</th>
+                                <th class="text-center px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-28">Verified</th>
                             </tr>
                         </thead>
                         <tbody id="tableBody">
                             <tr>
-                                <td colspan="6" class="text-center py-16 text-gray-400 text-sm">
+                                <td colspan="7" class="text-center py-16 text-gray-400 text-sm">
                                     <div class="flex flex-col items-center gap-2">
                                         <svg class="w-10 h-10 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
@@ -182,7 +183,7 @@
     let serverStartDate = '';
     let serverEndDate = '';
 
-    const API_BASE_URL = 'https://web.kobin.co.id/api/hris/absensi/get_all_absensi.php';
+    const API_BASE_URL = 'https://web.kobin.co.id/api/hris/absensi/get_all_absensimysql.php';
 
     // ===== DOM =====
     const tableBody = document.getElementById('tableBody');
@@ -350,7 +351,7 @@
         if (!data || data.length === 0) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="6" class="text-center py-16 text-gray-400 text-sm">
+                    <td colspan="7" class="text-center py-16 text-gray-400 text-sm">
                         <div class="flex flex-col items-center gap-2">
                             <svg class="w-10 h-10 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -422,6 +423,15 @@
                     </td>
                     <td class="px-5 py-3.5 text-center">${fotoHtml}</td>
                     <td class="px-5 py-3.5">${lokasiHtml}</td>
+                    <td class="px-5 py-3.5 text-center">
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ${
+                            item.verified === 'success'
+                                ? 'bg-green-100 text-green-700 border border-green-200'
+                                : 'bg-yellow-100 text-yellow-700 border border-yellow-200'
+                        }">
+                            ${item.verified === 'success' ? '✓ Success' : '⏳ Pending'}
+                        </span>
+                    </td>
                 </tr>`;
         });
 

@@ -93,22 +93,22 @@
                                 <thead class="bg-gray-50">
                                     <tr>
                                         <th onclick="sortTable(0)" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer select-none hover:bg-gray-100">
-                                            No <span class="sort-icon text-gray-400">⇅</span>
+                                            No
                                         </th>
                                         <th onclick="sortTable(1)" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer select-none hover:bg-gray-100">
-                                            Plant <span class="sort-icon text-gray-400">⇅</span>
+                                            Plant
                                         </th>
                                         <th onclick="sortTable(2)" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer select-none hover:bg-gray-100">
-                                            Telat (%) <span class="sort-icon text-gray-400">⇅</span>
+                                            Telat
                                         </th>
                                         <th onclick="sortTable(3)" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer select-none hover:bg-gray-100">
-                                            Mangkir (%) <span class="sort-icon text-gray-400">⇅</span>
+                                            Mangkir
                                         </th>
                                         <th onclick="sortTable(4)" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer select-none hover:bg-gray-100">
-                                            Ijin (%) <span class="sort-icon text-gray-400">⇅</span>
+                                            Ijin
                                         </th>
                                         <th onclick="sortTable(5)" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer select-none hover:bg-gray-100">
-                                            Sakit (%) <span class="sort-icon text-gray-400">⇅</span>
+                                            Sakit
                                         </th>
                                     </tr>
                                 </thead>
@@ -166,380 +166,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
 
-<!-- <script>
-    const API_BASE_URL = 'https://web.kobin.co.id/api/hris/summary/get_summary.php';
-    let summaryTable = null;
-    let plantChart = null;
-    let isFetching = false;
-    let currentData = [];
-
-    // DOM Elements
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    const tableBody = document.getElementById('tableBody');
-    const periodeSelect = document.getElementById('adminSelectPeriode');
-    const alertSuccess = document.getElementById('alertSuccess');
-    const alertError = document.getElementById('alertError');
-    const successMessage = document.getElementById('successMessage');
-    const errorMessage = document.getElementById('errorMessage');
-
-    let sortDir = {};
-
-    function sortTable(colIndex) {
-        const tbody = document.getElementById('tableBody');
-        const rows = Array.from(tbody.querySelectorAll('tr'));
-
-        sortDir[colIndex] = sortDir[colIndex] === 'asc' ? 'desc' : 'asc';
-        const dir = sortDir[colIndex];
-
-        rows.sort((a, b) => {
-            const aText = a.cells[colIndex]?.textContent.trim() ?? '';
-            const bText = b.cells[colIndex]?.textContent.trim() ?? '';
-
-            const aNum = parseFloat(aText);
-            const bNum = parseFloat(bText);
-            const isNum = !isNaN(aNum) && !isNaN(bNum);
-
-            let cmp = isNum ? aNum - bNum : aText.localeCompare(bText, 'id');
-            return dir === 'asc' ? cmp : -cmp;
-        });
-
-        // Update semua icon
-        document.querySelectorAll('.sort-icon').forEach((el, i) => {
-            el.textContent = i === colIndex ? (dir === 'asc' ? '↑' : '↓') : '⇅';
-        });
-
-        rows.forEach(row => tbody.appendChild(row));
-    }
-
-    // Show/Hide Loading
-    function showLoading() {
-        loadingOverlay.classList.remove('hidden');
-    }
-
-    function hideLoading() {
-        loadingOverlay.classList.add('hidden');
-    }
-
-    // Show Alert
-    function showAlert(type, message) {
-        if (type === 'success') {
-            successMessage.textContent = message;
-            alertSuccess.classList.remove('hidden');
-            setTimeout(() => {
-                alertSuccess.classList.add('hidden');
-            }, 3000);
-        } else {
-            errorMessage.textContent = message;
-            alertError.classList.remove('hidden');
-            setTimeout(() => {
-                alertError.classList.add('hidden');
-            }, 3000);
-        }
-    }
-
-    // Render Table
-    function renderTable(data) {
-        // Destroy DataTable dulu jika ada
-        if ($.fn.DataTable.isDataTable('#reporttbl')) {
-            $('#reporttbl').DataTable().destroy();
-            summaryTable = null;
-        }
-
-        if (!data || data.length === 0) {
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="6" class="text-center py-8">
-                        <div class="flex flex-col items-center justify-center text-gray-400">
-                            <span>Tidak ada data ditemukan</span>
-                        </div>
-                    </td>
-                </tr>
-            `;
-            return;
-        }
-
-        // Set HTML dulu, BARU init DataTable
-        let html = '';
-        data.forEach((item, index) => {
-            html += `
-                <tr class="hover:bg-gray-50 cursor-pointer" 
-                    data-plant="${item.Plant}" 
-                    data-nama="${item.Nama}" 
-                    data-telat="${item.telat}" 
-                    data-mangkir="${item.mangkir}" 
-                    data-ijin="${item.ijin}" 
-                    data-sakit="${item.sakit}">
-                    <td class="px-4 py-3 text-center text-sm">${index + 1}</td>
-                    <td class="px-4 py-3 text-center text-sm font-medium">${item.Nama || item.Plant}</td>
-                    <td class="px-4 py-3 text-center text-sm">${parseFloat(item.telat).toFixed(2)}</td>
-                    <td class="px-4 py-3 text-center text-sm">${parseFloat(item.mangkir).toFixed(2)}</td>
-                    <td class="px-4 py-3 text-center text-sm">${parseFloat(item.ijin).toFixed(2)}</td>
-                    <td class="px-4 py-3 text-center text-sm">${parseFloat(item.sakit).toFixed(2)}</td>
-                </tr>
-            `;
-        });
-
-        // Set innerHTML langsung ke tbody
-        $('#tableBody').html(html);
-
-        // Init DataTable SETELAH HTML ada di DOM
-        summaryTable = $('#reporttbl').DataTable({
-            dom: 'frt',
-            paging: false,
-            searching: false, // opsional, hide search box
-            info: false,      // opsional, hide "Showing X entries"
-            buttons: [
-                {
-                    extend: 'excelHtml5',
-                    text: 'Export Excel',
-                    className: 'btn btn-sm bg-green-500 text-white hover:bg-green-600',
-                    filename: 'Rekap_Summary_Report_Plant'
-                }
-            ]
-        });
-    }
-
-    function exportExcel() {
-        const table = document.getElementById('reporttbl');
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.table_to_sheet(table);
-        XLSX.utils.book_append_sheet(wb, ws, 'Summary');
-        XLSX.writeFile(wb, 'Rekap_Summary_Report_Plant.xlsx');
-    }
-
-    // Load Summary Data - PERBAIKAN: Clear cache sebelum fetch
-    async function loadSummaryData(periode = null) {
-        if (isFetching) return;
-        
-        const selectedPeriode = periode || periodeSelect.value;
-        if (!selectedPeriode || selectedPeriode === '') {
-            showAlert('error', 'Silakan pilih periode terlebih dahulu');
-            return;
-        }
-        
-        try {
-            isFetching = true;
-            showLoading();
-            
-            // Tambahkan timestamp untuk mencegah cache
-            const url = `${API_BASE_URL}?periode=${selectedPeriode}&_=${Date.now()}`;
-            console.log('Fetching:', url);
-            
-            const response = await fetch(url);
-            const result = await response.json();
-            
-            console.log('Summary Response for periode', selectedPeriode, ':', result);
-            
-            if (result.success) {
-                currentData = result.data || [];
-                renderTable(currentData);
-                
-                // Update judul atau info tambahan
-                const periodeDisplay = selectedPeriode.substring(0,4) + '-' + selectedPeriode.substring(4,6);
-                showAlert('success', `Berhasil memuat ${currentData.length} data plant untuk periode ${periodeDisplay}`);
-            } else {
-                throw new Error(result.message || 'Gagal mengambil data');
-            }
-        } catch (error) {
-            console.error('Error loading summary:', error);
-            showAlert('error', 'Gagal memuat data: ' + error.message);
-            renderTable([]);
-        } finally {
-            isFetching = false;
-            hideLoading();
-        }
-    }
-
-    // Event listener untuk periode change - PASTIKAN INI BERJALAN
-    $(periodeSelect).on('change', function() {
-        const selectedPeriode = $(this).val();
-        console.log('Periode changed to:', selectedPeriode);
-        if (selectedPeriode && selectedPeriode !== '') {
-            loadSummaryData(selectedPeriode);
-        }
-    });
-
-    // Load List Periode - PERBAIKAN: Format periode dengan benar
-    async function loadListPeriode() {
-        try {
-            showLoading();
-            const response = await fetch(`${API_BASE_URL}?action=list_periode&_=${Date.now()}`);
-            const result = await response.json();
-            
-            console.log('List Periode Response:', result);
-            
-            if (result.success && result.data && result.data.length > 0) {
-                let options = '';
-                let firstPeriode = null;
-                
-                result.data.forEach(item => {
-                    // Cek berbagai kemungkinan nama kolom periode
-                    let periodeValue = item.Periode || item.periode || item.CGroup;
-                    let nameValue = item.Name || item.name || item.CGroup;
-                    
-                    if (periodeValue) {
-                        options += `<option value="${periodeValue}">${nameValue || periodeValue}</option>`;
-                        if (!firstPeriode) firstPeriode = periodeValue;
-                    }
-                });
-                
-                periodeSelect.innerHTML = options;
-                
-                // Load data untuk periode pertama
-                if (firstPeriode) {
-                    await loadSummaryData(firstPeriode);
-                }
-            } else {
-                periodeSelect.innerHTML = '<option value="">Tidak ada periode</option>';
-                showAlert('error', result.message || 'Gagal mengambil data periode');
-            }
-        } catch (error) {
-            console.error('Error loading periode:', error);
-            periodeSelect.innerHTML = '<option value="">Error loading data</option>';
-            showAlert('error', 'Gagal memuat daftar periode: ' + error.message);
-        } finally {
-            hideLoading();
-        }
-    }
-
-    // Refresh Data
-    async function refreshData() {
-        const refreshIcon = document.querySelector('.refresh-icon');
-        refreshIcon.classList.remove('hidden');
-        await loadListPeriode();
-        setTimeout(() => {
-            refreshIcon.classList.add('hidden');
-        }, 500);
-    }
-
-    // Initialize Chart.js
-    function initChart() {
-        const ctx = document.getElementById('plantChart').getContext('2d');
-        plantChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Telat', 'Mangkir', 'Ijin', 'Sakit'],
-                datasets: [{
-                    label: 'Persentase (%)',
-                    data: [0, 0, 0, 0],
-                    backgroundColor: [
-                        '#F24141',
-                        '#F2A541',
-                        '#F3CA40',
-                        '#40F99B'
-                    ],
-                    borderColor: [
-                        '#d63030',
-                        '#d48d30',
-                        '#d4b530',
-                        '#30d480'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Persentase (%)'
-                        },
-                        ticks: {
-                            callback: function(value) {
-                                return value + '%';
-                            }
-                        }
-                    },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Kategori'
-                        }
-                    }
-                },
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + '%';
-                            }
-                        }
-                    },
-                    legend: {
-                        display: true,
-                        position: 'top'
-                    }
-                }
-            }
-        });
-    }
-
-    // Update Chart
-    function updateChart(plantData) {
-        if (plantChart) {
-            plantChart.data.datasets[0].data = [
-                plantData.telat,
-                plantData.mangkir,
-                plantData.ijin,
-                plantData.sakit
-            ];
-            plantChart.data.datasets[0].label = plantData.Nama;
-            plantChart.update();
-        }
-    }
-
-    // Show Chart Modal
-    function showChartModal(plantData) {
-        updateChart(plantData);
-        document.getElementById('chartModal').classList.remove('hidden');
-    }
-
-    // Close Chart Modal
-    function closeChartModal() {
-        document.getElementById('chartModal').classList.add('hidden');
-    }
-
-    // Close modal on escape key
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape') {
-            closeChartModal();
-        }
-    });
-
-    // Close modal when clicking outside
-    document.getElementById('chartModal').addEventListener('click', function(event) {
-        if (event.target === this) {
-            closeChartModal();
-        }
-    });
-
-    // Handle row click for chart
-    document.addEventListener('click', function(event) {
-        const row = event.target.closest('#tableBody tr');
-        if (row && row.cells && row.cells.length > 0) {
-            const plantData = {
-                Plant: row.dataset.plant,
-                Nama: row.dataset.nama,
-                telat: parseFloat(row.dataset.telat) || 0,
-                mangkir: parseFloat(row.dataset.mangkir) || 0,
-                ijin: parseFloat(row.dataset.ijin) || 0,
-                sakit: parseFloat(row.dataset.sakit) || 0
-            };
-            showChartModal(plantData);
-        }
-    });
-
-    // Initialize on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM loaded, initializing...');
-        initChart();
-        loadListPeriode();
-    });
-</script> -->
-
 <script>
     const API_BASE_URL = 'https://web.kobin.co.id/api/hris/summary/get_summary.php';
     let summaryTable = null;
@@ -577,9 +203,7 @@
             return dir === 'asc' ? cmp : -cmp;
         });
 
-        document.querySelectorAll('.sort-icon').forEach((el, i) => {
-            el.textContent = i === colIndex ? (dir === 'asc' ? '↑' : '↓') : '⇅';
-        });
+
 
         rows.forEach(row => tbody.appendChild(row));
     }
@@ -661,8 +285,11 @@
         const table = document.getElementById('reporttbl');
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.table_to_sheet(table);
-        XLSX.utils.book_append_sheet(wb, ws, 'Summary');
-        XLSX.writeFile(wb, 'Rekap_Summary_Report_Plant.xlsx');
+        const selectedPeriode = periodeSelect.value || 'Report';
+        const sheetName = 'Summary ' + selectedPeriode.substring(0,4) + '-' + selectedPeriode.substring(4,6);
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+        const fileName = `Rekap_Summary_Report_Plant_${selectedPeriode}.xlsx`;
+        XLSX.writeFile(wb, fileName);
     }
 
     async function loadSummaryData(periode = null) {

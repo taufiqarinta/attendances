@@ -11,7 +11,7 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="flex items-center shrink-0">
-                    <a href="{{ route('welcome') }}">
+                    <a href="{{ route('dashboard') }}">
                         {{-- <x-application-logo class="block w-auto text-white fill-current h-9" /> --}}
                         <img src="{{ asset('logo-kobin-one.png') }}" alt="Logo Kobin" class="w-24 h-10">
                     </a>
@@ -19,7 +19,7 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('welcome')" :active="request()->routeIs('welcome')"
+                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')"
                         class="text-white"
                         onmouseover="this.style.color='#dc2626'"
                         onmouseout="this.style.color='white'">
@@ -240,10 +240,10 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{ 'block': open, 'hidden': !open }" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('welcome')" :active="request()->routeIs('welcome')"
-                style="{{ request()->routeIs('welcome') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
+            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')"
+                style="{{ request()->routeIs('dashboard') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
                 onmouseover="this.style.color='#dc2626'"
-                onmouseout="this.style.color='{{ request()->routeIs('welcome') ? '#dc2626' : 'white' }}'">
+                onmouseout="this.style.color='{{ request()->routeIs('dashboard') ? '#dc2626' : 'white' }}'">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
         </div>
