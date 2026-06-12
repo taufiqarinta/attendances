@@ -12,7 +12,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        $schedule->command('attendance:delete-old-folders')
+                 ->monthlyOn(1, '01:00');
     }
 
     /**
