@@ -40,7 +40,7 @@ class DeleteOldAttendanceFolders extends Command
                 $folderDate = Carbon::createFromDate((int)$year, (int)$monthNumber, 1);
                 
                 // Hanya hapus jika folderDate < cutoffDate
-                if ($folderDate->lt($cutoffDate)) {
+                if ($folderDate->lte($cutoffDate)) {
                     $disk->deleteDirectory($folder);
                     $this->info("Deleted: $folder");
                     $totalDeleted++;
