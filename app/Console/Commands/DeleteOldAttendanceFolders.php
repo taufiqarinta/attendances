@@ -9,11 +9,11 @@ use Carbon\Carbon;
 class DeleteOldAttendanceFolders extends Command
 {
     protected $signature = 'attendance:delete-old-folders';
-    protected $description = 'Delete attendance folders older than 2 months ago';
+    protected $description = 'Delete attendance folders older than 1 month ago';
 
     public function handle()
     {
-        $cutoffDate = Carbon::now()->subMonths(2)->startOfMonth();
+        $cutoffDate = Carbon::now()->subMonths(1)->startOfMonth();
         $disk = Storage::disk('public');
         
         // Ambil TAHUN yang ada di dalam folder attendances/
@@ -40,7 +40,7 @@ class DeleteOldAttendanceFolders extends Command
                 $folderDate = Carbon::createFromDate((int)$year, (int)$monthNumber, 1);
                 
                 // Hanya hapus jika folderDate < cutoffDate
-                if ($folderDate->lte($cutoffDate)) {
+                if ($folderDate->lt($cutoffDate)) {
                     $disk->deleteDirectory($folder);
                     $this->info("Deleted: $folder");
                     $totalDeleted++;
