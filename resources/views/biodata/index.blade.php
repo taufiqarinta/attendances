@@ -198,8 +198,14 @@
     </style>
 
     <script>
-        const API_GET  = 'https://web.kobin.co.id/api/hris/biodata/get_biodata.php';
-        const API_SAVE = 'https://web.kobin.co.id/api/hris/biodata/save_biodata.php';
+        // const API_GET  = 'https://web.kobin.co.id/api/hris/biodata/get_biodata.php';
+        // const API_SAVE = 'https://web.kobin.co.id/api/hris/biodata/save_biodata.php';
+        const API_GET  = '{{ App\Helpers\ApiHelper::getApiUrl('biodata/get_biodata.php') }}';
+        const API_SAVE = '{{ App\Helpers\ApiHelper::getApiUrl('biodata/save_biodata.php') }}';
+
+        // console.log('📡 API URL GET:', API_GET);
+        // console.log('📡 API URL SAVE:', API_SAVE);
+        
         const NIK      = '{{ session("nik") }}';
         const PLANT    = '{{ session("plant") ?? "0001" }}';
         const YEAR     = '{{ date("Y") }}';

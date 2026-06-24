@@ -29,6 +29,7 @@
                 username: <span class="text-blue-600">{{ session('username') ?: '(kosong)' }}</span><br>
                 level: <span class="text-blue-600">{{ session('level') ?: '(kosong)' }}</span><br>
                 comp: <span class="text-blue-600">{{ session('comp') ?: '(kosong)' }}</span><br>
+                dept: <span class="text-blue-600">{{ session('dept') ?: '(kosong)' }}</span><br>
                 <hr class="my-2">
                 <strong>📋 Aturan Akses:</strong><br>
                 Admin (kode_jabatan = 0001 AND role = admin): 
@@ -223,7 +224,10 @@
 
     <script>
         // ==================== KONFIGURASI ====================
-        const API_BASE = 'https://web.kobin.co.id/api/hris/dashboard/get_dashboard.php';
+        // const API_BASE = 'https://web.kobin.co.id/api/hris/dashboard/get_dashboard.php';
+        const API_BASE = '{{ App\Helpers\ApiHelper::getApiUrl('dashboard/get_dashboard.php') }}';
+
+        // console.log('📡 API URL:', API_BASE);
         const SESSION_NIK = '{{ session("nik") }}';
         const SESSION_USERNAME = '{{ session("username") }}';
         const SESSION_PLANT = '{{ session("plant") ?? "1000" }}';
@@ -285,7 +289,12 @@
             const today = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
             
             try {
-                const url = `https://web.kobin.co.id/api/hris/harikerja/getharikerja.php?personnelNo=${nik}&validFrom=${today}`;
+                // const url = `https://web.kobin.co.id/api/hris/harikerja/getharikerja.php?personnelNo=${nik}&validFrom=${today}`;
+                const endpoint = '{{ App\Helpers\ApiHelper::getApiUrl('harikerja/getharikerja.php') }}';
+                // Kemudian tambahkan parameter di JavaScript
+                const url = `${endpoint}?personnelNo=${nik}&validFrom=${today}`;
+
+                // console.log('📡 API URL:', url);
                 const response = await fetch(url);
                 const result = await response.json();
                 

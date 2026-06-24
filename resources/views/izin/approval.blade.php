@@ -149,9 +149,17 @@
     
     <script>
         // API Base URL
-        const API_BASE_URL = 'https://web.kobin.co.id/api/hris/izin/get_approval.php';
-        const API_UPDATE_URL = 'https://web.kobin.co.id/api/hris/izin/update_approval.php';
-        const API_APPROVE_ALL_URL = 'https://web.kobin.co.id/api/hris/izin/approve_all.php';
+        // const API_BASE_URL = 'https://web.kobin.co.id/api/hris/izin/get_approval.php';
+        // const API_UPDATE_URL = 'https://web.kobin.co.id/api/hris/izin/update_approval.php';
+        // const API_APPROVE_ALL_URL = 'https://web.kobin.co.id/api/hris/izin/approve_all.php';
+
+        const API_BASE_URL = '{{ App\Helpers\ApiHelper::getApiUrl('izin/get_approval.php') }}';
+        const API_UPDATE_URL = '{{ App\Helpers\ApiHelper::getApiUrl('izin/update_approval.php') }}';
+        const API_APPROVE_ALL_URL = '{{ App\Helpers\ApiHelper::getApiUrl('izin/approve_all.php') }}';
+
+        // console.log('📡 API URL:', API_BASE_URL);
+        // console.log('📡 API URL:', API_UPDATE_URL);
+        // console.log('📡 API URL:', API_APPROVE_ALL_URL);
         
         // Ambil NIK dari session Laravel
         const USER_NIK = '{{ session('nik') }}';

@@ -163,7 +163,11 @@
 
     <script>
         // ==================== KONFIGURASI ====================
-        const API_BASE = 'https://web.kobin.co.id/api/hris/report/get_report.php';
+        // const API_BASE = 'https://web.kobin.co.id/api/hris/report/get_report.php';
+        const API_BASE = '{{ App\Helpers\ApiHelper::getApiUrl('report/get_report.php') }}';
+
+        console.log('📡 API URL:', API_BASE);
+
         const SESSION_NIK = '{{ session("nik") }}';
         const SESSION_USERNAME = '{{ session("username") }}';
         const SESSION_PLANT = '{{ session("plant") ?? "1000" }}';

@@ -167,7 +167,11 @@
 <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
 
 <script>
-    const API_BASE_URL = 'https://web.kobin.co.id/api/hris/summary/get_summary.php';
+    // const API_BASE_URL = 'https://web.kobin.co.id/api/hris/summary/get_summary.php';
+    const API_BASE_URL = '{{ App\Helpers\ApiHelper::getApiUrl('summary/get_summary.php') }}';
+
+    console.log('📡 API URL:', API_BASE_URL);
+    
     let summaryTable = null;
     let plantChart = null;
     let isFetching = false;

@@ -103,7 +103,10 @@
     </style>
 
     <script>
-        const API_SAVE     = 'https://web.kobin.co.id/api/hris/biodata/save_biodata.php';
+        // const API_SAVE     = 'https://web.kobin.co.id/api/hris/biodata/save_biodata.php';
+        const API_SAVE = '{{ App\Helpers\ApiHelper::getApiUrl('biodata/save_biodata.php') }}';
+
+        console.log('📡 API URL:', API_SAVE);
         const APPROVER_NIK = '{{ session("nik") }}';
 
         let currentRow = null; // data row yang sedang di-review

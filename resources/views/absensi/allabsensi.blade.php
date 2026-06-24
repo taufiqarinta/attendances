@@ -183,7 +183,11 @@
     let serverStartDate = '';
     let serverEndDate = '';
 
-    const API_BASE_URL = 'https://web.kobin.co.id/api/hris/absensi/get_all_absensimysql.php';
+    // const API_BASE_URL = 'https://web.kobin.co.id/api/hris/absensi/get_all_absensimysql.php';
+
+    const API_BASE_URL = '{{ App\Helpers\ApiHelper::getApiUrl('absensi/get_all_absensimysql.php') }}';
+
+    console.log('📡 API URL:', API_BASE_URL);
 
     // ===== DOM =====
     const tableBody = document.getElementById('tableBody');

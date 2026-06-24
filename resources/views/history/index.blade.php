@@ -135,7 +135,11 @@
     
     <script>
         // API Base URL
-        const API_BASE_URL = 'https://web.kobin.co.id/api/hris/history/get_history.php';
+        // const API_BASE_URL = 'https://web.kobin.co.id/api/hris/history/get_history.php';
+
+        const API_BASE_URL = '{{ App\Helpers\ApiHelper::getApiUrl('history/get_history.php') }}';
+
+        console.log('📡 API URL:', API_BASE_URL);
         
         // Ambil NIK dari session Laravel
         const USER_NIK = '{{ session('nik') }}';

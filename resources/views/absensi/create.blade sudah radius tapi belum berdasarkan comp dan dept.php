@@ -34,12 +34,6 @@
                         Nyalakan izin kamera dan lokasi untuk melakukan absensi
                     </div>
 
-                    <!-- Banner error geofence (tampil jika API geofence gagal diakses) -->
-                    <div id="geofenceErrorBanner" class="hidden mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm">
-                        Gagal memuat konfigurasi lokasi kantor. Absensi tidak dapat dilakukan saat ini.
-                        Silakan refresh halaman atau hubungi admin jika masalah berlanjut.
-                    </div>
-
                     <form id="attendanceForm" onsubmit="return false;">
                         <!-- Data User -->
                         <input type="hidden" id="userPlant" value="{{ session('plant') ?? '' }}">
@@ -82,12 +76,12 @@
                             </div>
                         </div>
 
-                        <!-- Geofence / Radius Section (tampil & wajib untuk IN maupun OUT, sesuai data dari API) -->
+                        <!-- Geofence / Radius Section (hanya tampil & wajib untuk CheckType = IN) -->
                         <div id="geofenceSection" class="mb-4 hidden">
                             <div class="p-4 border rounded-lg bg-gray-50">
                                 <div class="flex items-center justify-between mb-3">
-                                    <label class="block text-sm font-medium text-gray-700" id="geofenceSectionLabel">
-                                        Validasi Lokasi Absen
+                                    <label class="block text-sm font-medium text-gray-700">
+                                        Validasi Lokasi Absen Masuk
                                     </label>
                                     <span id="radiusBadge"
                                         class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-200 text-gray-600">
@@ -98,12 +92,13 @@
                                 <div id="geofenceMap" style="height: 260px; border-radius: 8px;" class="border border-gray-300"></div>
 
                                 <div class="mt-3 flex flex-col sm:flex-row sm:justify-between text-sm text-gray-600 gap-1">
-                                    <span>Lokasi kantor: <strong id="officeNameLabel">-</strong></span>
+                                    <span>Lokasi kantor: <strong id="officeNameLabel"></strong></span>
                                     <span>Jarak Anda: <strong id="distanceLabel">-</strong></span>
                                 </div>
 
                                 <div id="geofenceWarning" class="hidden mt-3 text-sm text-red-600 font-medium">
-                                    <!-- Isi akan diisi oleh JavaScript -->
+                                    Anda berada di luar radius absen masuk. Tombol submit tetap bisa diklik,
+                                    namun sistem akan menolak absen masuk jika Anda masih di luar radius.
                                 </div>
                             </div>
                         </div>
@@ -157,25 +152,43 @@
 
     <script>
         // ============================================================
-        // KONFIGURASI API GEOFENCE
+        // CEK APAKAH ATURAN RADIUS BERLAKU
         // ============================================================
-        // const API_GEOFENCE_URL = 'https://web.kobin.co.id/api/hris/test/geofence_plant/get_geofence_plant.php';
-        const API_SUBMIT_URL = '{{ App\Helpers\ApiHelper::getApiUrl('absensi/post_absensi.php') }}';
-        const API_GEOFENCE_URL = '{{ App\Helpers\ApiHelper::getApiUrl('geofence_plant/get_geofence_plant.php') }}';
+        function isRadiusRuleApplicable() {
+            // Ambil data dari session yang sudah di-pass ke JavaScript
+            const plant = document.getElementById('userPlant')?.value || '';
+            const dept = document.getElementById('userDept')?.value || '';
+            
+            // Aturan: berlaku jika plant = 1000 DAN dept BUKAN MERCHANDISER DAN BUKAN SALES JATENG
+            if (plant === '1000' && dept !== 'MERCHANDISER' && dept !== 'SALES JATENG') {
+                return true;
+            }
+            return false;
+        }
 
-        // console.log('📡 API Geofence URL:', API_GEOFENCE_URL);
-        // console.log('📡 API Submit URL:', API_SUBMIT_URL);
-
         // ============================================================
-        // STATE GEOFENCE (diisi dari API, bukan hardcode lagi)
+        // KONFIGURASI GEOFENCE (RADIUS ABSEN MASUK)
         // ============================================================
-        // Struktur per type: { locationChecks, radius, latitude, longitude, plantName }
-        let geofenceData = {
-            in:  { locationChecks: false, radius: null, latitude: null, longitude: null, plantName: null },
-            out: { locationChecks: false, radius: null, latitude: null, longitude: null, plantName: null }
+        const OFFICE_LOCATION = {
+            name: 'Voza Tower',
+            lat: -7.282900,   // <-- GANTI dengan latitude presisi
+            lng: 112.700500,  // <-- GANTI dengan longitude presisi
+            radiusMeters: 50  // Radius absen masuk dalam meter
         };
-        let geofenceLoaded = false;
-        let geofenceLoadFailed = false;
+        
+        // const OFFICE_LOCATION = {
+        //     name: 'Kim Liong',
+        //     lat: -7.564936,  // <-- GANTI dengan latitude presisi
+        //     lng: 112.614377,  // <-- GANTI dengan longitude presisi
+        //     radiusMeters: 50  // Radius absen masuk dalam meter
+        // };
+
+        document.getElementById('officeNameLabel').textContent = OFFICE_LOCATION.name;
+
+        // ============================================================
+        // API URL
+        // ============================================================
+        const API_SUBMIT_URL = 'https://web.kobin.co.id/api/hris/test/absensi/post_absensi.php';
 
         // State management
         let videoStream = null;
@@ -209,95 +222,9 @@
         const longitudePreview = document.getElementById('longitude_preview');
         const checkTypeSelect = document.getElementById('CheckType');
         const geofenceSection = document.getElementById('geofenceSection');
-        const geofenceSectionLabel = document.getElementById('geofenceSectionLabel');
         const radiusBadge = document.getElementById('radiusBadge');
         const distanceLabel = document.getElementById('distanceLabel');
-        const officeNameLabel = document.getElementById('officeNameLabel');
         const geofenceWarning = document.getElementById('geofenceWarning');
-        const geofenceErrorBanner = document.getElementById('geofenceErrorBanner');
-
-        // ============================================================
-        // Ambil konfigurasi geofence dari API
-        // ============================================================
-        async function loadGeofenceConfig() {
-            const nik = document.getElementById('PersonnelNo').value || '';
-            const plant = document.getElementById('userPlant').value || '';
-            const dept = document.getElementById('userDept').value || '';
-
-            const url = `${API_GEOFENCE_URL}?nik=${encodeURIComponent(nik)}&plant=${encodeURIComponent(plant)}&dept=${encodeURIComponent(dept)}`;
-
-            try {
-                const response = await fetch(url, { method: 'GET' });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-
-                const result = await response.json();
-
-                if (!result.success || !Array.isArray(result.data)) {
-                    throw new Error(result.message || 'Format response geofence tidak valid');
-                }
-
-                // Reset ke default dulu
-                geofenceData = {
-                    in:  { locationChecks: false, radius: null, latitude: null, longitude: null, plantName: null },
-                    out: { locationChecks: false, radius: null, latitude: null, longitude: null, plantName: null }
-                };
-
-                result.data.forEach((item) => {
-                    const type = (item.type || '').toLowerCase();
-                    if (type !== 'in' && type !== 'out') return;
-
-                    geofenceData[type] = {
-                        locationChecks: !!item.location_checks,
-                        radius: item.radius !== null && item.radius !== undefined ? Number(item.radius) : null,
-                        latitude: item.latitude !== null && item.latitude !== undefined ? Number(item.latitude) : null,
-                        longitude: item.longitude !== null && item.longitude !== undefined ? Number(item.longitude) : null,
-                        plantName: item.plant_name || null
-                    };
-                });
-
-                geofenceLoaded = true;
-                geofenceLoadFailed = false;
-                geofenceErrorBanner.classList.add('hidden');
-
-                console.log('✅ Geofence config loaded:', geofenceData);
-
-            } catch (error) {
-                console.error('❌ Gagal memuat konfigurasi geofence:', error);
-
-                geofenceLoaded = false;
-                geofenceLoadFailed = true;
-                geofenceErrorBanner.classList.remove('hidden');
-
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal Memuat Konfigurasi Lokasi',
-                    text: 'Tidak dapat mengambil data validasi lokasi kantor. Absensi tidak dapat dilakukan saat ini.',
-                    confirmButtonColor: '#ef4444',
-                    confirmButtonText: 'OK'
-                });
-            } finally {
-                // Apa pun hasilnya, re-evaluasi tampilan section & tombol submit
-                onCheckTypeChange();
-                updateSubmitButtonState();
-            }
-        }
-
-        // ============================================================
-        // Helper: ambil konfigurasi geofence untuk CheckType aktif
-        // ============================================================
-        function getActiveGeofenceConfig() {
-            const checkType = checkTypeSelect.value.toLowerCase();
-            if (checkType !== 'in' && checkType !== 'out') return null;
-            return geofenceData[checkType] || null;
-        }
-
-        function isRadiusRuleApplicable() {
-            const config = getActiveGeofenceConfig();
-            return !!(config && config.locationChecks && config.latitude !== null && config.longitude !== null);
-        }
 
         // ============================================================
         // Hitung jarak antar 2 koordinat (Haversine formula) -> meter
@@ -324,48 +251,14 @@
         function onCheckTypeChange() {
             const checkType = checkTypeSelect.value;
 
-            // Jika konfigurasi geofence belum/gagal dimuat, sembunyikan section
-            // (submit tetap diblokir lewat updateSubmitButtonState/geofenceLoadFailed)
-            if (!geofenceLoaded) {
-                geofenceSection.classList.add('hidden');
-                updateSubmitButtonState();
-                return;
-            }
-
-            const radiusApplicable = isRadiusRuleApplicable();
-
-            if ((checkType === 'IN' || checkType === 'OUT') && radiusApplicable) {
-                const config = getActiveGeofenceConfig();
-
-                geofenceSectionLabel.textContent = checkType === 'IN'
-                    ? 'Validasi Lokasi Absen Masuk'
-                    : 'Validasi Lokasi Absen Pulang';
-
-                officeNameLabel.textContent = config.plantName || '-';
-
-                geofenceWarning.innerHTML = `
-                    Anda berada di luar radius absen ${checkType === 'IN' ? 'masuk' : 'pulang'}.
-                    Absen ${checkType === 'IN' ? 'masuk' : 'pulang'} hanya dapat dilakukan dalam radius
-                    <strong>${config.radius} meter</strong>.
-                `;
-
+            if (checkType === 'IN') {
                 geofenceSection.classList.remove('hidden');
                 setTimeout(() => {
                     initOrUpdateMap();
                     if (geofenceMap) geofenceMap.invalidateSize();
                 }, 50);
-
-                // Hitung ulang status radius dengan konfigurasi yang baru
-                updateRadiusStatus();
             } else {
                 geofenceSection.classList.add('hidden');
-
-                if ((checkType === 'IN' || checkType === 'OUT') && !radiusApplicable) {
-                    radiusBadge.textContent = '⏭️ Tidak Perlu Validasi Radius';
-                    radiusBadge.className = 'px-3 py-1 rounded-full text-xs font-semibold bg-gray-200 text-gray-600';
-                    geofenceWarning.classList.add('hidden');
-                    distanceLabel.textContent = '-';
-                }
             }
 
             updateSubmitButtonState();
@@ -375,43 +268,32 @@
         // Inisialisasi / update peta Leaflet
         // ============================================================
         function initOrUpdateMap() {
-            const config = getActiveGeofenceConfig();
-            if (!config || config.latitude === null || config.longitude === null) return;
+            if (!geofenceMap) {
+                geofenceMap = L.map('geofenceMap').setView([OFFICE_LOCATION.lat, OFFICE_LOCATION.lng], 17);
 
-            if (geofenceMap) {
-                // Map sudah ada (misal pindah dari IN ke OUT): refresh marker & circle kantor
-                geofenceMap.remove();
-                geofenceMap = null;
-                officeMarker = null;
-                officeCircle = null;
-                userMarker = null;
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(geofenceMap);
+
+                officeMarker = L.marker([OFFICE_LOCATION.lat, OFFICE_LOCATION.lng], {
+                    title: OFFICE_LOCATION.name
+                }).addTo(geofenceMap).bindPopup(OFFICE_LOCATION.name);
+
+                officeCircle = L.circle([OFFICE_LOCATION.lat, OFFICE_LOCATION.lng], {
+                    radius: OFFICE_LOCATION.radiusMeters,
+                    color: '#ef4444',
+                    fillColor: '#ef4444',
+                    fillOpacity: 0.15,
+                    weight: 2
+                }).addTo(geofenceMap);
             }
-
-            geofenceMap = L.map('geofenceMap').setView([config.latitude, config.longitude], 17);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '&copy; OpenStreetMap contributors'
-            }).addTo(geofenceMap);
-
-            officeMarker = L.marker([config.latitude, config.longitude], {
-                title: config.plantName || 'Kantor'
-            }).addTo(geofenceMap).bindPopup(config.plantName || 'Kantor');
-
-            officeCircle = L.circle([config.latitude, config.longitude], {
-                radius: config.radius || 0,
-                color: '#ef4444',
-                fillColor: '#ef4444',
-                fillOpacity: 0.15,
-                weight: 2
-            }).addTo(geofenceMap);
 
             updateUserMarker();
         }
 
         function updateUserMarker() {
-            const config = getActiveGeofenceConfig();
-            if (!geofenceMap || !config || currentLocation.latitude === null) return;
+            if (!geofenceMap || currentLocation.latitude === null) return;
 
             const userLatLng = [currentLocation.latitude, currentLocation.longitude];
 
@@ -430,7 +312,7 @@
             }
 
             const bounds = L.latLngBounds([
-                [config.latitude, config.longitude],
+                [OFFICE_LOCATION.lat, OFFICE_LOCATION.lng],
                 userLatLng
             ]);
             geofenceMap.fitBounds(bounds, { padding: [40, 40], maxZoom: 18 });
@@ -442,23 +324,14 @@
         function updateRadiusStatus() {
             if (currentLocation.latitude === null) return;
 
-            const radiusApplicable = isRadiusRuleApplicable();
-
-            // Jika aturan radius tidak berlaku, skip update
-            if (!radiusApplicable) {
-                return;
-            }
-
-            const config = getActiveGeofenceConfig();
-
             currentDistanceMeters = calculateDistanceMeters(
                 currentLocation.latitude,
                 currentLocation.longitude,
-                config.latitude,
-                config.longitude
+                OFFICE_LOCATION.lat,
+                OFFICE_LOCATION.lng
             );
 
-            isWithinRadius = currentDistanceMeters <= config.radius;
+            isWithinRadius = currentDistanceMeters <= OFFICE_LOCATION.radiusMeters;
 
             distanceLabel.textContent = `${Math.round(currentDistanceMeters)} meter`;
 
@@ -478,49 +351,35 @@
         // ============================================================
         // Kontrol tombol submit
         // ------------------------------------------------------------
-        // Tombol membutuhkan: foto + lokasi terdeteksi + jenis absensi
-        // dipilih + konfigurasi geofence berhasil dimuat. Jika geofence
-        // gagal dimuat dari API, submit diblokir total (sesuai kebijakan).
-        // Validasi radius (jika berlaku utk CheckType aktif) juga
-        // menentukan apakah submit boleh dilakukan.
+        // PERUBAHAN PENTING:
+        // Sebelumnya tombol di-disable total saat checkType = IN dan
+        // posisi di luar radius (isWithinRadius = false). Akibatnya
+        // klik tidak pernah memicu onclick="submitAttendance()", jadi
+        // tidak ada log di console maupun SweetAlert yang muncul.
+        //
+        // Sekarang tombol hanya butuh foto + lokasi terdeteksi supaya
+        // BISA DIKLIK. Validasi radius dipindahkan sepenuhnya ke dalam
+        // fungsi submitAttendance(), sehingga saat user di luar radius
+        // dan menekan submit, SweetAlert peringatan jarak akan tampil
+        // dengan jelas (dan log tetap muncul di console).
         // ============================================================
         function updateSubmitButtonState() {
             const hasPhoto = isPhotoTaken;
             const hasLocation = currentLocation.latitude !== null;
             const checkType = checkTypeSelect.value;
-            const radiusApplicable = isRadiusRuleApplicable();
 
-            // Jika konfigurasi geofence gagal/belum dimuat -> blokir total
-            if (geofenceLoadFailed || !geofenceLoaded) {
-                submitBtn.disabled = true;
-                submitHint.textContent = geofenceLoadFailed
-                    ? 'Konfigurasi lokasi kantor gagal dimuat. Absensi tidak dapat dilakukan.'
-                    : 'Memuat konfigurasi lokasi kantor...';
-                submitHint.className = 'mt-2 text-xs text-red-600 text-center font-medium';
-                return;
-            }
+            const allowed = hasPhoto && hasLocation && checkType !== '';
+            submitBtn.disabled = !allowed;
 
-            let isSubmitAllowed = hasPhoto && hasLocation && checkType !== '';
-
-            if ((checkType === 'IN' || checkType === 'OUT') && radiusApplicable) {
-                isSubmitAllowed = isSubmitAllowed && isWithinRadius;
-            }
-
-            submitBtn.disabled = !isSubmitAllowed;
-
-            // Hint kecil di bawah tombol
+            // Hint kecil di bawah tombol supaya user tahu kenapa belum bisa submit
             if (!checkType) {
                 submitHint.textContent = 'Pilih jenis absensi terlebih dahulu.';
-                submitHint.className = 'mt-2 text-xs text-gray-500 text-center';
             } else if (!hasLocation) {
                 submitHint.textContent = 'Menunggu lokasi GPS terdeteksi...';
-                submitHint.className = 'mt-2 text-xs text-gray-500 text-center';
             } else if (!hasPhoto) {
                 submitHint.textContent = 'Ambil foto selfie terlebih dahulu.';
-                submitHint.className = 'mt-2 text-xs text-gray-500 text-center';
-            } else if ((checkType === 'IN' || checkType === 'OUT') && radiusApplicable && !isWithinRadius) {
-                const label = checkType === 'IN' ? 'masuk' : 'pulang';
-                submitHint.textContent = `Anda di luar radius kantor. Absen ${label} tidak dapat dilakukan.`;
+            } else if (checkType === 'IN' && !isWithinRadius) {
+                submitHint.textContent = 'Anda di luar radius kantor — submit tetap bisa diklik, tapi absen masuk akan ditolak sistem.';
                 submitHint.className = 'mt-2 text-xs text-red-600 text-center font-medium';
             } else {
                 submitHint.textContent = '';
@@ -632,24 +491,13 @@
         }
 
         // Get location
-        // ------------------------------------------------------------
-        // Menggunakan watchPosition() (bukan getCurrentPosition() yang
-        // hanya mengambil lokasi sekali). Dengan watchPosition, browser
-        // akan terus memantau GPS dan memanggil callback setiap kali
-        // posisi berubah -- sehingga jika karyawan berjalan dari luar
-        // radius ke dalam radius, status & tombol submit otomatis
-        // terupdate tanpa perlu refresh halaman.
-        // ------------------------------------------------------------
-        let locationWatchId = null;
-        let isFirstLocationFix = true;
-
         function requestLocation() {
             if (!navigator.geolocation) {
                 showAlert('error', 'Browser Anda tidak mendukung geolokasi. Silakan gunakan browser modern.', 'Geolokasi Tidak Didukung');
                 return;
             }
 
-            locationWatchId = navigator.geolocation.watchPosition(
+            navigator.geolocation.getCurrentPosition(
                 function(position) {
                     Swal.close();
 
@@ -661,20 +509,9 @@
 
                     updateRadiusStatus();
 
-                    if (checkTypeSelect.value === 'IN' || checkTypeSelect.value === 'OUT') {
-                        if (isRadiusRuleApplicable()) {
-                            if (isFirstLocationFix || !geofenceMap) {
-                                // Fix lokasi pertama (atau map belum pernah dibuat): inisialisasi peta penuh
-                                initOrUpdateMap();
-                            } else {
-                                // Update berikutnya: cukup geser marker user, jangan rebuild peta
-                                // (supaya tidak reset zoom/posisi setiap kali GPS update)
-                                updateUserMarker();
-                            }
-                        }
+                    if (checkTypeSelect.value === 'IN') {
+                        initOrUpdateMap();
                     }
-
-                    isFirstLocationFix = false;
 
                     updateSubmitButtonState();
                 },
@@ -700,28 +537,15 @@
                 },
                 {
                     enableHighAccuracy: true,
-                    timeout: 15000,
+                    timeout: 10000,
                     maximumAge: 0
                 }
             );
         }
 
-        function stopWatchingLocation() {
-            if (locationWatchId !== null) {
-                navigator.geolocation.clearWatch(locationWatchId);
-                locationWatchId = null;
-            }
-        }
-
         // Submit to API
         async function submitAttendance() {
             console.log('🟢 submitAttendance() dipanggil');
-
-            // Blokir submit jika konfigurasi geofence gagal/belum dimuat
-            if (geofenceLoadFailed || !geofenceLoaded) {
-                showAlert('error', 'Konfigurasi lokasi kantor gagal dimuat. Silakan refresh halaman.', 'Tidak Dapat Submit');
-                return;
-            }
 
             // Validasi foto
             if (!isPhotoTaken || !capturedPhotoData) {
@@ -743,24 +567,22 @@
                 return;
             }
 
-            // Validasi radius untuk IN maupun OUT, HANYA jika aturan berlaku (location_checks dari API)
-            const radiusApplicable = isRadiusRuleApplicable();
-            const config = getActiveGeofenceConfig();
-
-            if ((checkType === 'IN' || checkType === 'OUT') && radiusApplicable) {
+            // Validasi radius KHUSUS untuk absen Masuk (IN)
+            // Ini sekarang benar-benar tereksekusi karena tombol tidak lagi
+            // di-disable berdasarkan radius.
+            if (checkType === 'IN') {
                 updateRadiusStatus(); // hitung ulang jarak terbaru sebelum submit
 
                 console.log('📍 Cek radius -> jarak:', Math.round(currentDistanceMeters), 'meter, dalam radius:', isWithinRadius);
 
                 if (!isWithinRadius) {
-                    const label = checkType === 'IN' ? 'Absen Masuk' : 'Absen Pulang';
                     Swal.fire({
                         icon: 'error',
-                        title: `Di Luar Radius ${label}`,
+                        title: 'Di Luar Radius Absen Masuk',
                         html: `
                             <div class="text-left">
-                                <p>Anda berada <strong>${Math.round(currentDistanceMeters)} meter</strong> dari ${config.plantName || 'lokasi kantor'}.</p>
-                                <p>${label} hanya dapat dilakukan dalam radius <strong>${config.radius} meter</strong> dari lokasi kantor.</p>
+                                <p>Anda berada <strong>${Math.round(currentDistanceMeters)} meter</strong> dari ${OFFICE_LOCATION.name}.</p>
+                                <p>Absen masuk hanya dapat dilakukan dalam radius <strong>${OFFICE_LOCATION.radiusMeters} meter</strong> dari lokasi kantor.</p>
                             </div>
                         `,
                         confirmButtonColor: '#ef4444',
@@ -833,26 +655,17 @@
                     }
 
                     const checkTypeName = checkType === 'IN' ? 'Masuk' : 'Pulang';
-
-                    // Tampilkan SweetAlert sukses dengan informasi jarak jika radius berlaku
-                    let successHtml = `
-                        <div class="text-left">
-                            <p><strong>Jenis:</strong> ${checkTypeName}</p>
-                            <p><strong>Waktu:</strong> ${localTime.datetime}</p>
-                            <p><strong>Lokasi:</strong> ${currentLocation.latitude}, ${currentLocation.longitude}</p>
-                    `;
-
-                    if ((checkType === 'IN' || checkType === 'OUT') && radiusApplicable) {
-                        successHtml += `<p><strong>Jarak dari kantor:</strong> ${Math.round(currentDistanceMeters)} meter</p>`;
-                        successHtml += `<p><strong>Status:</strong> ${isWithinRadius ? '✅ Dalam radius' : '⚠️ Di luar radius'}</p>`;
-                    }
-
-                    successHtml += `</div>`;
-
                     Swal.fire({
                         icon: 'success',
                         title: 'Absensi Berhasil!',
-                        html: successHtml,
+                        html: `
+                            <div class="text-left">
+                                <p><strong>Jenis:</strong> ${checkTypeName}</p>
+                                <p><strong>Waktu:</strong> ${localTime.datetime}</p>
+                                <p><strong>Lokasi:</strong> ${currentLocation.latitude}, ${currentLocation.longitude}</p>
+                                ${checkType === 'IN' ? `<p><strong>Jarak dari kantor:</strong> ${Math.round(currentDistanceMeters)} meter</p>` : ''}
+                            </div>
+                        `,
                         confirmButtonColor: '#ef4444',
                         confirmButtonText: 'OK',
                         timer: 3000,
@@ -860,7 +673,6 @@
                     });
 
                     stopCamera();
-                    stopWatchingLocation();
 
                     setTimeout(() => {
                         window.location.href = '{{ route("absensi.index") }}';
@@ -977,25 +789,15 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Plant:', document.getElementById('userPlant')?.value);
-            console.log('Dept:', document.getElementById('userDept')?.value);
-
             requestLocation();
             captureBtn.disabled = true;
             captureBtn.addEventListener('click', capturePhoto);
             setTimeout(initCamera, 300);
-
-            // Muat konfigurasi geofence dari API (menggantikan hardcode lama)
-            loadGeofenceConfig();
-
             updateSubmitButtonState();
         });
 
         // Cleanup
-        window.addEventListener('beforeunload', function() {
-            stopCamera();
-            stopWatchingLocation();
-        });
+        window.addEventListener('beforeunload', stopCamera);
     </script>
 
     <style>

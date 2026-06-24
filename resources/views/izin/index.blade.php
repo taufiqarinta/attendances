@@ -228,9 +228,15 @@
     
     <script>
         // API Base URL
-        const API_BASE_URL = 'https://web.kobin.co.id/api/hris/izin/get_izin.php';
-        const API_POST_URL = 'https://web.kobin.co.id/api/hris/izin/post_izin.php';
-        
+        // const API_BASE_URL = 'https://web.kobin.co.id/api/hris/izin/get_izin.php';
+        // const API_POST_URL = 'https://web.kobin.co.id/api/hris/izin/post_izin.php';
+
+        const API_BASE_URL = '{{ App\Helpers\ApiHelper::getApiUrl('izin/get_izin.php') }}';
+        const API_POST_URL = '{{ App\Helpers\ApiHelper::getApiUrl('izin/post_izin.php') }}';
+
+        // console.log('📡 API_BASE_URL:', API_BASE_URL);
+        // console.log('📡 API_POST_URL:', API_POST_URL);
+
         // Ambil NIK dari session Laravel
         const USER_NIK = '{{ session('nik') }}';
         const USER_PLANT = '{{ session('plant', 'DEFAULT') }}';
@@ -985,7 +991,11 @@
                 formData.append('reason', reason);
                 
                 // Kirim ke backend cancel_izin.php
-                const response = await fetch('https://web.kobin.co.id/api/hris/izin/cancel_izin.php', {
+                const apiUrlCancel = '{{ App\Helpers\ApiHelper::getApiUrl('izin/cancel_izin.php') }}';
+
+                // console.log('📡 apiUrlCancel:', apiUrlCancel);
+
+                const response = await fetch(apiUrlCancel, {
                     method: 'POST',
                     body: formData
                 });
@@ -1420,7 +1430,7 @@
 
         // Print function
         function doPrint(encodedData) {
-            console.log('Print data:', encodedData);
+            // console.log('Print data:', encodedData);
             
             // Pastikan data diencode dengan benar
             try {

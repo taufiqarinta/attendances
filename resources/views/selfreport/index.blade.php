@@ -146,7 +146,10 @@
     {{-- ========================== SCRIPT ========================== --}}
     <script>
         // Sesuaikan URL API ke path server kamu
-        const API_BASE = 'https://web.kobin.co.id/api/hris/selfreport/get_selfreport.php';
+        // const API_BASE = 'https://web.kobin.co.id/api/hris/selfreport/get_selfreport.php';
+        const API_BASE = '{{ App\Helpers\ApiHelper::getApiUrl('selfreport/get_selfreport.php') }}';
+
+        // console.log('📡 API URL:', API_BASE);
 
         // Data user dari session (di-render server-side, aman)
         const SESSION_NIK      = '{{ session("nik") }}';
