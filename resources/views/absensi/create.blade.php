@@ -68,30 +68,37 @@
                             </select>
                         </div>
 
-                        <!-- Preview Lokasi -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Latitude</label>
-                                <input type="text" id="latitude_preview"
-                                    class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100" readonly>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Longitude</label>
-                                <input type="text" id="longitude_preview"
-                                    class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100" readonly>
-                            </div>
-                        </div>
+                        <!-- Lokasi Section -->
+                        <div class="mb-4 p-4 border rounded-lg bg-gray-50">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Lokasi Anda <span class="text-red-600">*</span>
+                            </label>
 
-                        <div class="mb-4 flex items-center justify-between">
-                            <span id="locationRefreshStatus" class="text-xs text-gray-500"></span>
-                            <button type="button" id="refreshLocationBtn"
-                                onclick="refreshLocation()"
-                                class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:cursor-not-allowed">
-                                <svg id="refreshLocationIcon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
-                                </svg>
-                                Refresh Lokasi
-                            </button>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500">Latitude</label>
+                                    <input type="text" id="latitude_preview"
+                                        class="mt-1 block w-full rounded-md border-gray-300 bg-white" readonly>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500">Longitude</label>
+                                    <input type="text" id="longitude_preview"
+                                        class="mt-1 block w-full rounded-md border-gray-300 bg-white" readonly>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col items-center">
+                                <button type="button" id="refreshLocationBtn"
+                                    onclick="refreshLocation()"
+                                    class="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <svg id="refreshLocationIcon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                                    </svg>
+                                    Refresh Lokasi
+                                </button>
+
+                                <div id="locationRefreshStatus" class="mt-2 text-sm text-gray-600"></div>
+                            </div>
                         </div>
 
                         <!-- Geofence / Radius Section (tampil & wajib untuk IN maupun OUT, sesuai data dari API) -->
@@ -686,6 +693,7 @@
                     if (isManualRefresh) {
                         setLocationRefreshing(false);
                         locationRefreshStatus.textContent = 'Lokasi diperbarui ' + new Date().toLocaleTimeString('id-ID');
+                        locationRefreshStatus.className = 'mt-2 text-sm font-medium text-green-600';
                     }
                 },
                 function(error) {
@@ -709,6 +717,7 @@
                     if (isManualRefresh) {
                         setLocationRefreshing(false);
                         locationRefreshStatus.textContent = 'Gagal memperbarui lokasi.';
+                        locationRefreshStatus.className = 'mt-2 text-sm font-medium text-red-600';
                     }
 
                     showAlert('error', errorMessage, 'Gagal Mendapatkan Lokasi');
@@ -730,7 +739,10 @@
         function setLocationRefreshing(isLoading) {
             refreshLocationBtn.disabled = isLoading;
             refreshLocationIcon.classList.toggle('animate-spin', isLoading);
-            locationRefreshStatus.textContent = isLoading ? 'Memperbarui lokasi...' : locationRefreshStatus.textContent;
+            if (isLoading) {
+                locationRefreshStatus.textContent = 'Memperbarui lokasi...';
+                locationRefreshStatus.className = 'mt-2 text-sm font-medium text-blue-600';
+            }
         }
 
         // Submit to API
