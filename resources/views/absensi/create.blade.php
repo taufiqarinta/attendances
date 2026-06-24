@@ -69,7 +69,7 @@
                         </div>
 
                         <!-- Preview Lokasi -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Latitude</label>
                                 <input type="text" id="latitude_preview"
@@ -80,6 +80,18 @@
                                 <input type="text" id="longitude_preview"
                                     class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100" readonly>
                             </div>
+                        </div>
+
+                        <div class="mb-4 flex items-center justify-between">
+                            <span id="locationRefreshStatus" class="text-xs text-gray-500"></span>
+                            <button type="button" id="refreshLocationBtn"
+                                onclick="refreshLocation()"
+                                class="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <svg id="refreshLocationIcon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                                </svg>
+                                Refresh Lokasi
+                            </button>
                         </div>
 
                         <!-- Geofence / Radius Section (tampil & wajib untuk IN maupun OUT, sesuai data dari API) -->
@@ -215,6 +227,9 @@
         const officeNameLabel = document.getElementById('officeNameLabel');
         const geofenceWarning = document.getElementById('geofenceWarning');
         const geofenceErrorBanner = document.getElementById('geofenceErrorBanner');
+        const refreshLocationBtn = document.getElementById('refreshLocationBtn');
+        const refreshLocationIcon = document.getElementById('refreshLocationIcon');
+        const locationRefreshStatus = document.getElementById('locationRefreshStatus');
 
         // ============================================================
         // Ambil konfigurasi geofence dari API
@@ -632,10 +647,15 @@
         }
 
         // Get location
-        function requestLocation() {
+        // isManualRefresh = true ketika dipanggil dari tombol "Refresh Lokasi"
+        function requestLocation(isManualRefresh = false) {
             if (!navigator.geolocation) {
                 showAlert('error', 'Browser Anda tidak mendukung geolokasi. Silakan gunakan browser modern.', 'Geolokasi Tidak Didukung');
                 return;
+            }
+
+            if (isManualRefresh) {
+                setLocationRefreshing(true);
             }
 
             navigator.geolocation.getCurrentPosition(
@@ -648,15 +668,25 @@
                     latitudePreview.value = currentLocation.latitude;
                     longitudePreview.value = currentLocation.longitude;
 
+                    // updateRadiusStatus() menghitung ulang jarak & status dalam/luar radius
+                    // berdasarkan lokasi terbaru, lalu memanggil updateSubmitButtonState()
+                    // sehingga tombol submit otomatis ikut ter-enable/disable.
                     updateRadiusStatus();
 
                     if (checkTypeSelect.value === 'IN' || checkTypeSelect.value === 'OUT') {
                         if (isRadiusRuleApplicable()) {
                             initOrUpdateMap();
+                        } else {
+                            updateUserMarker();
                         }
                     }
 
                     updateSubmitButtonState();
+
+                    if (isManualRefresh) {
+                        setLocationRefreshing(false);
+                        locationRefreshStatus.textContent = 'Lokasi diperbarui ' + new Date().toLocaleTimeString('id-ID');
+                    }
                 },
                 function(error) {
                     Swal.close();
@@ -676,6 +706,11 @@
                             errorMessage = error.message;
                     }
 
+                    if (isManualRefresh) {
+                        setLocationRefreshing(false);
+                        locationRefreshStatus.textContent = 'Gagal memperbarui lokasi.';
+                    }
+
                     showAlert('error', errorMessage, 'Gagal Mendapatkan Lokasi');
                 },
                 {
@@ -684,6 +719,18 @@
                     maximumAge: 0
                 }
             );
+        }
+
+        // Dipanggil dari tombol "Refresh Lokasi"
+        function refreshLocation() {
+            requestLocation(true);
+        }
+
+        // Toggle tampilan loading pada tombol refresh lokasi
+        function setLocationRefreshing(isLoading) {
+            refreshLocationBtn.disabled = isLoading;
+            refreshLocationIcon.classList.toggle('animate-spin', isLoading);
+            locationRefreshStatus.textContent = isLoading ? 'Memperbarui lokasi...' : locationRefreshStatus.textContent;
         }
 
         // Submit to API

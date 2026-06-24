@@ -632,24 +632,13 @@
         }
 
         // Get location
-        // ------------------------------------------------------------
-        // Menggunakan watchPosition() (bukan getCurrentPosition() yang
-        // hanya mengambil lokasi sekali). Dengan watchPosition, browser
-        // akan terus memantau GPS dan memanggil callback setiap kali
-        // posisi berubah -- sehingga jika karyawan berjalan dari luar
-        // radius ke dalam radius, status & tombol submit otomatis
-        // terupdate tanpa perlu refresh halaman.
-        // ------------------------------------------------------------
-        let locationWatchId = null;
-        let isFirstLocationFix = true;
-
         function requestLocation() {
             if (!navigator.geolocation) {
                 showAlert('error', 'Browser Anda tidak mendukung geolokasi. Silakan gunakan browser modern.', 'Geolokasi Tidak Didukung');
                 return;
             }
 
-            locationWatchId = navigator.geolocation.watchPosition(
+            navigator.geolocation.getCurrentPosition(
                 function(position) {
                     Swal.close();
 
@@ -663,18 +652,9 @@
 
                     if (checkTypeSelect.value === 'IN' || checkTypeSelect.value === 'OUT') {
                         if (isRadiusRuleApplicable()) {
-                            if (isFirstLocationFix || !geofenceMap) {
-                                // Fix lokasi pertama (atau map belum pernah dibuat): inisialisasi peta penuh
-                                initOrUpdateMap();
-                            } else {
-                                // Update berikutnya: cukup geser marker user, jangan rebuild peta
-                                // (supaya tidak reset zoom/posisi setiap kali GPS update)
-                                updateUserMarker();
-                            }
+                            initOrUpdateMap();
                         }
                     }
-
-                    isFirstLocationFix = false;
 
                     updateSubmitButtonState();
                 },
@@ -700,17 +680,10 @@
                 },
                 {
                     enableHighAccuracy: true,
-                    timeout: 15000,
+                    timeout: 10000,
                     maximumAge: 0
                 }
             );
-        }
-
-        function stopWatchingLocation() {
-            if (locationWatchId !== null) {
-                navigator.geolocation.clearWatch(locationWatchId);
-                locationWatchId = null;
-            }
         }
 
         // Submit to API
@@ -860,7 +833,6 @@
                     });
 
                     stopCamera();
-                    stopWatchingLocation();
 
                     setTimeout(() => {
                         window.location.href = '{{ route("absensi.index") }}';
@@ -992,10 +964,7 @@
         });
 
         // Cleanup
-        window.addEventListener('beforeunload', function() {
-            stopCamera();
-            stopWatchingLocation();
-        });
+        window.addEventListener('beforeunload', stopCamera);
     </script>
 
     <style>
