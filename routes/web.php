@@ -28,6 +28,7 @@ use App\Http\Controllers\StockOpnameController;
 use App\Http\Controllers\IzinController;
 use App\Http\Controllers\SelfReportController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\GeofencePlantController;
 
 
 
@@ -51,6 +52,8 @@ Route::get('/welcome', [WelcomeController::class, 'index'])->name('welcome');
 
 // Route yang membutuhkan session login
 Route::middleware(['web', 'check.api.session'])->group(function () {
+    Route::resource('geofence-plant', GeofencePlantController::class)
+        ->parameters(['geofence-plant' => 'geofence_plant']);
 
      Route::get('/change-password', function () {
         return view('auth.change-password');
