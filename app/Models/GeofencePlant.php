@@ -6,16 +6,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class GeofencePlant extends Model
 {
-    /**
-     * Koneksi database yang dipakai model ini.
-     * Harus sama dengan nama key di config/database.php => 'connections'.
-     */
+    
     protected $connection = 'hris_kobin';
 
     /**
      * Nama tabel aktual di database hris_kobin.
      */
-    protected $table = 'master_geofence_plant_test';
+    public function getTable()
+    {
+        return config('attendance.mode') == 'test'
+            ? 'master_geofence_plant_test'
+            : 'master_geofence_plant';
+    }
 
     /**
      * Kolom yang boleh diisi secara mass-assignment.
