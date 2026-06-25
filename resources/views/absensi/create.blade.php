@@ -87,7 +87,10 @@
                                 </div>
                             </div>
 
-                            <div class="flex flex-col items-center">
+                            <div id="refreshLocationWrapper" class="flex flex-col items-center hidden">
+                                <p id="refreshLocationLabel" class="text-sm text-gray-600 mb-2 text-center">
+                                    Anda berada di luar radius. Jika sudah berpindah posisi, perbarui lokasi Anda.
+                                </p>
                                 <button type="button" id="refreshLocationBtn"
                                     onclick="refreshLocation()"
                                     class="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed">
@@ -234,6 +237,8 @@
         const officeNameLabel = document.getElementById('officeNameLabel');
         const geofenceWarning = document.getElementById('geofenceWarning');
         const geofenceErrorBanner = document.getElementById('geofenceErrorBanner');
+        const refreshLocationWrapper = document.getElementById('refreshLocationWrapper');
+        const refreshLocationLabel = document.getElementById('refreshLocationLabel');
         const refreshLocationBtn = document.getElementById('refreshLocationBtn');
         const refreshLocationIcon = document.getElementById('refreshLocationIcon');
         const locationRefreshStatus = document.getElementById('locationRefreshStatus');
@@ -350,6 +355,7 @@
             // (submit tetap diblokir lewat updateSubmitButtonState/geofenceLoadFailed)
             if (!geofenceLoaded) {
                 geofenceSection.classList.add('hidden');
+                updateRefreshLocationVisibility();
                 updateSubmitButtonState();
                 return;
             }
@@ -390,7 +396,28 @@
                 }
             }
 
+            updateRefreshLocationVisibility();
             updateSubmitButtonState();
+        }
+
+        // ============================================================
+        // Tampilkan tombol "Refresh Lokasi" HANYA jika:
+        // - validasi radius aktif (locationChecks = true utk CheckType ini), DAN
+        // - user saat ini berada di LUAR radius
+        // Jika validasi tidak aktif, atau user sudah di dalam radius (bisa
+        // submit), tombol refresh disembunyikan karena tidak diperlukan lagi.
+        // ============================================================
+        function updateRefreshLocationVisibility() {
+            const radiusApplicable = isRadiusRuleApplicable();
+            const shouldShow = radiusApplicable && currentLocation.latitude !== null && !isWithinRadius;
+
+            refreshLocationWrapper.classList.toggle('hidden', !shouldShow);
+
+            if (shouldShow) {
+                const checkType = checkTypeSelect.value;
+                const label = checkType === 'IN' ? 'masuk' : 'pulang';
+                refreshLocationLabel.textContent = `Anda terdeteksi di luar radius absen ${label}. Jika sudah berpindah posisi, perbarui lokasi Anda.`;
+            }
         }
 
         // ============================================================
@@ -468,6 +495,7 @@
 
             // Jika aturan radius tidak berlaku, skip update
             if (!radiusApplicable) {
+                updateRefreshLocationVisibility();
                 return;
             }
 
@@ -494,6 +522,7 @@
                 geofenceWarning.classList.remove('hidden');
             }
 
+            updateRefreshLocationVisibility();
             updateSubmitButtonState();
         }
 
@@ -676,8 +705,9 @@
                     longitudePreview.value = currentLocation.longitude;
 
                     // updateRadiusStatus() menghitung ulang jarak & status dalam/luar radius
-                    // berdasarkan lokasi terbaru, lalu memanggil updateSubmitButtonState()
-                    // sehingga tombol submit otomatis ikut ter-enable/disable.
+                    // berdasarkan lokasi terbaru, lalu memanggil updateRefreshLocationVisibility()
+                    // dan updateSubmitButtonState() sehingga tombol refresh & submit otomatis
+                    // ikut menyesuaikan (tombol refresh akan hilang begitu user masuk radius).
                     updateRadiusStatus();
 
                     if (checkTypeSelect.value === 'IN' || checkTypeSelect.value === 'OUT') {
@@ -688,6 +718,7 @@
                         }
                     }
 
+                    updateRefreshLocationVisibility();
                     updateSubmitButtonState();
 
                     if (isManualRefresh) {
@@ -1019,6 +1050,7 @@
             // Muat konfigurasi geofence dari API (menggantikan hardcode lama)
             loadGeofenceConfig();
 
+            updateRefreshLocationVisibility();
             updateSubmitButtonState();
         });
 
