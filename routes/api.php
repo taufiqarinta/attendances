@@ -21,6 +21,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 Route::apiResource('geofence-plant', GeofencePlantApiController::class)
+    ->names('api.geofence-plant')
     ->parameters(['geofence-plant' => 'geofence_plant']);
 Route::post('/absensi/save-photo', [AttendanceController::class, 'savePhotoFromBackend']);
 // Route::post('/izin/upload-file', [IzinController::class, 'uploadFile'])->name('izin.upload');
