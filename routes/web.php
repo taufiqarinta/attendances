@@ -114,4 +114,8 @@ Route::middleware(['web', 'check.api.session'])->group(function () {
     })->name('history.index');
 });
 
+Route::fallback(function () {
+    return response()->view('errors.custom-404', [], 404);
+});
+
 require __DIR__ . '/auth.php';
