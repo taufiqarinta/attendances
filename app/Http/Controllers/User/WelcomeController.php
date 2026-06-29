@@ -11,7 +11,7 @@ class WelcomeController extends Controller
 {
     public function index(Request $request)
     {
-        dd("Masuk bosq");
+        // dd("Masuk bosq");
         $user = Auth::user();
         $search = $request->input('search', '');
 
