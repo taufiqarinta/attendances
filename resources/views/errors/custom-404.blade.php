@@ -149,7 +149,7 @@
       <!-- Pastikan teks ini sama persis dengan kode awal -->
       <h2>Oops!<br/>Halaman tidak ditemukan</h2>
       <p>Halaman yang anda cari mungkin sudah dipindahkan atau tidak tersedia.</p>
-      <a href="{{ url('/welcome') }}">Kembali ke Beranda</a>
+      <a href="{{ url('/') }}">Kembali ke Beranda</a>
     </div>
   </div>
 
