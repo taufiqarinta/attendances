@@ -1562,25 +1562,79 @@
         }
 
         #tblabsences thead th {
-            background-color: #f9fafb !important;
-            font-weight: 600 !important;
-            font-size: 0.75rem !important;
+            background-color: #950000; color: white;
+            color: #ffffff !important;
+            font-size: 0.7rem !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.06em !important;
             text-transform: uppercase !important;
-            letter-spacing: 0.05em !important;
-            color: #6b7280 !important;
-            border-bottom: 2px solid #e5e7eb !important;
-            white-space: nowrap !important;
+            padding: 14px 20px !important;
+            border-bottom: none !important;
+        }
+        #tblabsences thead th:first-child { border-top-left-radius: 12px; }
+        #tblabsences thead th:last-child { border-top-right-radius: 12px; }
+
+        /* Sort icon biar kontras di header gelap */
+        #tblabsensi thead th.sorting:after,
+        #tblabsensi thead th.sorting_asc:after,
+        #tblabsensi thead th.sorting_desc:after {
+            color: #ffffff !important;
+        }
+        #tblabsensi thead th.sorting:after {
+            opacity: 0.25;
+        }
+        #tblabsensi thead th.sorting_asc:after,
+        #tblabsensi thead th.sorting_desc:after {
+            opacity: 1;
         }
 
+        /* Body tabel — border halus & hover merah muda */
+        #tblabsences {
+            border-collapse: separate !important;
+            border-spacing: 0 !important;
+        }
         #tblabsences tbody td {
-            padding: 0.75rem 0.5rem !important;
-            vertical-align: middle !important;
-            border-bottom: 1px solid #e5e7eb !important;
-            font-size: 0.875rem !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+        }
+        #tblabsences tbody tr:hover {
+            background-color: #fef2f2 !important;
+        }
+        #tblabsences tbody tr:last-child td {
+            border-bottom: none !important;
         }
 
-        #tblabsences tbody tr:hover {
-            background-color: #f9fafb !important;
+        /* Search input & length select — focus warna merah */
+        .dataTables_filter input:focus {
+            border-color: #950000 !important;
+            box-shadow: 0 0 0 1px #950000 !important;
+        }
+        .dataTables_length select:focus {
+            border-color: #950000 !important;
+            outline: none !important;
+        }
+
+        /* Pagination — tema merah gradient */
+        .dataTables_paginate .paginate_button {
+            border-radius: 0.6rem !important;
+        }
+        .dataTables_paginate .paginate_button:hover:not(.disabled):not(.current) {
+            background: #fef2f2 !important;
+            border-color: #fca5a5 !important;
+            color: #950000 !important;
+        }
+        .dataTables_paginate .paginate_button.current {
+            background-color: #950000; color: white;
+            border-color: transparent !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 6px rgba(250, 0, 0, 0.35) !important;
+        }
+
+        /* Badge status — samakan bentuk dengan badge dashboard (rounded-lg, bukan pill penuh) */
+        #tblabsences td span[class*="bg-"] {
+            border-radius: 0.5rem !important;
+            padding: 0.25rem 0.65rem !important;
+            font-weight: 600 !important;
+            white-space: nowrap !important;
         }
 
         /* Status Badge Styling */

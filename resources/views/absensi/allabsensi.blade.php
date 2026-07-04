@@ -5,13 +5,6 @@
                 {{ __('Data Absensi Seluruh Karyawan') }}
             </h2>
             <div class="flex space-x-2">
-                <!-- <a href="{{ route('absensi.create') }}"
-                    class="inline-flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-all duration-200 shadow-sm hover:shadow-md">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                    </svg>
-                    Absensi
-                </a> -->
                 <button onclick="refreshData()"
                     class="inline-flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 font-semibold py-2 px-4 rounded-lg text-sm border border-gray-200 transition-all duration-200 shadow-sm hover:shadow-md">
                     <svg class="w-4 h-4 refresh-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -25,180 +18,130 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <div class="py-8">
-        <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="py-12">
+        <div class="max-w-9xl mx-auto sm:px-6 lg:px-8">
+
+            <!-- Loading Overlay -->
+            <div id="loadingOverlay" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-50 flex items-center justify-center">
+                <div class="bg-white rounded-lg p-6 flex flex-col items-center">
+                    <svg class="animate-spin h-10 w-10 text-red-700 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="text-gray-700">Memuat data...</span>
+                </div>
+            </div>
 
             <!-- Alert Messages -->
-            <div id="alertSuccess" class="hidden mb-4 flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl text-sm">
-                <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            <div id="alertSuccess" class="mb-4 hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
                 <span id="successMessage"></span>
             </div>
-            <div id="alertError" class="hidden mb-4 flex items-center gap-3 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl text-sm">
-                <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+            <div id="alertError" class="mb-4 hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
                 <span id="errorMessage"></span>
             </div>
 
-            <!-- Filter Card -->
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm mb-6 overflow-hidden">
-                <div class="px-5 py-4 border-b border-gray-50">
-                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Filter Data</p>
-                </div>
-                <div class="p-5">
-                    <form id="filterForm">
-                        <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+            <!-- Tabel Absensi -->
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-4 sm:p-6 text-gray-900">
 
-                            <!-- Tanggal Mulai -->
-                            <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Tanggal Mulai</label>
+                    <!-- Filter Section -->
+                    <div class="mb-6">
+                        <form id="filterForm" class="flex items-end gap-3">
+                            <!-- Filter Tanggal Mulai -->
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
                                 <input type="date" id="startDate" name="start_date"
-                                    class="w-full rounded-xl border-gray-200 shadow-sm text-sm h-10">
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                             </div>
-
-                            <!-- Tanggal Akhir -->
-                            <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Tanggal Akhir</label>
+                            <!-- Filter Tanggal Akhir -->
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
                                 <input type="date" id="endDate" name="end_date"
-                                    class="w-full rounded-xl border-gray-200 shadow-sm text-sm h-10">
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                             </div>
-
-                            <!-- Search -->
-                            <div class="col-span-2 lg:col-span-1">
-                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Cari Karyawan</label>
-                                <div class="relative">
-                                    <svg class="w-4 h-4 absolute left-3 top-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
-                                    </svg>
-                                    <input type="text" id="searchInput" name="search"
-                                        placeholder="NIK atau nama karyawan..."
-                                        class="w-full pl-9 rounded-xl border-gray-200 shadow-sm text-sm h-10">
-                                </div>
-                            </div>
-
-                            <!-- Tombol Filter -->
-                            <div class="flex items-end">
-                                <button type="submit"
-                                    class="w-full h-10 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
-                                    </svg>
+                            <!-- Tombol Aksi -->
+                            <div class="flex gap-2">
+                                <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 whitespace-nowrap">
                                     Filter
                                 </button>
-                            </div>
-
-                            <!-- Tombol Reset -->
-                            <div class="flex items-end">
                                 <button type="button" onclick="resetFilters()"
-                                    class="w-full h-10 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl text-sm flex items-center justify-center gap-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                    </svg>
+                                    class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 whitespace-nowrap">
                                     Reset
                                 </button>
                             </div>
+                        </form>
+                    </div>
 
+                    <!-- Container untuk tabel -->
+                    <div class="table-container w-full overflow-hidden">
+                        <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300">
+                            <table class="w-full divide-y divide-gray-200" id="tblallabsensi">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">NIK</th>
+                                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Karyawan</th>
+                                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal & Jam</th>
+                                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">In / Out</th>
+                                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Foto</th>
+                                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
+                                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Verified</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody" class="bg-white divide-y divide-gray-200">
+                                    <!-- Data akan diisi oleh JavaScript -->
+                                </tbody>
+                            </table>
                         </div>
-                    </form>
+                    </div>
+
                 </div>
             </div>
-
-            <!-- Table Card -->
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-
-                <!-- Table Toolbar -->
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center px-5 py-4 border-b border-gray-50 gap-3">
-                    <div class="flex items-center gap-2">
-                        <!-- Loading spinner -->
-                        <div id="tableSpinner" class="hidden">
-                            <svg class="animate-spin w-4 h-4 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-                            </svg>
-                        </div>
-                        <span class="text-sm text-gray-500" id="paginationInfo">Memuat data...</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <label class="text-xs text-gray-400 font-medium">Tampilkan</label>
-                        <select id="limitSelect"
-                            class="w-20 px-2 py-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                            <option value="10">10</option>
-                            <option value="25" selected>25</option>
-                            <option value="50">50</option>
-                            <option value="100">100</option>
-                        </select>
-                        <label class="text-xs text-gray-400 font-medium">per halaman</label>
-                    </div>
-                </div>
-
-                <!-- Table -->
-                <div class="overflow-x-auto p-2">
-                    <table class="w-full min-w-[900px] border-collapse">
-                        <thead>
-                            <tr class="bg-gray-50 border-b border-gray-100">
-                                <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-32">NIK</th>
-                                <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-52">Nama Karyawan</th>
-                                <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-48">Tanggal & Jam</th>
-                                <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-28">In / Out</th>
-                                <th class="text-center px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-28">Foto</th>
-                                <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-36">Lokasi</th>
-                                <th class="text-center px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-28">Verified</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody">
-                            <tr>
-                                <td colspan="7" class="text-center py-16 text-gray-400 text-sm">
-                                    <div class="flex flex-col items-center gap-2">
-                                        <svg class="w-10 h-10 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                                        </svg>
-                                        Memuat data...
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Pagination Footer -->
-                <div class="flex flex-col sm:flex-row justify-between items-center px-5 py-4 border-t border-gray-50 gap-3" id="paginationContainer">
-                    <div class="text-sm text-gray-400" id="paginationDetail"></div>
-                    <nav class="flex items-center gap-1" id="paginationLinks"></nav>
-                </div>
-            </div>
-
         </div>
     </div>
 
+    <!-- Modal Foto -->
+    <div id="fotoModal" class="fixed inset-0 hidden bg-black bg-opacity-75 z-50 items-center justify-center p-4">
+        <div class="relative max-w-4xl max-h-full">
+            <img id="modalFoto" src="" alt="Foto" class="max-w-full max-h-[90vh] object-contain rounded">
+            <button onclick="closeFotoModal()" class="absolute top-4 right-4 bg-white rounded-full p-2 hover:bg-gray-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
     <script>
     // ===== STATE =====
-    let allData = [];          // Semua data dari server (sekali load)
-    let filteredData = [];     // Data setelah filter client-side search (jika diperlukan)
-    let currentPage = 1;
-    let currentLimit = 25;
-    let isFetching = false;
+    let allData = [];
     let currentController = null;
-    let searchDebounce = null;
 
     // Filter state (dikirim ke server saat fetch)
-    let serverSearch = '';
     let serverStartDate = '';
     let serverEndDate = '';
-
-    // const API_BASE_URL = 'https://web.kobin.co.id/api/hris/absensi/get_all_absensimysql.php';
 
     const API_BASE_URL = '{{ App\Helpers\ApiHelper::getApiUrl('absensi/get_all_absensimysql.php') }}';
 
     console.log('📡 API URL:', API_BASE_URL);
 
     // ===== DOM =====
+    const loadingOverlay = document.getElementById('loadingOverlay');
     const tableBody = document.getElementById('tableBody');
-    const searchInput = document.getElementById('searchInput');
     const startDateInput = document.getElementById('startDate');
     const endDateInput = document.getElementById('endDate');
-    const limitSelect = document.getElementById('limitSelect');
-    const paginationInfo = document.getElementById('paginationInfo');
-    const paginationDetail = document.getElementById('paginationDetail');
-    const paginationLinks = document.getElementById('paginationLinks');
-    const tableSpinner = document.getElementById('tableSpinner');
+    const alertSuccess = document.getElementById('alertSuccess');
+    const alertError = document.getElementById('alertError');
+    const successMessage = document.getElementById('successMessage');
+    const errorMessage = document.getElementById('errorMessage');
 
     // ===== INIT =====
     function setDefaultDates() {
@@ -219,27 +162,47 @@
             day: '2-digit', month: '2-digit', year: 'numeric',
             hour: '2-digit', minute: '2-digit', second: '2-digit'
         });
-        // Ganti pemisah jam-menit dari titik menjadi titik dua
         formatted = formatted.replace(/(\d{2})\.(\d{2})\.(\d{2})$/, '$1:$2:$3');
         return formatted;
     }
 
-    // ===== FETCH — ambil SEMUA data sekaligus (tidak ada pagination server) =====
+    // ===== SHOW/HIDE LOADING =====
+    function showLoading() {
+        loadingOverlay.classList.remove('hidden');
+    }
+    function hideLoading() {
+        loadingOverlay.classList.add('hidden');
+    }
+
+    // ===== ALERT =====
+    function showAlert(type, msg) {
+        if (type === 'success') {
+            successMessage.textContent = msg;
+            alertSuccess.classList.remove('hidden');
+            setTimeout(() => alertSuccess.classList.add('hidden'), 3000);
+        } else {
+            errorMessage.textContent = msg;
+            alertError.classList.remove('hidden');
+            setTimeout(() => alertError.classList.add('hidden'), 5000);
+        }
+        if (typeof toastr !== 'undefined') {
+            type === 'success' ? toastr.success(msg) : toastr.error(msg);
+        }
+    }
+
+    // ===== FETCH — ambil SEMUA data sekaligus =====
     async function fetchAttendanceData() {
         if (currentController) currentController.abort();
         currentController = new AbortController();
 
         try {
-            isFetching = true;
-            tableSpinner.classList.remove('hidden');
-            paginationInfo.textContent = 'Memuat data...';
+            showLoading();
 
             const params = new URLSearchParams({
                 page: 1,
-                limit: 9999,           // ambil semua data sekaligus
+                limit: 9999,
                 user_nik: '{{ session('nik') }}'
             });
-            if (serverSearch)    params.append('search', serverSearch);
             if (serverStartDate) params.append('start_date', serverStartDate);
             if (serverEndDate)   params.append('end_date', serverEndDate);
 
@@ -250,9 +213,7 @@
 
             if (result.success) {
                 allData = result.data || [];
-                filteredData = allData;
-                currentPage = 1;
-                renderPage();
+                renderTable(allData);
 
                 if (allData.length > 0) {
                     verifyBatchData(allData);
@@ -264,182 +225,112 @@
             if (err.name === 'AbortError') return;
             showAlert('error', 'Gagal memuat data: ' + err.message);
             allData = [];
-            filteredData = [];
-            renderPage();
+            renderTable([]);
         } finally {
-            isFetching = false;
-            tableSpinner.classList.add('hidden');
+            hideLoading();
         }
     }
 
-    // ===== CLIENT-SIDE PAGINATION =====
-    function renderPage() {
-        const total = filteredData.length;
-        const totalPages = total === 0 ? 1 : Math.ceil(total / currentLimit);
-        if (currentPage > totalPages) currentPage = totalPages;
-
-        const start = (currentPage - 1) * currentLimit;
-        const end = Math.min(start + currentLimit, total);
-        const pageData = filteredData.slice(start, end);
-
-        renderTable(pageData);
-        updatePaginationInfo(total, start + 1, end);
-        renderPaginationLinks(totalPages);
-    }
-
-    function updatePaginationInfo(total, start, end) {
-        if (total === 0) {
-            paginationInfo.textContent = 'Tidak ada data';
-            paginationDetail.textContent = '';
-            return;
-        }
-        paginationInfo.textContent = `Menampilkan ${start}–${end} dari ${total} data`;
-        const totalPages = Math.ceil(total / currentLimit);
-        paginationDetail.textContent = `Halaman ${currentPage} dari ${totalPages}`;
-    }
-
-    function renderPaginationLinks(totalPages) {
-        if (totalPages <= 1) { paginationLinks.innerHTML = ''; return; }
-
-        const btnClass = (active) => `inline-flex items-center justify-center w-9 h-9 rounded-lg text-sm font-medium transition-all duration-150 ${
-            active
-            ? 'bg-indigo-600 text-white shadow-sm'
-            : 'text-gray-500 hover:bg-gray-100 border border-gray-200'
-        }`;
-
-        let html = '';
-
-        // Prev
-        html += `<button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}
-            class="${btnClass(false)} ${currentPage === 1 ? 'opacity-30 cursor-not-allowed' : ''}">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-        </button>`;
-
-        // Pages
-        const maxVis = 5;
-        let startP = Math.max(1, currentPage - Math.floor(maxVis / 2));
-        let endP = Math.min(totalPages, startP + maxVis - 1);
-        if (endP - startP + 1 < maxVis) startP = Math.max(1, endP - maxVis + 1);
-
-        if (startP > 1) {
-            html += `<button onclick="changePage(1)" class="${btnClass(false)}">1</button>`;
-            if (startP > 2) html += `<span class="text-gray-300 text-sm px-1">···</span>`;
-        }
-        for (let i = startP; i <= endP; i++) {
-            html += `<button onclick="changePage(${i})" class="${btnClass(i === currentPage)}">${i}</button>`;
-        }
-        if (endP < totalPages) {
-            if (endP < totalPages - 1) html += `<span class="text-gray-300 text-sm px-1">···</span>`;
-            html += `<button onclick="changePage(${totalPages})" class="${btnClass(false)}">${totalPages}</button>`;
-        }
-
-        // Next
-        html += `<button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}
-            class="${btnClass(false)} ${currentPage === totalPages ? 'opacity-30 cursor-not-allowed' : ''}">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-        </button>`;
-
-        paginationLinks.innerHTML = html;
-    }
-
-    function changePage(page) {
-        const totalPages = Math.ceil(filteredData.length / currentLimit);
-        if (page < 1 || page > totalPages || page === currentPage) return;
-        currentPage = page;
-        document.querySelector('.overflow-x-auto')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        renderPage();
-    }
-
-    // ===== RENDER TABLE =====
+    // ===== RENDER TABLE + INIT DATATABLE =====
     function renderTable(data) {
         if (!data || data.length === 0) {
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="7" class="text-center py-16 text-gray-400 text-sm">
-                        <div class="flex flex-col items-center gap-2">
-                            <svg class="w-10 h-10 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            tableBody.innerHTML = '';
+        } else {
+            let html = '';
+            data.forEach((item) => {
+                const checkType = (item.CheckType || '').toLowerCase().trim();
+                const isIn = checkType === 'in';
+
+                const badgeClass = isIn
+                    ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                    : 'bg-red-100 text-red-700 border border-red-200';
+
+                let fotoHtml = '<span class="text-gray-300 text-xs">—</span>';
+                if (item.file_foto) {
+                    const fotoPath = item.file_foto.replace('public/', '');
+                    const fotoUrl = `/storage/${fotoPath}`;
+                    fotoHtml = `
+                        <a href="${fotoUrl}" target="_blank"
+                            class="group relative w-14 h-14 mx-auto block overflow-hidden rounded-xl border border-gray-200 hover:border-indigo-300 transition-all duration-200 hover:shadow-md cursor-pointer">
+                            <img src="${fotoUrl}" alt="Foto ${item.PersonnelNo}"
+                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                                onerror="this.onerror=null; this.closest('a').outerHTML='<span class=\'text-red-400 text-xs\'>Tidak ada</span>'">
+                            <div class="absolute inset-0 bg-indigo-600/0 group-hover:bg-indigo-600/10 transition-colors duration-200 flex items-center justify-center">
+                                <svg class="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                </svg>
+                            </div>
+                        </a>`;
+                }
+
+                let lokasiHtml = '<span class="text-gray-300 text-xs">—</span>';
+                if (item.Latitude && item.Longitude && item.Latitude !== '0' && item.Longitude !== '0') {
+                    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${item.Latitude},${item.Longitude}`;
+                    lokasiHtml = `
+                        <a href="${mapsUrl}" target="_blank"
+                            class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 text-sm font-medium hover:underline transition-colors">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                             </svg>
-                            Tidak ada data ditemukan
-                        </div>
-                    </td>
-                </tr>`;
-            return;
+                            Lihat
+                        </a>`;
+                }
+
+                html += `
+                    <tr>
+                        <td class="px-4 py-3 text-center">
+                            <span class="font-mono text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-lg">${item.PersonnelNo || '-'}</span>
+                        </td>
+                        <td class="px-4 py-3 text-center">${item.nama_karyawan || '-'}</td>
+                        <td class="px-4 py-3 text-center" data-order="${item.CurrentDateTime || ''}">${formatDisplayDate(item.CurrentDateTime)}</td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold ${badgeClass}">
+                                <span class="w-1.5 h-1.5 rounded-full ${isIn ? 'bg-emerald-500' : 'bg-red-500'}"></span>
+                                ${(item.CheckType || '').toUpperCase()}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-center">${fotoHtml}</td>
+                        <td class="px-4 py-3 text-center">${lokasiHtml}</td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ${
+                                item.verified === 'success'
+                                    ? 'bg-green-100 text-green-700 border border-green-200'
+                                    : 'bg-yellow-100 text-yellow-700 border border-yellow-200'
+                            }">
+                                ${item.verified === 'success' ? '✓ Success' : '⏳ Pending'}
+                            </span>
+                        </td>
+                    </tr>`;
+            });
+            tableBody.innerHTML = html;
         }
 
-        let html = '';
-        data.forEach((item) => {
-            const checkType = (item.CheckType || '').toLowerCase().trim();
-            const isIn = checkType === 'in';
-
-            const badgeClass = isIn
-                ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
-                : 'bg-red-100 text-red-700 border border-red-200';
-
-            let fotoHtml = '<span class="text-gray-300 text-xs">—</span>';
-            if (item.file_foto) {
-                const fotoPath = item.file_foto.replace('public/', '');
-                const fotoUrl = `/storage/${fotoPath}`;
-                fotoHtml = `
-                    <a href="${fotoUrl}" target="_blank" 
-                        class="group relative w-14 h-14 mx-auto block overflow-hidden rounded-xl border border-gray-200 hover:border-indigo-300 transition-all duration-200 hover:shadow-md cursor-pointer">
-                        <img src="${fotoUrl}" alt="Foto ${item.PersonnelNo}"
-                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                            onerror="this.onerror=null; this.closest('a').outerHTML='<span class=\'text-red-400 text-xs\'>Tidak ada</span>'">
-                        <div class="absolute inset-0 bg-indigo-600/0 group-hover:bg-indigo-600/10 transition-colors duration-200 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                            </svg>
-                        </div>
-                    </a>`;
+        // Init / re-init DataTable
+        setTimeout(() => {
+            if ($.fn.DataTable.isDataTable('#tblallabsensi')) {
+                $('#tblallabsensi').DataTable().destroy();
             }
-
-            let lokasiHtml = '<span class="text-gray-300 text-xs">—</span>';
-            if (item.Latitude && item.Longitude && item.Latitude !== '0' && item.Longitude !== '0') {
-                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${item.Latitude},${item.Longitude}`;
-                lokasiHtml = `
-                    <a href="${mapsUrl}" target="_blank"
-                        class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 text-sm font-medium hover:underline transition-colors">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                        Lihat
-                    </a>`;
-            }
-
-            html += `
-                <tr class="border-b border-gray-50 hover:bg-indigo-50/30 transition-colors duration-100">
-                    <td class="px-5 py-3.5">
-                        <span class="font-mono text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-lg">${item.PersonnelNo || '-'}</span>
-                    </td>
-                    <td class="px-5 py-3.5">
-                        <p class="text-sm font-medium text-gray-800">${item.nama_karyawan || '-'}</p>
-                    </td>
-                    <td class="px-5 py-3.5">
-                        <p class="text-sm text-gray-600">${formatDisplayDate(item.CurrentDateTime)}</p>
-                    </td>
-                    <td class="px-5 py-3.5">
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold ${badgeClass}">
-                            <span class="w-1.5 h-1.5 rounded-full ${isIn ? 'bg-emerald-500' : 'bg-red-500'}"></span>
-                            ${item.CheckType || '-'}
-                        </span>
-                    </td>
-                    <td class="px-5 py-3.5 text-center">${fotoHtml}</td>
-                    <td class="px-5 py-3.5">${lokasiHtml}</td>
-                    <td class="px-5 py-3.5 text-center">
-                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ${
-                            item.verified === 'success'
-                                ? 'bg-green-100 text-green-700 border border-green-200'
-                                : 'bg-yellow-100 text-yellow-700 border border-yellow-200'
-                        }">
-                            ${item.verified === 'success' ? '✓ Success' : '⏳ Pending'}
-                        </span>
-                    </td>
-                </tr>`;
-        });
-
-        tableBody.innerHTML = html;
+            $('#tblallabsensi').DataTable({
+                order: [[2, 'desc']], // Sort by Tanggal & Jam descending
+                pageLength: 25,
+                language: {
+                    emptyTable: "Tidak ada data ditemukan",
+                    zeroRecords: "Tidak ada data yang cocok",
+                    search: "Cari:",
+                    lengthMenu: "Show _MENU_ entries",
+                    info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+                    infoEmpty: "Tidak ada data",
+                    infoFiltered: "(disaring dari _MAX_ total data)",
+                    paginate: {
+                        first: "Awal",
+                        last: "Akhir",
+                        next: "Selanjutnya",
+                        previous: "Sebelumnya"
+                    }
+                }
+            });
+        }, 100);
     }
 
     // ===== VERIFY =====
@@ -458,15 +349,6 @@
         } catch (e) { /* silent */ }
     }
 
-    // ===== ALERT =====
-    function showAlert(type, msg) {
-        const el = document.getElementById(type === 'success' ? 'alertSuccess' : 'alertError');
-        const span = document.getElementById(type === 'success' ? 'successMessage' : 'errorMessage');
-        span.textContent = msg;
-        el.classList.remove('hidden');
-        setTimeout(() => el.classList.add('hidden'), 4000);
-    }
-
     // ===== REFRESH =====
     function refreshData() {
         const icon = document.querySelector('.refresh-icon');
@@ -478,11 +360,13 @@
 
     // ===== RESET =====
     function resetFilters() {
-        serverSearch = '';
-        searchInput.value = '';
         setDefaultDates();
-        currentPage = 1;
         fetchAttendanceData();
+    }
+
+    // ===== CLOSE FOTO MODAL =====
+    function closeFotoModal() {
+        document.getElementById('fotoModal').classList.add('hidden');
     }
 
     // ===== INIT EVENTS =====
@@ -490,52 +374,201 @@
         setDefaultDates();
         fetchAttendanceData();
 
-        // Submit filter → fetch ulang dari server
         document.getElementById('filterForm').addEventListener('submit', function (e) {
             e.preventDefault();
-            serverSearch = searchInput.value.trim();
             serverStartDate = startDateInput.value;
             serverEndDate = endDateInput.value;
-            currentPage = 1;
             fetchAttendanceData();
-        });
-
-        // Ganti limit → client-side saja, tidak perlu fetch ulang
-        limitSelect.addEventListener('change', function () {
-            currentLimit = parseInt(this.value);
-            currentPage = 1;
-            renderPage();   // hanya re-render dari allData
-        });
-
-        // Search dengan debounce — fetch ulang ke server
-        searchInput.addEventListener('input', function () {
-            clearTimeout(searchDebounce);
-            searchDebounce = setTimeout(() => {
-                serverSearch = this.value.trim();
-                currentPage = 1;
-                fetchAttendanceData();
-            }, 500);
         });
     });
     </script>
 
     <style>
+        /* DataTables Custom Styling */
+        .dataTables_wrapper {
+            padding: 1rem !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        .dataTables_length,
+        .dataTables_filter,
+        .dataTables_info,
+        .dataTables_paginate {
+            margin: 0.75rem 0.5rem !important;
+        }
+        .dataTables_length label,
+        .dataTables_filter label {
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.5rem !important;
+            font-weight: 500 !important;
+            color: #374151 !important;
+        }
+        .dataTables_length select {
+            width: auto !important;
+            min-width: 60px !important;
+            padding: 0.375rem 1.5rem 0.375rem 0.5rem !important;
+            border: 1px solid #d1d5db !important;
+            border-radius: 0.375rem !important;
+            background-color: white !important;
+            cursor: pointer !important;
+        }
+        .dataTables_filter input {
+            width: 200px !important;
+            padding: 0.375rem 0.75rem !important;
+            border: 1px solid #d1d5db !important;
+            border-radius: 0.375rem !important;
+            outline: none !important;
+        }
+        .dataTables_filter input:focus {
+            border-color: #950000 !important;
+            box-shadow: 0 0 0 1px #950000 !important;
+        }
+        .dataTables_length select:focus {
+            border-color: #950000 !important;
+            outline: none !important;
+        }
+        .dataTables_info {
+            color: #6b7280 !important;
+            font-size: 0.875rem !important;
+        }
+        .dataTables_paginate {
+            display: flex !important;
+            gap: 0.25rem !important;
+        }
+        .dataTables_paginate .paginate_button {
+            padding: 0.375rem 0.75rem !important;
+            border: 1px solid #d1d5db !important;
+            border-radius: 0.6rem !important;
+            background: white !important;
+            color: #374151 !important;
+            cursor: pointer !important;
+            font-size: 0.875rem !important;
+            transition: all 0.2s !important;
+        }
+        .dataTables_paginate .paginate_button:hover:not(.disabled):not(.current) {
+            background: #fef2f2 !important;
+            border-color: #fca5a5 !important;
+            color: #950000 !important;
+        }
+        .dataTables_paginate .paginate_button.current {
+            background-color: #950000 !important;
+            border-color: transparent !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 6px rgba(250, 0, 0, 0.35) !important;
+        }
+        .dataTables_paginate .paginate_button.disabled {
+            opacity: 0.5 !important;
+            cursor: not-allowed !important;
+            pointer-events: none !important;
+        }
+
+        /* Table Styling */
+        #tblallabsensi {
+            width: 100% !important;
+            border-collapse: separate !important;
+            border-spacing: 0 !important;
+        }
+        #tblallabsensi thead th {
+            background-color: #950000;
+            color: #ffffff !important;
+            font-size: 0.7rem !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.06em !important;
+            text-transform: uppercase !important;
+            padding: 14px 20px !important;
+            border-bottom: none !important;
+        }
+        #tblallabsensi thead th:first-child { border-top-left-radius: 12px; }
+        #tblallabsensi thead th:last-child { border-top-right-radius: 12px; }
+        #tblallabsensi thead th.sorting:after,
+        #tblallabsensi thead th.sorting_asc:after,
+        #tblallabsensi thead th.sorting_desc:after {
+            color: #ffffff !important;
+        }
+        #tblallabsensi thead th.sorting:after {
+            opacity: 0.25;
+        }
+        #tblallabsensi thead th.sorting_asc:after,
+        #tblallabsensi thead th.sorting_desc:after {
+            opacity: 1;
+        }
+        #tblallabsensi tbody td {
+            border-bottom: 1px solid #f1f5f9 !important;
+            padding: 0.875rem 1.25rem !important;
+        }
+        #tblallabsensi tbody tr:hover {
+            background-color: #fef2f2 !important;
+        }
+        #tblallabsensi tbody tr:last-child td {
+            border-bottom: none !important;
+        }
+        #tblallabsensi td span[class*="bg-"] {
+            border-radius: 0.5rem !important;
+            padding: 0.25rem 0.65rem !important;
+            font-weight: 600 !important;
+            white-space: nowrap !important;
+        }
+
+        /* Scrollbar Styling */
+        .scrollbar-thin::-webkit-scrollbar {
+            height: 8px !important;
+            width: 8px !important;
+        }
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: #f1f1f1 !important;
+            border-radius: 4px !important;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: #c1c1c1 !important;
+            border-radius: 4px !important;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1 !important;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1024px) {
+            .dataTables_filter input {
+                width: 150px !important;
+            }
+            #tblallabsensi tbody td {
+                padding: 0.5rem 0.5rem !important;
+                font-size: 0.75rem !important;
+            }
+        }
+        @media (max-width: 768px) {
+            .dataTables_length {
+                float: left !important;
+                width: 100% !important;
+                margin-bottom: 0.5rem !important;
+            }
+            .dataTables_filter {
+                float: left !important;
+                width: 100% !important;
+                margin-bottom: 0.5rem !important;
+            }
+            .dataTables_filter input {
+                width: 100% !important;
+            }
+        }
+
+        /* Table container */
+        .table-container {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            background: white;
+            overflow: hidden;
+        }
+        .overflow-x-auto {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
         .animate-spin { animation: spin 1s linear infinite; }
-
-        /* Scrollbar halus */
-        .overflow-x-auto::-webkit-scrollbar { height: 5px; }
-        .overflow-x-auto::-webkit-scrollbar-track { background: #f8fafc; }
-        .overflow-x-auto::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 99px; }
-        .overflow-x-auto::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
-
-        /* Modal backdrop blur */
-        #fotoModal:not(.hidden) { display: flex; }
-
-        /* Row hover smooth */
-        #tableBody tr { transition: background-color 0.1s ease; }
     </style>
 </x-app-layout>

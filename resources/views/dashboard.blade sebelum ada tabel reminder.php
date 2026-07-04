@@ -14,79 +14,9 @@
             </button>
         </div>
     </x-slot>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <style>
-        table.dataTable thead th {
-            background-color: #950000; color: white;
-            color: #ffffff !important;
-            font-size: 0.7rem !important;
-            font-weight: 700 !important;
-            letter-spacing: 0.06em !important;
-            text-transform: uppercase !important;
-            padding: 14px 20px !important;
-            border-bottom: none !important;
-        }
-
-        .overflow-x-auto {
-            overflow: hidden !important;
-            border-radius: 12px;
-        }
-
-        /* Jarak antara search/length control dengan tabel */
-        .dataTables_wrapper .dataTables_length,
-        .dataTables_wrapper .dataTables_filter {
-            margin-bottom: 1rem;
-        }
-        .dataTables_wrapper .dataTables_length {
-            display: inline-block;
-        }
-        .dataTables_wrapper .dataTables_filter {
-            display: inline-block;
-            float: right;
-        }
-        .dataTables_wrapper::after {
-            content: "";
-            display: table;
-            clear: both;
-        }
-
-        /* Rapikan dropdown "Tampilkan X data" */
-        .dataTables_length select {
-            width: auto !important;
-            min-width: 60px !important;
-            padding: 0.375rem 1.5rem 0.375rem 0.5rem !important;
-            border: 1px solid #d1d5db !important;
-            border-radius: 0.375rem !important;
-            background-color: white !important;
-            cursor: pointer !important;
-        }
-        
-        .dataTables_wrapper .dataTables_length select:focus {
-            outline: none;
-            border-color: #950000;
-            box-shadow: 0 0 0 1px #950000;
-        }
-
-        .dataTables_filter input {
-            width: 200px !important;
-            padding: 0.375rem 0.75rem !important;
-            border: 1px solid #d1d5db !important;
-            border-radius: 0.375rem !important;
-            outline: none !important;
-            margin-left: 8px;
-        }
-        
-        .dataTables_filter input:focus {
-            border-color: #950000 !important;
-            box-shadow: 0 0 0 1px #950000 !important;
-        }
-    </style>
-
 
     <div class="py-8">
-        <div class="max-w-9xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
             {{-- Debug Session (HAPUS SETELAH SELESAI DEBUG) --}}
             <!-- <div class="bg-gray-100 p-3 mb-4 rounded text-xs font-mono">
@@ -155,12 +85,12 @@
                 {{-- Working Hours Info --}}
                 <div id="workingHoursInfo" class="mt-2 p-2 bg-gray-50 rounded-lg border border-gray-200">
                     <div class="flex items-center gap-2">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
-                        <span class="text-white font-medium">Working Office Hour:</span>
-                        <span id="workingHoursText" class="text-white">Loading...</span>
+                        <span class="text-gray-700 font-medium">Working Office Hour:</span>
+                        <span id="workingHoursText" class="text-gray-600">Loading...</span>
                     </div>
                 </div>
                 
@@ -262,7 +192,7 @@
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Periode</label>
                         <select id="selfSelectPeriode"
-                            class="p-2 block mt-1 w-56 h-[42px] rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            class="w-full md:w-64 rounded-md border-gray-300 shadow-sm focus:border-red-400 focus:ring-red-400 text-sm">
                             <option value="">Loading...</option>
                         </select>
                     </div>
@@ -280,54 +210,6 @@
             </div>
             @endif
 
-            {{-- Section Kontrak Kerja - HO & Miss --}}
-            @if(session('comp') == '0001' && session('nik') == '924330')
-                <div class="mb-8">
-                    <div class="bg-white shadow-sm rounded-lg p-4">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">📄 Kontrak Kerja - HO & Miss</h3>
-
-                         <div class="mb-3 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                            <div class="flex items-center gap-2">
-                                <label for="plantSelectKontrak" class="text-sm font-medium text-gray-700 whitespace-nowrap">Location</label>
-                                <select id="plantSelectKontrak"
-                                    class="p-2 block mt-1 w-56 h-[42px] rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                    <option value="">Semua Location</option>
-                                    <option value="1000">HEAD OFFICE</option>
-                                    <option value="1001">PABRIK NGORO</option>
-                                    <option value="1002">CAKK</option>
-                                    <option value="1003">PK - 2</option>
-                                    <option value="1004">MISS</option>
-                                    <option value="1005">KAISAR PABRIK</option>
-                                </select>
-                            </div>
-                            {{-- Container tujuan pemindahan search & length DataTables --}}
-                            <div id="kontrakFilterBar" class="flex flex-col sm:flex-row items-center gap-3"></div>
-                        </div>
-
-                        <div class="rounded-xl overflow-hidden border border-gray-100">
-                            <div class="overflow-x-auto">
-                                <table id="tableKontrak" class="display w-full text-sm" style="width:100%">
-                                    <thead>
-                                        <tr>
-                                            <th>NIK</th>
-                                            <th>Nama</th>
-                                            <th>Location</th>
-                                            <th>Departemen</th>
-                                            <th>Mulai Kontrak</th>
-                                            <th>Akhir Kontrak</th>
-                                            <th>Sisa Hari</th>
-                                            <th>Status Kontrak</th>
-                                            <th>Durasi (Bulan)</th>
-                                            <th>Masa Kontrak</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            @endif
         </div>
     </div>
 
@@ -339,15 +221,11 @@
     <script src="https://cdn.jsdelivr.net/npm/highcharts@11.4.8/modules/exporting.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/highcharts@11.4.8/modules/export-data.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/highcharts@11.4.8/modules/accessibility.js"></script>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
 
     <script>
         // ==================== KONFIGURASI ====================
         // const API_BASE = 'https://web.kobin.co.id/api/hris/dashboard/get_dashboard.php';
         const API_BASE = '{{ App\Helpers\ApiHelper::getApiUrl('dashboard/get_dashboard.php') }}';
-        const API_KONTRAK = '{{ App\Helpers\ApiHelper::getApiUrl('kontrakkerja/get_kontrakkerja_ho_dan_miss.php') }}';
 
         // console.log('📡 API URL:', API_BASE);
         const SESSION_NIK = '{{ session("nik") }}';
@@ -403,158 +281,6 @@
                 document.getElementById('errorMessage').textContent = msg;
                 el.classList.remove('hidden');
                 setTimeout(() => el.classList.add('hidden'), 5000);
-            }
-        }
-
-        // Mapping kode Location/PA ke nama, sesuai dropdown
-        const LOCATION_MAP = {
-            '1000': 'HEAD OFFICE',
-            '1001': 'PABRIK NGORO',
-            '1002': 'CAKK',
-            '1003': 'PK - 2',
-            '1004': 'MISS',
-            '1005': 'KAISAR PABRIK'
-        };
-
-        function namaLocation(kode) {
-            return LOCATION_MAP[kode] || kode || '-';
-        }
-
-        function formatTanggal(tgl) {
-            if (!tgl) return '-';
-            const d = new Date(tgl);
-            if (isNaN(d)) return tgl;
-            return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
-        }
-
-        function bersihkanNama(nama) {
-            return (nama || '').replace(/[\x00-\x1F\x7F]/g, '').trim();
-        }
-
-        // Hitung sisa hari dari hari ini ke end_date (bisa negatif jika sudah lewat)
-        function hitungSisaHari(endDate) {
-            if (!endDate) return null;
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const end = new Date(endDate);
-            end.setHours(0, 0, 0, 0);
-            const diffMs = end - today;
-            return Math.round(diffMs / (1000 * 60 * 60 * 24));
-        }
-
-        // Tentukan status masa kontrak berdasarkan sisa hari
-        function statusMasaKontrak(sisaHari) {
-            if (sisaHari === null) {
-                return { label: '-', className: 'bg-gray-100 text-gray-700' };
-            }
-            if (sisaHari < 0) {
-                return { label: 'Sudah Berakhir', className: 'bg-red-900 text-white' };
-            }
-            if (sisaHari <= 14) {
-                return { label: 'Segera Berakhir', className: 'bg-red-500 text-white' };
-            }
-            return { label: 'Aman', className: 'bg-green-500 text-white' };
-        }
-
-        function initTableKontrak() {
-            const container = document.getElementById('tableKontrak');
-            if (!container) return;
-
-            tableKontrak = $('#tableKontrak').DataTable({
-                ajax: {
-                    url: API_KONTRAK,
-                    data: function (d) {
-                        d.limit = 0;
-                        const plant = document.getElementById('plantSelectKontrak')?.value;
-                        if (plant) d.pa = plant;
-                        return d;
-                    },
-                    dataSrc: function (json) {
-                        if (!json.success) {
-                            showError(json.message || 'Gagal mengambil data kontrak');
-                            return [];
-                        }
-                        return json.data;
-                    },
-                    error: function (xhr, error, thrown) {
-                        showError('Gagal memuat data kontrak dari API: ' + thrown);
-                    }
-                },
-                columns: [
-                    { data: 'personnelno' },
-                    { data: 'firstname', render: (d) => bersihkanNama(d) },
-                    { data: 'pa', render: (d) => namaLocation(d) },
-                    { data: 'dept' },
-                    {
-                        data: 'valid_from',
-                        render: function (data, type) {
-                            return type === 'display' ? formatTanggal(data) : (data || '');
-                        }
-                    },
-                    {
-                        data: 'end_date',
-                        render: function (data, type) {
-                            return type === 'display' ? formatTanggal(data) : (data || '');
-                        }
-                    },
-                    {
-                        data: 'end_date',
-                        className: 'text-center',
-                        render: function (data, type) {
-                            const sisa = hitungSisaHari(data);
-                            if (type === 'sort' || type === 'type') {
-                                return sisa !== null ? sisa : 999999;
-                            }
-                            if (sisa === null) return '-';
-                            return sisa < 0
-                                ? `${Math.abs(sisa)} hari lewat`
-                                : `${sisa} hari`;
-                        }
-                    },
-                    { data: 'status_kontrak' },
-                    { data: 'durasi_kontrak_bulan', render: (d) => d !== null ? d + ' bulan' : '-' },
-                    {
-                        data: 'end_date',
-                        className: 'text-center',
-                        render: function (data, type) {
-                            const sisa = hitungSisaHari(data);
-                            const status = statusMasaKontrak(sisa);
-                            if (type === 'sort' || type === 'type' || type === 'filter') {
-                                return status.label;
-                            }
-                            return `<span class="px-2 py-1 text-xs font-semibold rounded whitespace-nowrap inline-block ${status.className}">${status.label}</span>`;
-                        }
-                    }
-                ],
-                order: [[5, 'asc']],
-                pageLength: 25,
-                lengthMenu: [10, 25, 50, 100],
-                language: {
-                    search: "Search:",
-                    lengthMenu: "Show _MENU_ entries",
-                    info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
-                    infoEmpty: "Tidak ada data",
-                    infoFiltered: "(disaring dari _MAX_ total data)",
-                    paginate: { first: "Awal", last: "Akhir", next: "Selanjutnya", previous: "Sebelumnya" },
-                    emptyTable: "Tidak ada data kontrak",
-                    zeroRecords: "Data tidak ditemukan"
-                },
-                createdRow: function (row, data) {
-                    const sisa = hitungSisaHari(data.end_date);
-                    if (sisa !== null && sisa <= 14) $(row).addClass('bg-red-50');
-                }
-            });
-
-            // Reload tabel setiap dropdown Location berubah
-            $('#tableKontrak_wrapper > .dataTables_length').appendTo('#kontrakFilterBar');
-            $('#tableKontrak_wrapper > .dataTables_filter').appendTo('#kontrakFilterBar');
-
-            // Reload tabel setiap dropdown Location berubah
-            const plantSelect = document.getElementById('plantSelectKontrak');
-            if (plantSelect) {
-                plantSelect.addEventListener('change', () => {
-                    tableKontrak.ajax.reload();
-                });
             }
         }
 
@@ -619,15 +345,15 @@
                     
                     if (currentTime < startMinutes) {
                         // Belum jam kerja
-                        workingHoursText.classList.add('text-white');
+                        workingHoursText.classList.add('text-blue-600');
                         workingHoursText.parentElement.parentElement.classList.add('border-blue-400', 'bg-blue-400');
                     } else if (currentTime >= startMinutes && currentTime <= finishMinutes) {
                         // Jam kerja
-                        workingHoursText.classList.add('text-white');
+                        workingHoursText.classList.add('text-green-600');
                         workingHoursText.parentElement.parentElement.classList.add('border-green-400', 'bg-green-400');
                     } else {
                         // Sudah lewat jam kerja
-                        workingHoursText.classList.add('text-white');
+                        workingHoursText.classList.add('text-orange-600');
                         workingHoursText.parentElement.parentElement.classList.add('border-orange-400', 'bg-orange-400');
                     }
                 } else {
@@ -1293,11 +1019,6 @@
                 await loadSelfChart();
                 await loadAtasanChart();
                 await loadAdminChart();
-                @if(session('comp') == '0001' && session('nik') == '924330')
-                    if (tableKontrak) {
-                        tableKontrak.ajax.reload(null, false);
-                    }
-                @endif
             } catch (err) {
                 showError('Gagal refresh data: ' + err.message);
             } finally {
@@ -1327,8 +1048,6 @@
                 
                 // 3. Init charts
                 initAllCharts();
-
-                initTableKontrak();
                 
                 // 4. Setup event listeners
                 setupEventListeners();
