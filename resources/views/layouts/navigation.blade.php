@@ -35,7 +35,7 @@
                         onmouseout="this.style.color='white'">
                         {{ __('Biodata') }}
                     </x-nav-link>
-
+                    
                     <!-- <div class="hidden sm:flex sm:items-center sm:ms-10 granitfiesta">
                         <x-dropdown align="right" width="48">
                             <x-slot name="trigger">
@@ -198,10 +198,23 @@
                                     <x-dropdown-link :href="route('geofence-plant.index')" :active="request()->routeIs('geofence-plant')">
                                         {{ __('Lokasi Absen') }}
                                     </x-dropdown-link>
+                                    <x-dropdown-link :href="route('orientation.master-activity.index')" :active="request()->routeIs('orientation.master-activity.index')">
+                                        {{ __('Kegiatan Orientation') }}
+                                    </x-dropdown-link>
                                 </x-slot>
                             </x-dropdown>
                         </div>
                     @endif
+
+                    @if(session('comp') == '0001' && session('nik') == '924330')
+                    <x-nav-link :href="route('orientation.index')" :active="request()->routeIs('orientation.index')"
+                        class="text-white"
+                        onmouseover="this.style.color='#dc2626'"
+                        onmouseout="this.style.color='white'">
+                        {{ __('Orientasi') }}
+                    </x-nav-link>
+                     @endif
+
                 </div>
                 
             </div>
