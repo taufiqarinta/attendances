@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Jadwal Orientation</title>
+    <title>Kobin Orientation Program</title>
+
     <style>
         * {
             margin: 0;
@@ -12,31 +13,33 @@
         }
 
         body {
-            font-family: 'Times New Roman', Times, serif;
+            font-family: "Times New Roman", Times, serif;
             font-size: 12px;
-            background: #FFFFFF;
-            padding: 20px;
+            color: #000;
+            background: #fff;
+            padding: 20px 30px;
         }
 
         .container {
-            max-width: 100%;
-            margin: 0 auto;
+            width: 100%;
         }
 
-        /* Header */
+        /* ================= HEADER ================= */
         .header {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             justify-content: space-between;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #7A1113;
+            border-bottom: 3px solid #7A1113;
             padding-bottom: 15px;
+            margin-bottom: 20px;
+            min-height: 80px;
         }
 
         .header-left {
             display: flex;
             align-items: center;
             gap: 20px;
+            flex: 1;
         }
 
         .logo {
@@ -45,6 +48,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
 
         .logo img {
@@ -53,17 +57,27 @@
             object-fit: contain;
         }
 
+        .logo-placeholder {
+            width: 75px;
+            height: 75px;
+            border: 1px dashed #999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 10px;
+            background: #f9f9f9;
+        }
+
         .title-section {
-            text-align: center;
             flex: 1;
         }
 
         .title-section h1 {
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 28px;
+            font-size: 30px;
             font-weight: bold;
-            color: #7A1113;
+            color: #000;
             letter-spacing: 2px;
+            margin: 0;
         }
 
         .title-section .subtitle {
@@ -72,196 +86,327 @@
             margin-top: 2px;
         }
 
-        .info-right {
+        .header-right {
             text-align: right;
             font-size: 11px;
             color: #333;
             min-width: 200px;
+            flex-shrink: 0;
         }
 
-        .info-right .label {
+        .header-right .label {
             font-weight: bold;
         }
 
-        /* Info Program */
+        /* ================= INFO ================= */
         .program-info {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
-            font-size: 12px;
-            padding: 8px 0;
+            margin-bottom: 20px;
+            padding: 10px 0;
             border-bottom: 1px dashed #ccc;
+            font-size: 12px;
         }
 
         .program-info .left {
             display: flex;
             gap: 30px;
-        }
-
-        .program-info .left span {
-            display: inline-block;
+            flex-wrap: wrap;
         }
 
         .program-info .label {
             font-weight: bold;
         }
 
-        /* Table */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        th {
-            background-color: #7A1113;
-            color: #FFFFFF;
-            font-weight: bold;
-            padding: 8px 6px;
-            border: 1px solid #7A1113;
-            text-align: center;
-            font-size: 11px;
-            font-family: 'Times New Roman', Times, serif;
-        }
-
-        td {
-            padding: 6px;
-            border: 1px solid #cccccc;
-            text-align: center;
-            font-size: 11px;
-            font-family: 'Times New Roman', Times, serif;
-        }
-
-        .group-header {
-            background-color: #FDF0ED;
-            font-weight: bold;
-            text-align: left;
-        }
-
-        .group-header td {
-            padding: 6px 12px;
-            border: 1px solid #cccccc;
-            border-top: 2px solid #7A1113;
-        }
-
-        .group-header .date {
-            font-weight: bold;
-            font-size: 12px;
-            color: #7A1113;
-        }
-
-        .group-header .location {
-            font-weight: normal;
-            font-size: 11px;
+        .program-info .right {
             color: #666;
         }
 
-        .text-left {
-            text-align: left;
+        /* ================= TABLE ================= */
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px;
+        }
+
+        .schedule-table th {
+            background: #ff4c4c;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 7px 6px;
+            font-size: 12px;
+            font-weight: normal;
+            text-align: center;
+        }
+
+        .schedule-table td {
+            border: 1px solid #555;
+            padding: 6px 8px;
+            font-size: 11px;
+            vertical-align: middle;
+        }
+
+        .bg-gray {
+            background: #d9d9d9;
+        }
+
+        .bg-white {
+            background: #ffffff;
         }
 
         .text-center {
             text-align: center;
         }
 
-        /* Alternate row color */
-        tbody tr:nth-child(even) {
-            background-color: #F9F9F9;
+        .text-left {
+            text-align: left;
         }
 
-        /* Footer */
+        .text-right {
+            text-align: right;
+        }
+
+        .font-bold {
+            font-weight: bold;
+        }
+
+        .date-cell {
+            text-align: center;
+            vertical-align: middle;
+            font-size: 11pt;
+            width: 14%;
+            font-weight: bold;
+        }
+
+        .place-cell {
+            text-align: center;
+            vertical-align: middle;
+            font-size: 11pt;
+            width: 14%;
+            font-weight: bold;
+        }
+
+        .break-cell {
+            text-align: center;
+            font-weight: bold;
+            font-size: 12px;
+            background: #d9d9d9;
+        }
+
+        .time-cell {
+            text-align: center;
+            width: 14%;
+        }
+
+        .activity-cell {
+            padding-left: 10px;
+            width: 28%;
+        }
+
+        .pic-cell {
+            padding-left: 8px;
+            width: 16%;
+        }
+
+        .position-cell {
+            padding-left: 8px;
+            width: 14%;
+        }
+
+        /* ================= FOOTER ================= */
         .footer {
-            margin-top: 20px;
-            padding-top: 10px;
+            margin-top: 25px;
+            padding-top: 12px;
             border-top: 2px solid #7A1113;
             text-align: center;
             font-size: 10px;
-            color: #999;
+            color: #888;
+        }
+
+        .footer span {
+            font-weight: bold;
         }
     </style>
+
 </head>
 
 <body>
+
     <div class="container">
-        {{-- HEADER --}}
+
+        {{-- ================= HEADER ================= --}}
         <div class="header">
+
             <div class="header-left">
+
+                {{-- LOGO --}}
                 <div class="logo">
-                    <img src="{{ public_path('images/logo_kobin.png') }}" alt="Logo Kobin"
-                        onerror="this.style.display='none'">
+                    @php
+                        try {
+                            $logoPath = public_path('icons/kobintiles-logo.png');
+                            $logoExists = file_exists($logoPath);
+
+                            if ($logoExists) {
+                                $logoData = file_get_contents($logoPath);
+                                $logoBase64 = base64_encode($logoData);
+                                $logoType = mime_content_type($logoPath) ?: 'png';
+                            }
+                        } catch (\Exception $e) {
+                            $logoExists = false;
+                        }
+                    @endphp
+
+                    @if (isset($logoExists) && $logoExists && !empty($logoBase64))
+                        <img src="data:{{ $logoType }};base64,{{ $logoBase64 }}" alt="Logo Kobin">
+                    @else
+                        <div class="logo-placeholder">
+                            LOGO
+                        </div>
+                    @endif
                 </div>
+
+                {{-- TITLE --}}
+                <div class="title-section">
+                    <h1>KOBIN ORIENTATION PROGRAM</h1>
+                    <div class="subtitle">{{ $orientation->batch_name ?? 'Batch Name' }}</div>
+                </div>
+
             </div>
-            <div class="title-section">
-                <h1>KOBIN ORIENTATION PROGRAM</h1>
-                <div class="subtitle">{{ $orientation->batch_name }}</div>
+
+            {{-- HEADER RIGHT --}}
+            <div class="header-right">
+                <div><span class="label">Nama :</span> Tim HO</div>
+                <div style="margin-top:4px;"><span class="label">Periode :</span> {{ $period ?? '-' }}</div>
             </div>
-            <div class="info-right">
-                <div><span class="label">Nama:</span> Tim HO</div>
-                <div><span class="label">Periode:</span> {{ $period ?? '-' }}</div>
-            </div>
+
         </div>
 
-        {{-- PROGRAM INFO --}}
+
+        {{-- ================= PROGRAM INFO ================= --}}
         <div class="program-info">
+
             <div class="left">
-                <span><span class="label">Orientation:</span> {{ $batchNumber ?? '-' }}</span>
-                <span><span class="label">Lokasi:</span> {{ $plantName }} | Total Peserta: {{ $totalParticipants }}
-                    Orang</span>
+                <span>
+                    <span class="label">Lokasi :</span>
+                    {{ $plantName ?? '-' }}
+                </span>
+                <span>
+                    <span class="label">Total Peserta :</span>
+                    {{ $totalParticipants ?? 0 }} Orang
+                </span>
             </div>
+
             <div class="right">
-                <span><span class="label">Tanggal Cetak:</span> {{ now()->format('d F Y H:i') }} WIB</span>
+                <span class="label">Tanggal Cetak :</span>
+                {{ now()->format('d F Y H:i') }} WIB
             </div>
+
         </div>
 
-        {{-- TABLE --}}
-        <table>
+
+        {{-- ================= TABLE ================= --}}
+        <table class="schedule-table">
+
             <thead>
                 <tr>
-                    <th style="width:12%">Tanggal</th>
-                    <th style="width:14%">Waktu</th>
-                    <th style="width:14%">Tempat</th>
-                    <th style="width:26%">Kegiatan</th>
-                    <th style="width:18%">PIC</th>
-                    <th style="width:16%">Jabatan</th>
+                    <th width="14%">Tanggal</th>
+                    <th width="14%">Waktu</th>
+                    <th width="14%">Tempat</th>
+                    <th width="28%">Kegiatan</th>
+                    <th width="16%">PIC</th>
+                    <th width="14%">Jabatan</th>
                 </tr>
             </thead>
-            <tbody>
-                @forelse($groupedActivities as $group)
-                    {{-- Group Header --}}
-                    <tr class="group-header">
-                        <td colspan="6">
-                            <span class="date">{{ $group['date_formatted'] }}</span>
-                            <span class="location"> | {{ $plantName }}</span>
-                        </td>
-                    </tr>
 
-                    {{-- Rows --}}
-                    @foreach ($group['rows'] as $row)
+            <tbody>
+                @forelse($groupedActivities ?? [] as $group)
+
+                    @php
+                        $rows = $group['rows'] ?? [];
+                        $rowCount = count($rows);
+                    @endphp
+
+                    @foreach ($rows as $index => $row)
+                        @php
+                            $activity = trim(strtolower($row['activity'] ?? ''));
+                            $isBreak = str_contains($activity, 'istirahat') || str_contains($activity, 'break');
+                            $isLunch = str_contains($activity, 'makan') || str_contains($activity, 'lunch');
+                            $isBreakTime = $isBreak || $isLunch;
+
+                            $bgClass = $index % 2 == 0 ? 'bg-white' : 'bg-gray';
+                        @endphp
+
                         <tr>
-                            <td>{{ $group['date_formatted'] }}</td>
-                            <td>{{ $row['time'] }}</td>
-                            <td>{{ $plantName }}</td>
-                            <td class="text-left">{{ $row['activity'] }}</td>
-                            <td>{{ $row['pic_name'] }}</td>
-                            <td>{{ $row['position'] }}</td>
+
+                            {{-- ================= TANGGAL (ROWSPAN) ================= --}}
+                            @if ($index == 0)
+                                <td rowspan="{{ $rowCount }}" class="date-cell">
+                                    {{ $group['date_formatted'] ?? '-' }}
+                                </td>
+                            @endif
+
+                            {{-- ================= WAKTU ================= --}}
+                            <td class="time-cell {{ $bgClass }}">
+                                {{ $row['time'] ?? '-' }}
+                            </td>
+
+                            {{-- ================= TEMPAT (ROWSPAN) ================= --}}
+                            @if ($index == 0)
+                                <td rowspan="{{ $rowCount }}" class="place-cell">
+                                    {{ $plantName ?? '-' }}
+                                </td>
+                            @endif
+
+                            {{-- ================= ISTIRAHAT / BREAK ================= --}}
+                            @if ($isBreakTime)
+                                <td colspan="3" class="break-cell">
+                                    {{ $isLunch ? 'ISTIRAHAT MAKAN' : 'ISTIRAHAT' }}
+                                </td>
+                            @else
+                                {{-- Kegiatan --}}
+                                <td class="activity-cell text-left {{ $bgClass }}">
+                                    {{ $row['activity'] ?? '-' }}
+                                </td>
+
+                                {{-- PIC --}}
+                                <td class="pic-cell text-left {{ $bgClass }}">
+                                    {{ $row['pic_name'] ?? '-' }}
+                                </td>
+
+                                {{-- Jabatan --}}
+                                <td class="position-cell text-left {{ $bgClass }}">
+                                    {{ $row['position'] ?? '-' }}
+                                </td>
+                            @endif
+
                         </tr>
                     @endforeach
+
                 @empty
+
                     <tr>
                         <td colspan="6" style="text-align:center;padding:30px;color:#999;">
-                            Belum ada kegiatan
+                            <strong>Belum ada jadwal orientation</strong>
                         </td>
                     </tr>
+
                 @endforelse
             </tbody>
+
         </table>
 
-        {{-- FOOTER --}}
+        {{-- ================= FOOTER ================= --}}
         <div class="footer">
-            <p>Dokumen ini dicetak dari sistem Kobin Orientation • {{ now()->format('d F Y') }}</p>
+            <p>
+                Dokumen ini dicetak dari sistem
+                <span>Kobin Orientation</span> •
+                {{ now()->format('d F Y H:i') }} WIB
+            </p>
         </div>
+
     </div>
+
 </body>
 
 </html>

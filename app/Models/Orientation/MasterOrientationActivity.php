@@ -13,6 +13,7 @@ class MasterOrientationActivity extends Model
     protected $table = 'master_orientation_activities';
 
     protected $fillable = [
+        'code_activity',
         'activity_name',
         'description',
         'plants',

@@ -109,7 +109,9 @@
                     @include('orientation.component-detail.participant')
 
                     {{-- INFORMASI & CATATAN --}}
-                    @include('orientation.component-detail.informasi-catatan')
+                    @if ($canManage)
+                        @include('orientation.component-detail.informasi-catatan')
+                    @endif
                 </div>
 
                 {{-- ========================================================= --}}
@@ -123,8 +125,9 @@
                     {{-- Timeline --}}
                     @include('orientation.component-detail.timeline')
 
-                    {{-- AKSI CEPAT - VERSION 2 --}}
-                    <div class="rounded-2xl border border-gray-200 bg-white shadow-sm">
+                    @if ($canManage)
+                        {{-- AKSI CEPAT - VERSION 2 --}}
+                        <div class="rounded-2xl border border-gray-200 bg-white shadow-sm">
                         <div class="border-b border-gray-100 px-5 py-3.5">
                             <div class="flex items-center gap-2.5">
                                 <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-50">
@@ -221,8 +224,8 @@
                         </div>
                     </div>
 
-                    {{-- Finish Button --}}
-                    @if ($orientation->status !== 'completed' && $orientation->status !== 'cancelled')
+                        {{-- Finish Button --}}
+                        @if ($orientation->status !== 'completed' && $orientation->status !== 'cancelled')
                         <form action="{{ route('orientation.complete', $orientation->id) }}" method="POST"
                             onsubmit="return confirmCompleteProgram('{{ $orientation->batch_name }}')">
                             @csrf
@@ -236,7 +239,7 @@
                                 Tandai Program Selesai
                             </button>
                         </form>
-                    @elseif($orientation->status === 'completed')
+                        @elseif($orientation->status === 'completed')
                         <div class="rounded-2xl bg-green-50 border border-green-200 px-4 py-3.5 text-center">
                             <div class="flex items-center justify-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none"
@@ -247,7 +250,7 @@
                                 <span class="text-sm font-semibold text-green-700">Program telah selesai</span>
                             </div>
                         </div>
-                    @elseif($orientation->status === 'cancelled')
+                        @elseif($orientation->status === 'cancelled')
                         <div class="rounded-2xl bg-red-50 border border-red-200 px-4 py-3.5 text-center">
                             <div class="flex items-center justify-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" fill="none"
@@ -258,6 +261,7 @@
                                 <span class="text-sm font-semibold text-red-700">Program telah dibatalkan</span>
                             </div>
                         </div>
+                        @endif
                     @endif
                 </div>
             </div>

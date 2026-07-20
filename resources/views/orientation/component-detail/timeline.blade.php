@@ -106,7 +106,7 @@
                         <div class="flex-1">
                             <div class="flex items-center gap-1.5 flex-wrap">
                                 <div class="font-semibold text-gray-800 text-xs">{{ $row['title'] ?? 'Kegiatan' }}</div>
-                                @if ($hasScore)
+                                @if ($hasScore && $canManage)
                                     <span
                                         class="text-[8px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full">
                                         Nilai: {{ $scoreValue }}

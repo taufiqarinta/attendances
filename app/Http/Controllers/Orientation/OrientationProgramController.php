@@ -29,9 +29,12 @@ class OrientationProgramController extends Controller
         $perPage = (int) $request->input('per_page', 10);
         $perPage = in_array($perPage, [10, 25, 50, 100], true) ? $perPage : 10;
         $search = trim((string) $request->input('search'));
+        $canManage = $this->canManageOrientation();
+        $userNik = $this->currentUserNik();
 
         $programs = OrientationProgram::query()
             ->with(['plant', 'activities'])
+            ->when(!$canManage, fn($query) => $query->whereJsonContains('participants', ['nik' => $userNik]))
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('batch_name', 'like', "%{$search}%")
@@ -46,7 +49,9 @@ class OrientationProgramController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        $allPrograms = OrientationProgram::select(['id', 'participants', 'status'])->get();
+        $allPrograms = OrientationProgram::select(['id', 'participants', 'status'])
+            ->when(!$canManage, fn($query) => $query->whereJsonContains('participants', ['nik' => $userNik]))
+            ->get();
 
         $statistics = [
             'total_programs' => $allPrograms->count(),
@@ -55,7 +60,7 @@ class OrientationProgramController extends Controller
             'completed_programs' => $allPrograms->where('status', 'completed')->count(),
         ];
 
-        return view('orientation.index', compact('programs', 'statistics', 'search', 'perPage'));
+        return view('orientation.index', compact('programs', 'statistics', 'search', 'perPage', 'canManage'));
     }
 
     /**
@@ -63,8 +68,12 @@ class OrientationProgramController extends Controller
      */
     public function create()
     {
+        $this->authorizeOrientationManager();
+
         $plants = MasterPlant::orderBy('name_plant', 'asc')->get();
-        $masterOrientationActivities = MasterOrientationActivity::orderBy('activity_name', 'asc')->get();
+        $masterOrientationActivities = MasterOrientationActivity::where('status', 1)
+            ->orderBy('activity_name', 'asc')
+            ->get();
 
         return view('orientation.create-orientation', compact(
             'plants',
@@ -77,13 +86,17 @@ class OrientationProgramController extends Controller
      */
     public function edit(OrientationProgram $orientation)
     {
+        $this->authorizeOrientationManager();
+
         $orientation->load(['plant', 'activities.masterActivity']);
 
         // Ambil semua NIK PIC dari kegiatan untuk diambil datanya sekaligus
         $niks = $orientation->activities->pluck('pic_employee_id')->filter()->unique()->values()->all();
         $allPicData = $this->getMultiplePicData($niks);
 
-        $masterOrientationActivities = MasterOrientationActivity::orderBy('activity_name', 'asc')->get();
+        $masterOrientationActivities = MasterOrientationActivity::where('status', 1)
+            ->orderBy('activity_name', 'asc')
+            ->get();
         $initialParticipants = $orientation->participants ?? [];
 
         $kegiatanRows = $orientation->activities->map(function (OrientationActivity $activity) use ($allPicData) {
@@ -119,6 +132,8 @@ class OrientationProgramController extends Controller
      */
     public function update(Request $request, OrientationProgram $orientation)
     {
+        $this->authorizeOrientationManager();
+
         $request->merge(['participants' => $this->normalizeParticipants($request->input('participants', []))]);
 
         $request->validate([
@@ -179,6 +194,8 @@ class OrientationProgramController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorizeOrientationManager();
+
         $request->merge(['participants' => $this->normalizeParticipants($request->input('participants', []))]);
 
         $request->validate([
@@ -265,6 +282,8 @@ class OrientationProgramController extends Controller
      */
     public function destroy(OrientationProgram $orientation)
     {
+        $this->authorizeOrientationManager();
+
         DB::connection($this->dbConnection)->transaction(function () use ($orientation) {
             $orientation->activities()->delete();
             $orientation->delete();
@@ -308,6 +327,9 @@ class OrientationProgramController extends Controller
      */
     public function show(OrientationProgram $orientation)
     {
+        $this->authorizeOrientationViewer($orientation);
+        $canManage = $this->canManageOrientation();
+
         $orientation->load([
             'plant',
             'activities.masterActivity'
@@ -467,7 +489,8 @@ class OrientationProgramController extends Controller
             'activitiesByDate' => $activitiesByDate,
             'availableActivities' => $availableActivities,
             'programStats' => $programStats,
-            'scheduleConflicts' => $scheduleConflicts
+            'scheduleConflicts' => $scheduleConflicts,
+            'canManage' => $canManage,
         ]);
     }
 
@@ -771,6 +794,10 @@ class OrientationProgramController extends Controller
      */
     public function updateScore(Request $request)
     {
+        if (!$this->canManageOrientation()) {
+            return response()->json(['message' => 'Anda tidak memiliki akses untuk mengubah nilai kegiatan.'], 403);
+        }
+
         try {
             $request->validate([
                 'id' => 'required|exists:dev_test.orientation_activities,id',
@@ -800,6 +827,10 @@ class OrientationProgramController extends Controller
      */
     public function updateStatus(Request $request)
     {
+        if (!$this->canManageOrientation()) {
+            return response()->json(['message' => 'Anda tidak memiliki akses untuk mengubah status kegiatan.'], 403);
+        }
+
         try {
             $request->validate([
                 'id' => 'required|exists:dev_test.orientation_activities,id',
@@ -883,6 +914,10 @@ class OrientationProgramController extends Controller
 
             $activity = OrientationActivity::find($request->id);
 
+            if (!$activity || !$this->canViewOrientation($activity->orientation)) {
+                return response()->json(['message' => 'Anda tidak memiliki akses ke data kegiatan ini.'], 403);
+            }
+
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -904,6 +939,8 @@ class OrientationProgramController extends Controller
      */
     public function cancel(OrientationProgram $orientation)
     {
+        $this->authorizeOrientationManager();
+
         try {
             DB::connection($this->dbConnection)->transaction(function () use ($orientation) {
                 // Update status program menjadi cancelled
@@ -934,6 +971,8 @@ class OrientationProgramController extends Controller
      */
     public function complete(OrientationProgram $orientation)
     {
+        $this->authorizeOrientationManager();
+
         try {
             DB::connection($this->dbConnection)->transaction(function () use ($orientation) {
                 // Update status program menjadi completed
@@ -961,6 +1000,8 @@ class OrientationProgramController extends Controller
      */
     public function exportSchedule(OrientationProgram $orientation)
     {
+        $this->authorizeOrientationManager();
+
         $orientation->load(['plant', 'activities.masterActivity']);
 
         $participants = $orientation->participants ?? [];
@@ -1051,6 +1092,8 @@ class OrientationProgramController extends Controller
      */
     public function exportParticipants(OrientationProgram $orientation)
     {
+        $this->authorizeOrientationManager();
+
         $orientation->load(['plant']);
         $participants = $orientation->participants ?? [];
         $totalParticipants = count($participants);
@@ -1065,5 +1108,50 @@ class OrientationProgramController extends Controller
         $pdf->setPaper('A4', 'portrait');
 
         return $pdf->download('Peserta_Orientation_' . str_replace(' ', '_', $orientation->batch_name) . '.pdf');
+    }
+
+    /**
+     * Hanya NIK administrator Orientation yang dapat mengelola data.
+     */
+    private function canManageOrientation(): bool
+    {
+        return $this->currentUserNik() === '924330';
+    }
+
+    private function currentUserNik(): string
+    {
+        return trim((string) session('nik', ''));
+    }
+
+    private function authorizeOrientationManager(): void
+    {
+        abort_unless($this->canManageOrientation(), 403, 'Anda tidak memiliki akses untuk mengelola Orientation Program.');
+    }
+
+    private function authorizeOrientationViewer(OrientationProgram $orientation): void
+    {
+        abort_unless(
+            $this->canViewOrientation($orientation),
+            403,
+            'Anda hanya dapat melihat Orientation Program yang diikuti.'
+        );
+    }
+
+    private function canViewOrientation(?OrientationProgram $orientation): bool
+    {
+        if (!$orientation) {
+            return false;
+        }
+
+        if ($this->canManageOrientation()) {
+            return true;
+        }
+
+        $userNik = $this->currentUserNik();
+        return collect($orientation->participants ?? [])->contains(function ($participant) use ($userNik) {
+            $participantNik = is_array($participant) ? ($participant['nik'] ?? '') : $participant;
+
+            return (string) $participantNik === $userNik;
+        });
     }
 }

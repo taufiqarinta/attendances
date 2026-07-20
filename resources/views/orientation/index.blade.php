@@ -205,15 +205,17 @@
                             </a>
                         @endif
 
-                        <a href="{{ route('orientation.create') }}"
-                            class="flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-red-600 to-red-700 px-5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:from-red-700 hover:to-red-800 hover:shadow-md active:scale-95">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                    d="M12 4v16m8-8H4" />
-                            </svg>
-                            Buat Program
-                        </a>
+                        @if ($canManage)
+                            <a href="{{ route('orientation.create') }}"
+                                class="flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-red-600 to-red-700 px-5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:from-red-700 hover:to-red-800 hover:shadow-md active:scale-95">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                        d="M12 4v16m8-8H4" />
+                                </svg>
+                                Buat Program
+                            </a>
+                        @endif
                     </div>
 
                 </form>
@@ -257,7 +259,9 @@
                                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         <p class="text-sm text-gray-500">Tidak ada program orientasi ditemukan</p>
-                        <p class="text-xs text-gray-400 mt-1">Klik tombol "Buat Program" untuk menambahkan</p>
+                        @if ($canManage)
+                            <p class="text-xs text-gray-400 mt-1">Klik tombol "Buat Program" untuk menambahkan</p>
+                        @endif
                     </div>
                 @else
                     <div class="overflow-x-auto">
@@ -430,39 +434,36 @@
                                         {{-- Action --}}
                                         <td class="px-4 py-3" onclick="event.stopPropagation();">
                                             <div class="flex items-center justify-center gap-1">
-                                                <a href="{{ route('orientation.edit', $program) }}"
-                                                    class="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition group-hover:opacity-100 opacity-70">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
-                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                                    </svg>
-                                                </a>
-                                                <form action="{{ route('orientation.destroy', $program) }}"
-                                                    method="POST" class="inline"
-                                                    onsubmit="return confirm('Apakah Anda yakin ingin menghapus program ini?')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit"
-                                                        class="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-600 transition group-hover:opacity-100 opacity-70">
+                                                @if ($canManage)
+                                                    <a href="{{ route('orientation.edit', $program) }}"
+                                                        class="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition group-hover:opacity-100 opacity-70">
                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
                                                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                                 stroke-width="2"
-                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                                         </svg>
-                                                    </button>
-                                                </form>
-                                                <button
-                                                    class="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
-                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                                                    </svg>
-                                                </button>
+                                                    </a>
+                                                    <form action="{{ route('orientation.destroy', $program) }}"
+                                                        method="POST" class="inline"
+                                                        onsubmit="return confirm('Apakah Anda yakin ingin menghapus program ini?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit"
+                                                            class="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-600 transition group-hover:opacity-100 opacity-70">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                                                fill="none" viewBox="0 0 24 24"
+                                                                stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                            </svg>
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                                @if (!$canManage)
+                                                    <span class="text-xs text-gray-400">Lihat detail</span>
+                                                @endif
                                             </div>
                                         </td>
                                     </tr>
@@ -596,15 +597,15 @@
 
         </div>
 
-    @if (session('deleted_success'))
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil dihapus',
-                text: @json(session('deleted_success')),
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#dc2626',
-            });
-        </script>
-    @endif
+        @if (session('deleted_success'))
+            <script>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil dihapus',
+                    text: @json(session('deleted_success')),
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#dc2626',
+                });
+            </script>
+        @endif
 </x-app-layout>

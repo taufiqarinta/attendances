@@ -52,12 +52,14 @@
                                     <div class="text-xs text-gray-500">{{ $row['description'] }}</div>
                                 </div>
                             </div>
-                            <span
-                                class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold flex-shrink-0 {{ $statusColors[$row['status']] ?? 'bg-gray-100 text-gray-600' }}">
+                            @if ($canManage)
                                 <span
-                                    class="h-1.5 w-1.5 rounded-full {{ $statusDot[$row['status']] ?? 'bg-gray-400' }}"></span>
-                                {{ $statusLabels[$row['status']] ?? ucfirst($row['status'] ?? 'pending') }}
-                            </span>
+                                    class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold flex-shrink-0 {{ $statusColors[$row['status']] ?? 'bg-gray-100 text-gray-600' }}">
+                                    <span
+                                        class="h-1.5 w-1.5 rounded-full {{ $statusDot[$row['status']] ?? 'bg-gray-400' }}"></span>
+                                    {{ $statusLabels[$row['status']] ?? ucfirst($row['status'] ?? 'pending') }}
+                                </span>
+                            @endif
                         </div>
                         <div class="grid grid-cols-2 gap-1 text-xs">
                             <div>
@@ -72,19 +74,22 @@
                                 <span class="text-gray-500">PIC</span>
                                 <div class="font-medium">{{ $row['pic_name'] ?? '-' }}</div>
                             </div>
-                            <div>
-                                <span class="text-gray-500">Nilai</span>
-                                @if ($hasScore)
-                                    <button
-                                        onclick="openDetailNilai({{ $row['id'] }}, '{{ addslashes($row['title']) }}', '{{ $scoreValue }}', '{{ addslashes($scoreNote) }}')"
-                                        class="font-medium text-green-600 font-semibold hover:underline cursor-pointer text-left">
-                                        {{ $scoreValue }}
-                                    </button>
-                                @else
-                                    <div class="text-gray-400">-</div>
-                                @endif
-                            </div>
+                            @if ($canManage)
+                                <div>
+                                    <span class="text-gray-500">Nilai</span>
+                                    @if ($hasScore)
+                                        <button
+                                            onclick="openDetailNilai({{ $row['id'] }}, '{{ addslashes($row['title']) }}', '{{ $scoreValue }}', '{{ addslashes($scoreNote) }}')"
+                                            class="font-medium text-green-600 font-semibold hover:underline cursor-pointer text-left">
+                                            {{ $scoreValue }}
+                                        </button>
+                                    @else
+                                        <div class="text-gray-400">-</div>
+                                    @endif
+                                </div>
+                            @endif
                         </div>
+                        @if ($canManage)
                         <div class="flex flex-col gap-2">
                             @if (in_array($row['status'], ['ongoing', 'completed']))
                                 <button
@@ -113,16 +118,19 @@
                                 @endif
                             </div>
                         </div>
-                        {{-- Tampilkan waktu mulai dan selesai jika ada --}}
-                        @if ($row['started_at'] ?? false)
-                            <div class="text-[10px] text-green-600">
-                                🟢 Dimulai: {{ $row['started_at'] }}
-                            </div>
                         @endif
-                        @if ($row['completed_at'] ?? false)
-                            <div class="text-[10px] text-blue-600">
-                                ✅ Selesai: {{ $row['completed_at'] }}
-                            </div>
+                        @if ($canManage)
+                            {{-- Tampilkan waktu mulai dan selesai jika ada --}}
+                            @if ($row['started_at'] ?? false)
+                                <div class="text-[10px] text-green-600">
+                                    🟢 Dimulai: {{ $row['started_at'] }}
+                                </div>
+                            @endif
+                            @if ($row['completed_at'] ?? false)
+                                <div class="text-[10px] text-blue-600">
+                                    ✅ Selesai: {{ $row['completed_at'] }}
+                                </div>
+                            @endif
                         @endif
                     </div>
                 @endforeach
@@ -139,9 +147,11 @@
                         <th class="px-4 py-2.5 font-semibold">Tanggal</th>
                         <th class="px-4 py-2.5 font-semibold">Waktu</th>
                         <th class="px-4 py-2.5 font-semibold">PIC / Trainer</th>
-                        <th class="px-4 py-2.5 font-semibold">Status</th>
-                        <th class="px-4 py-2.5 text-center font-semibold">Nilai</th>
-                        <th class="px-4 py-2.5 text-center font-semibold">Aksi</th>
+                        @if ($canManage)
+                            <th class="px-4 py-2.5 font-semibold">Status</th>
+                            <th class="px-4 py-2.5 text-center font-semibold">Nilai</th>
+                            <th class="px-4 py-2.5 text-center font-semibold">Aksi</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -185,6 +195,7 @@
                             <td class="px-4 py-3">
                                 <span class="text-sm font-medium">{{ $row['pic_name'] ?? '-' }}</span>
                             </td>
+                            @if ($canManage)
                             <td class="px-4 py-3">
                                 <span
                                     class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $statusColors[$row['status']] ?? 'bg-gray-100 text-gray-600' }}">
@@ -243,6 +254,7 @@
                                     @endif
                                 </div>
                             </td>
+                            @endif
                         </tr>
                     @endforeach
                 </tbody>
@@ -252,7 +264,8 @@
         {{-- Footer Summary --}}
         <div
             class="flex flex-col sm:flex-row items-center justify-between border-t border-gray-100 bg-gray-50/80 px-4 sm:px-6 py-2.5 gap-2 sm:gap-0">
-            <div class="flex flex-wrap items-center gap-3 sm:gap-4 text-xs">
+            @if ($canManage)
+                <div class="flex flex-wrap items-center gap-3 sm:gap-4 text-xs">
                 @php
                     $completed = collect($kegiatanRows)->where('status', 'completed')->count();
                     $ongoing = collect($kegiatanRows)->where('status', 'ongoing')->count();
@@ -277,7 +290,8 @@
                         <span class="text-gray-600">Dibatalkan ({{ $cancelled }})</span>
                     </div>
                 @endif
-            </div>
+                </div>
+            @endif
             <div class="text-xs text-gray-500">
                 Total: <span class="font-semibold text-gray-700">{{ count($kegiatanRows) }} Materi</span>
             </div>

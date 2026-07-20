@@ -45,7 +45,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z" />
                         </svg>
-                        <input type="text" id="searchInput" placeholder="Cari kegiatan..."
+                        <input type="text" id="searchInput" placeholder="Cari kode atau kegiatan..."
                             class="h-10 w-full rounded-xl border border-gray-200 bg-white pl-10 pr-3 text-sm focus:border-red-500 focus:ring-red-500"
                             onkeyup="searchActivities()">
                     </div>
@@ -84,6 +84,9 @@
                                     class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-12">
                                     No</th>
                                 <th
+                                    class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-28">
+                                    Kode</th>
+                                <th
                                     class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider min-w-[150px]">
                                     Nama Kegiatan</th>
                                 <th
@@ -106,6 +109,7 @@
                                 <tr class="hover:bg-slate-50/60 transition-colors duration-150 activity-row group"
                                     data-status="{{ $activity->status }}"
                                     data-name="{{ strtolower($activity->activity_name) }}"
+                                    data-code="{{ strtolower($activity->code_activity ?? '') }}"
                                     data-id="{{ $activity->id }}">
 
                                     <td class="px-4 py-3.5 text-sm text-gray-500 text-center">
@@ -113,6 +117,10 @@
                                             class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-xs font-semibold text-gray-600">
                                             {{ $no++ }}
                                         </span>
+                                    </td>
+
+                                    <td class="px-4 py-3.5 text-sm font-semibold text-red-700">
+                                        {{ $activity->code_activity ?? '-' }}
                                     </td>
 
                                     <td class="px-4 py-3.5">
@@ -216,7 +224,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-4 py-16 text-center">
+                                    <td colspan="7" class="px-4 py-16 text-center">
                                         <div class="flex flex-col items-center gap-4">
                                             <div
                                                 class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center">
@@ -727,8 +735,9 @@
 
                 if (searchTerm) {
                     const name = row.getAttribute('data-name') || '';
-                    const description = row.querySelector('td:nth-child(3)')?.textContent?.toLowerCase() || '';
-                    if (!name.includes(searchTerm) && !description.includes(searchTerm)) {
+                    const code = row.getAttribute('data-code') || '';
+                    const description = row.querySelector('td:nth-child(4)')?.textContent?.toLowerCase() || '';
+                    if (!name.includes(searchTerm) && !code.includes(searchTerm) && !description.includes(searchTerm)) {
                         show = false;
                     }
                 }
