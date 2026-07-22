@@ -88,6 +88,12 @@ class OrientationProgramController extends Controller
     {
         $this->authorizeOrientationManager();
 
+        if ($this->hasStartedOrCompletedActivity($orientation)) {
+            return redirect()
+                ->route('orientation.index')
+                ->with('edit_blocked', 'Program tidak dapat diedit karena terdapat kegiatan yang sudah dimulai atau selesai.');
+        }
+
         $orientation->load(['plant', 'activities.masterActivity']);
 
         // Ambil semua NIK PIC dari kegiatan untuk diambil datanya sekaligus
@@ -133,6 +139,14 @@ class OrientationProgramController extends Controller
     public function update(Request $request, OrientationProgram $orientation)
     {
         $this->authorizeOrientationManager();
+
+        // Periksa ulang di server agar pembatasan edit tidak dapat dilewati
+        // melalui URL atau request langsung.
+        if ($this->hasStartedOrCompletedActivity($orientation)) {
+            return response()->json([
+                'message' => 'Program tidak dapat diedit karena terdapat kegiatan yang sudah dimulai atau selesai.',
+            ], 422);
+        }
 
         $request->merge(['participants' => $this->normalizeParticipants($request->input('participants', []))]);
 
@@ -292,6 +306,20 @@ class OrientationProgramController extends Controller
         return redirect()
             ->route('orientation.index')
             ->with('deleted_success', 'Orientation program berhasil dihapus.');
+    }
+
+    /**
+     * Program terkunci setelah salah satu kegiatannya dimulai atau selesai.
+     */
+    private function hasStartedOrCompletedActivity(OrientationProgram $orientation): bool
+    {
+        return $orientation->activities()
+            ->where(function ($query) {
+                $query->whereIn('status', ['ongoing', 'completed'])
+                    ->orWhereNotNull('started_at')
+                    ->orWhereNotNull('completed_at');
+            })
+            ->exists();
     }
 
     /**

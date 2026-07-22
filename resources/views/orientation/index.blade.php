@@ -331,6 +331,11 @@
                                         $batchIndex = ($program->batch ?? 1) % count($batchColor);
                                         $statusKey = $program->status ?? 'draft';
                                         $participants = count($program->participants ?? []);
+                                        $isEditLocked = $program->activities->contains(function ($activity) {
+                                            return in_array($activity->status, ['ongoing', 'completed'], true)
+                                                || $activity->started_at
+                                                || $activity->completed_at;
+                                        });
                                     @endphp
                                     <tr class="hover:bg-red-50/30 transition group cursor-pointer"
                                         onclick="window.location='{{ route('orientation.detail', $programId) }}'">
@@ -435,15 +440,27 @@
                                         <td class="px-4 py-3" onclick="event.stopPropagation();">
                                             <div class="flex items-center justify-center gap-1">
                                                 @if ($canManage)
-                                                    <a href="{{ route('orientation.edit', $program) }}"
-                                                        class="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition group-hover:opacity-100 opacity-70">
+                                                    @if ($isEditLocked)
+                                                        <button type="button"
+                                                            onclick="showEditLockedAlert()"
+                                                            aria-label="Edit orientation tidak tersedia"
+                                                            class="p-1.5 rounded-lg hover:bg-amber-50 text-gray-400 hover:text-amber-600 transition group-hover:opacity-100 opacity-70">
+                                                    @else
+                                                        <a href="{{ route('orientation.edit', $program) }}"
+                                                            aria-label="Edit orientation"
+                                                            class="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition group-hover:opacity-100 opacity-70">
+                                                    @endif
                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
                                                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                                 stroke-width="2"
                                                                 d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                                         </svg>
-                                                    </a>
+                                                    @if ($isEditLocked)
+                                                        </button>
+                                                    @else
+                                                        </a>
+                                                    @endif
                                                     <form action="{{ route('orientation.destroy', $program) }}"
                                                         method="POST" class="inline"
                                                         onsubmit="return confirm('Apakah Anda yakin ingin menghapus program ini?')">
@@ -608,4 +625,28 @@
                 });
             </script>
         @endif
+
+        @if (session('edit_blocked'))
+            <script>
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Edit tidak dapat dilakukan',
+                    text: @json(session('edit_blocked')),
+                    confirmButtonText: 'Mengerti',
+                    confirmButtonColor: '#dc2626',
+                });
+            </script>
+        @endif
+
+        <script>
+            function showEditLockedAlert() {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Edit tidak dapat dilakukan',
+                    text: 'Program tidak dapat diedit karena terdapat kegiatan yang sudah dimulai atau selesai.',
+                    confirmButtonText: 'Mengerti',
+                    confirmButtonColor: '#dc2626',
+                });
+            }
+        </script>
 </x-app-layout>

@@ -90,34 +90,34 @@
                             @endif
                         </div>
                         @if ($canManage)
-                        <div class="flex flex-col gap-2">
-                            @if (in_array($row['status'], ['ongoing', 'completed']))
-                                <button
-                                    onclick="openNilaiModal({{ $row['id'] }}, '{{ addslashes($row['title']) }}', '{{ $scoreValue }}', '{{ addslashes($scoreNote) }}')"
-                                    class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 transition w-full">
-                                    {{ $hasScore ? '+ Edit Nilai' : '+ Masukkan Nilai' }}
-                                </button>
-                            @endif
-                            <div class="flex justify-end">
-                                @if ($row['status'] === 'completed' || $row['status'] === 'cancelled')
+                            <div class="flex flex-col gap-2">
+                                @if (in_array($row['status'], ['ongoing', 'completed']))
                                     <button
-                                        class="rounded-lg bg-gray-100 px-4 py-2 text-xs font-medium text-gray-400 cursor-not-allowed opacity-50 w-full sm:w-auto"
-                                        disabled>
-                                        {{ $row['status'] === 'cancelled' ? 'Dibatalkan' : 'Selesai' }}
-                                    </button>
-                                @elseif($row['status'] === 'ongoing')
-                                    <button onclick="updateStatus({{ $row['id'] }}, 'completed')"
-                                        class="rounded-lg bg-green-600 px-4 py-2 text-xs font-semibold text-white hover:bg-green-700 transition w-full">
-                                        Selesai
-                                    </button>
-                                @elseif($row['status'] === 'pending')
-                                    <button onclick="updateStatus({{ $row['id'] }}, 'ongoing')"
-                                        class="rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition w-full sm:w-auto">
-                                        Mulai
+                                        onclick="openNilaiModal({{ $row['id'] }}, '{{ addslashes($row['title']) }}', '{{ $scoreValue }}', '{{ addslashes($scoreNote) }}')"
+                                        class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 transition w-full">
+                                        {{ $hasScore ? '+ Edit Nilai' : '+ Masukkan Nilai' }}
                                     </button>
                                 @endif
+                                <div class="flex justify-end">
+                                    @if ($row['status'] === 'completed' || $row['status'] === 'cancelled')
+                                        <button
+                                            class="rounded-lg bg-gray-100 px-4 py-2 text-xs font-medium text-gray-400 cursor-not-allowed opacity-50 w-full sm:w-auto"
+                                            disabled>
+                                            {{ $row['status'] === 'cancelled' ? 'Dibatalkan' : 'Selesai' }}
+                                        </button>
+                                    @elseif($row['status'] === 'ongoing')
+                                        <button onclick="updateStatus({{ $row['id'] }}, 'completed')"
+                                            class="rounded-lg bg-green-600 px-4 py-2 text-xs font-semibold text-white hover:bg-green-700 transition w-full">
+                                            Selesai
+                                        </button>
+                                    @elseif($row['status'] === 'pending')
+                                        <button onclick="updateStatus({{ $row['id'] }}, 'ongoing')"
+                                            class="rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 transition w-full sm:w-auto">
+                                            Mulai
+                                        </button>
+                                    @endif
+                                </div>
                             </div>
-                        </div>
                         @endif
                         @if ($canManage)
                             {{-- Tampilkan waktu mulai dan selesai jika ada --}}
@@ -196,64 +196,64 @@
                                 <span class="text-sm font-medium">{{ $row['pic_name'] ?? '-' }}</span>
                             </td>
                             @if ($canManage)
-                            <td class="px-4 py-3">
-                                <span
-                                    class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $statusColors[$row['status']] ?? 'bg-gray-100 text-gray-600' }}">
+                                <td class="px-4 py-3">
                                     <span
-                                        class="h-1.5 w-1.5 rounded-full {{ $statusDot[$row['status']] ?? 'bg-gray-400' }}"></span>
-                                    {{ $statusLabels[$row['status']] ?? ucfirst($row['status'] ?? 'pending') }}
-                                </span>
-                            </td>
-                            <td class="px-4 py-3 text-center">
-                                @if ($hasScore)
-                                    <button
-                                        onclick="openDetailNilai({{ $row['id'] }}, '{{ addslashes($row['title']) }}', '{{ $scoreValue }}', '{{ addslashes($scoreNote) }}')"
-                                        class="inline-flex items-center justify-center rounded-lg bg-green-50 px-3 py-1 text-sm font-bold text-green-700 hover:bg-green-100 hover:scale-105 transition cursor-pointer">
-                                        {{ $scoreValue }}
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1 text-green-500"
-                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                    </button>
-                                @else
-                                    <span class="text-gray-400 text-xs">-</span>
-                                @endif
-                            </td>
-                            <td class="px-4 py-3">
-                                <div class="flex justify-center gap-2">
-                                    @if (in_array($row['status'], ['ongoing', 'completed']))
+                                        class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $statusColors[$row['status']] ?? 'bg-gray-100 text-gray-600' }}">
+                                        <span
+                                            class="h-1.5 w-1.5 rounded-full {{ $statusDot[$row['status']] ?? 'bg-gray-400' }}"></span>
+                                        {{ $statusLabels[$row['status']] ?? ucfirst($row['status'] ?? 'pending') }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 text-center">
+                                    @if ($hasScore)
                                         <button
-                                            onclick="openNilaiModal({{ $row['id'] }}, '{{ addslashes($row['title']) }}', '{{ $scoreValue }}', '{{ addslashes($scoreNote) }}')"
-                                            class="inline-flex items-center gap-1 rounded-lg border border-dashed border-gray-300 bg-white px-3 py-1.5 text-[10px] font-medium text-gray-500 hover:border-blue-400 hover:text-blue-600 transition">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none"
-                                                viewBox="0 0 24 24" stroke="currentColor">
+                                            onclick="openDetailNilai({{ $row['id'] }}, '{{ addslashes($row['title']) }}', '{{ $scoreValue }}', '{{ addslashes($scoreNote) }}')"
+                                            class="inline-flex items-center justify-center rounded-lg bg-green-50 px-3 py-1 text-sm font-bold text-green-700 hover:bg-green-100 hover:scale-105 transition cursor-pointer">
+                                            {{ $scoreValue }}
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1 text-green-500"
+                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M12 4v16m8-8H4" />
+                                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
-                                            {{ $hasScore ? 'Edit Nilai' : 'Nilai' }}
                                         </button>
+                                    @else
+                                        <span class="text-gray-400 text-xs">-</span>
                                     @endif
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="flex justify-center gap-2">
+                                        @if (in_array($row['status'], ['ongoing', 'completed']))
+                                            <button
+                                                onclick="openNilaiModal({{ $row['id'] }}, '{{ addslashes($row['title']) }}', '{{ $scoreValue }}', '{{ addslashes($scoreNote) }}')"
+                                                class="inline-flex items-center gap-1 rounded-lg border border-dashed border-gray-300 bg-white px-3 py-1.5 text-[10px] font-medium text-gray-500 hover:border-blue-400 hover:text-blue-600 transition">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5"
+                                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M12 4v16m8-8H4" />
+                                                </svg>
+                                                {{ $hasScore ? 'Edit Nilai' : 'Nilai' }}
+                                            </button>
+                                        @endif
 
-                                    @if ($row['status'] === 'completed' || $row['status'] === 'cancelled')
-                                        <button
-                                            class="rounded-lg bg-gray-100 px-3 py-1.5 text-[10px] font-medium text-gray-400 cursor-not-allowed opacity-50"
-                                            disabled>
-                                            {{ $row['status'] === 'cancelled' ? 'Dibatalkan' : 'Selesai' }}
-                                        </button>
-                                    @elseif($row['status'] === 'ongoing')
-                                        <button onclick="updateStatus({{ $row['id'] }}, 'completed')"
-                                            class="rounded-lg bg-green-600 px-3 py-1.5 text-[10px] font-semibold text-white hover:bg-green-700 transition">
-                                            Selesai
-                                        </button>
-                                    @elseif($row['status'] === 'pending')
-                                        <button onclick="updateStatus({{ $row['id'] }}, 'ongoing')"
-                                            class="rounded-lg bg-blue-600 px-3 py-1.5 text-[10px] font-semibold text-white hover:bg-blue-700 transition">
-                                            Mulai
-                                        </button>
-                                    @endif
-                                </div>
-                            </td>
+                                        @if ($row['status'] === 'completed' || $row['status'] === 'cancelled')
+                                            <button
+                                                class="rounded-lg bg-gray-100 px-3 py-1.5 text-[10px] font-medium text-gray-400 cursor-not-allowed opacity-50"
+                                                disabled>
+                                                {{ $row['status'] === 'cancelled' ? 'Dibatalkan' : 'Selesai' }}
+                                            </button>
+                                        @elseif($row['status'] === 'ongoing')
+                                            <button onclick="updateStatus({{ $row['id'] }}, 'completed')"
+                                                class="rounded-lg bg-green-600 px-3 py-1.5 text-[10px] font-semibold text-white hover:bg-green-700 transition">
+                                                Selesai
+                                            </button>
+                                        @elseif($row['status'] === 'pending')
+                                            <button onclick="updateStatus({{ $row['id'] }}, 'ongoing')"
+                                                class="rounded-lg bg-blue-600 px-3 py-1.5 text-[10px] font-semibold text-white hover:bg-blue-700 transition">
+                                                Mulai
+                                            </button>
+                                        @endif
+                                    </div>
+                                </td>
                             @endif
                         </tr>
                     @endforeach
@@ -266,30 +266,30 @@
             class="flex flex-col sm:flex-row items-center justify-between border-t border-gray-100 bg-gray-50/80 px-4 sm:px-6 py-2.5 gap-2 sm:gap-0">
             @if ($canManage)
                 <div class="flex flex-wrap items-center gap-3 sm:gap-4 text-xs">
-                @php
-                    $completed = collect($kegiatanRows)->where('status', 'completed')->count();
-                    $ongoing = collect($kegiatanRows)->where('status', 'ongoing')->count();
-                    $pending = collect($kegiatanRows)->where('status', 'pending')->count();
-                    $cancelled = collect($kegiatanRows)->where('status', 'cancelled')->count();
-                @endphp
-                <div class="flex items-center gap-1.5">
-                    <span class="h-2.5 w-2.5 rounded-full bg-green-500"></span>
-                    <span class="text-gray-600">Selesai ({{ $completed }})</span>
-                </div>
-                <div class="flex items-center gap-1.5">
-                    <span class="h-2.5 w-2.5 rounded-full bg-blue-500"></span>
-                    <span class="text-gray-600">Berlangsung ({{ $ongoing }})</span>
-                </div>
-                <div class="flex items-center gap-1.5">
-                    <span class="h-2.5 w-2.5 rounded-full bg-gray-400"></span>
-                    <span class="text-gray-600">Belum Dimulai ({{ $pending }})</span>
-                </div>
-                @if ($cancelled > 0)
+                    @php
+                        $completed = collect($kegiatanRows)->where('status', 'completed')->count();
+                        $ongoing = collect($kegiatanRows)->where('status', 'ongoing')->count();
+                        $pending = collect($kegiatanRows)->where('status', 'pending')->count();
+                        $cancelled = collect($kegiatanRows)->where('status', 'cancelled')->count();
+                    @endphp
                     <div class="flex items-center gap-1.5">
-                        <span class="h-2.5 w-2.5 rounded-full bg-red-500"></span>
-                        <span class="text-gray-600">Dibatalkan ({{ $cancelled }})</span>
+                        <span class="h-2.5 w-2.5 rounded-full bg-green-500"></span>
+                        <span class="text-gray-600">Selesai ({{ $completed }})</span>
                     </div>
-                @endif
+                    <div class="flex items-center gap-1.5">
+                        <span class="h-2.5 w-2.5 rounded-full bg-blue-500"></span>
+                        <span class="text-gray-600">Berlangsung ({{ $ongoing }})</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="h-2.5 w-2.5 rounded-full bg-gray-400"></span>
+                        <span class="text-gray-600">Belum Dimulai ({{ $pending }})</span>
+                    </div>
+                    @if ($cancelled > 0)
+                        <div class="flex items-center gap-1.5">
+                            <span class="h-2.5 w-2.5 rounded-full bg-red-500"></span>
+                            <span class="text-gray-600">Dibatalkan ({{ $cancelled }})</span>
+                        </div>
+                    @endif
                 </div>
             @endif
             <div class="text-xs text-gray-500">
@@ -553,6 +553,23 @@
         closeNilaiModal();
     }
 
+    function formatStatusDateTime(dateTime) {
+        if (!dateTime) return '-';
+
+        const date = new Date(dateTime);
+        if (Number.isNaN(date.getTime())) return dateTime;
+
+        return new Intl.DateTimeFormat('id-ID', {
+            timeZone: 'Asia/Jakarta',
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+        }).format(date).replace('.', ':') + ' WIB';
+    }
+
     // Fungsi untuk update status kegiatan
     function updateStatus(id, status) {
         const statusLabels = {
@@ -572,9 +589,9 @@
         let statusMessage = 'Apakah Anda yakin ingin mengubah status menjadi "' + statusLabels[status] + '"?';
 
         if (status === 'ongoing') {
-            statusMessage += '\n\n⏰ Waktu mulai akan dicatat: ' + new Date().toLocaleString('id-ID');
+            statusMessage += '\n\n⏰ Waktu mulai akan dicatat: ' + formatStatusDateTime(new Date());
         } else if (status === 'completed') {
-            statusMessage += '\n\n⏰ Waktu selesai akan dicatat: ' + new Date().toLocaleString('id-ID');
+            statusMessage += '\n\n⏰ Waktu selesai akan dicatat: ' + formatStatusDateTime(new Date());
         }
 
         Swal.fire({
@@ -615,10 +632,12 @@
                                 '"';
 
                             if (data.data && data.data.started_at) {
-                                successMessage += '\n\n🟢 Dimulai: ' + data.data.started_at;
+                                successMessage += '\n\n🟢 Dimulai: ' + formatStatusDateTime(data.data
+                                    .started_at);
                             }
                             if (data.data && data.data.completed_at) {
-                                successMessage += '\n✅ Selesai: ' + data.data.completed_at;
+                                successMessage += '\n✅ Selesai: ' + formatStatusDateTime(data.data
+                                    .completed_at);
                             }
 
                             Swal.fire({

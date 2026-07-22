@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Orientation\OrientationProgram;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class ParticipantOrientationController extends Controller
 {
@@ -47,7 +49,7 @@ class ParticipantOrientationController extends Controller
                 ]);
             }
 
-            // Format data
+            // Format data dan filter status tidak completed
             $formattedPrograms = $programs->map(function ($program) use ($nik) {
                 // Ambil data peserta dari program
                 $participantData = collect($program->participants ?? [])
@@ -58,9 +60,9 @@ class ParticipantOrientationController extends Controller
                 $completedActivities = $program->activities
                     ->where('status', 'completed')
                     ->count();
-                
-                $progress = $totalActivities > 0 
-                    ? round(($completedActivities / $totalActivities) * 100) 
+
+                $progress = $totalActivities > 0
+                    ? round(($completedActivities / $totalActivities) * 100)
                     : 0;
 
                 // Tentukan status peserta
@@ -70,6 +72,9 @@ class ParticipantOrientationController extends Controller
                 } elseif ($progress > 0) {
                     $participantStatus = 'active';
                 }
+
+                // Hitung total participant
+                $totalParticipants = collect($program->participants ?? [])->count();
 
                 return [
                     'id' => $program->id,
@@ -89,22 +94,27 @@ class ParticipantOrientationController extends Controller
                     'progress' => $progress,
                     'total_activities' => $totalActivities,
                     'completed_activities' => $completedActivities,
+                    'total_participants' => $totalParticipants,
                     'start_date' => $program->activities->min('activity_date')?->format('Y-m-d'),
                     'end_date' => $program->activities->max('activity_date')?->format('Y-m-d'),
                     'created_at' => $program->created_at?->format('Y-m-d H:i:s'),
                     'updated_at' => $program->updated_at?->format('Y-m-d H:i:s'),
                 ];
-            });
+            })
+                ->filter(function ($program) {
+                    // Filter: hanya tampilkan yang statusnya bukan 'completed'
+                    return $program['status'] !== 'completed';
+                })
+                ->values(); // Reset index array
 
             return response()->json([
                 'success' => true,
                 'message' => 'Data orientation program berhasil diambil.',
                 'data' => $formattedPrograms,
             ]);
-
         } catch (\Exception $e) {
             Log::error('Error get participant orientations: ' . $e->getMessage());
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengambil data orientation program: ' . $e->getMessage(),
@@ -197,13 +207,6 @@ class ParticipantOrientationController extends Controller
             $completedActivities = $program->activities->where('status', 'completed')->count();
             $progress = $totalActivities > 0 ? round(($completedActivities / $totalActivities) * 100) : 0;
 
-            $participantStatus = 'pending';
-            if ($progress == 100 && $totalActivities > 0) {
-                $participantStatus = 'completed';
-            } elseif ($progress > 0) {
-                $participantStatus = 'active';
-            }
-
             // Statistik program
             $programStats = [
                 'total_activities' => $totalActivities,
@@ -211,8 +214,8 @@ class ParticipantOrientationController extends Controller
                 'pending_activities' => $program->activities->where('status', 'pending')->count(),
                 'in_progress_activities' => $program->activities->where('status', 'in_progress')->count(),
                 'total_participants' => count($participants),
-                'completion_percentage' => $totalActivities > 0 
-                    ? round(($completedActivities / $totalActivities) * 100) 
+                'completion_percentage' => $totalActivities > 0
+                    ? round(($completedActivities / $totalActivities) * 100)
                     : 0,
             ];
 
@@ -224,8 +227,8 @@ class ParticipantOrientationController extends Controller
                 ->map(function ($activities, $date) use ($allPicData) {
                     return [
                         'date' => $date,
-                        'date_formatted' => $date !== 'no-date' 
-                            ? date('l, d F Y', strtotime($date)) 
+                        'date_formatted' => $date !== 'no-date'
+                            ? date('l, d F Y', strtotime($date))
                             : 'Tanggal tidak tersedia',
                         'activities' => $activities->sortBy('start_time')->map(function ($activity) use ($allPicData) {
                             $picNik = $activity->pic_employee_id;
@@ -262,14 +265,6 @@ class ParticipantOrientationController extends Controller
                     'code' => $program->plant?->code,
                     'address' => $program->plant?->address,
                 ],
-                'participant' => [
-                    'nik' => $nik,
-                    'nama' => $participantData['nama'] ?? $nik,
-                    'jabatan' => $participantData['jabatan'] ?? null,
-                    'dept' => $participantData['dept'] ?? null,
-                    'status' => $participantStatus,
-                    'progress' => $progress,
-                ],
                 'statistics' => $programStats,
                 'activities' => $activities,
                 'activities_by_date' => $activitiesByDate,
@@ -280,10 +275,9 @@ class ParticipantOrientationController extends Controller
                 'message' => 'Detail orientation program berhasil diambil.',
                 'data' => $data,
             ]);
-
         } catch (\Exception $e) {
             Log::error('Error get participant orientation detail: ' . $e->getMessage());
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengambil detail orientation program: ' . $e->getMessage(),
@@ -373,10 +367,9 @@ class ParticipantOrientationController extends Controller
                     'activities' => $activities,
                 ],
             ]);
-
         } catch (\Exception $e) {
             Log::error('Error get participant activities: ' . $e->getMessage());
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengambil data kegiatan: ' . $e->getMessage(),
@@ -471,8 +464,8 @@ class ParticipantOrientationController extends Controller
                     'pending_activities' => $pendingActivities,
                     'ongoing_programs' => $ongoingPrograms,
                     'completed_programs' => $completedPrograms,
-                    'overall_progress' => $totalActivities > 0 
-                        ? round(($completedActivities / $totalActivities) * 100) 
+                    'overall_progress' => $totalActivities > 0
+                        ? round(($completedActivities / $totalActivities) * 100)
                         : 0,
                 ],
                 'programs' => $programSummaries,
@@ -483,10 +476,9 @@ class ParticipantOrientationController extends Controller
                 'message' => 'Data dashboard berhasil diambil.',
                 'data' => $data,
             ]);
-
         } catch (\Exception $e) {
             Log::error('Error get participant dashboard: ' . $e->getMessage());
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengambil data dashboard: ' . $e->getMessage(),
