@@ -35,7 +35,7 @@
                         onmouseout="this.style.color='white'">
                         {{ __('Biodata') }}
                     </x-nav-link>
-
+                    
                     <!-- <div class="hidden sm:flex sm:items-center sm:ms-10 granitfiesta">
                         <x-dropdown align="right" width="48">
                             <x-slot name="trigger">
@@ -198,10 +198,21 @@
                                     <x-dropdown-link :href="route('geofence-plant.index')" :active="request()->routeIs('geofence-plant')">
                                         {{ __('Lokasi Absen') }}
                                     </x-dropdown-link>
+                                    <x-dropdown-link :href="route('orientation.master-activity.index')" :active="request()->routeIs('orientation.master-activity.index')">
+                                        {{ __('Kegiatan Orientation') }}
+                                    </x-dropdown-link>
                                 </x-slot>
                             </x-dropdown>
                         </div>
                     @endif
+
+                    <x-nav-link :href="route('orientation.index')" :active="request()->routeIs('orientation.index')"
+                        class="text-white"
+                        onmouseover="this.style.color='#dc2626'"
+                        onmouseout="this.style.color='white'">
+                        {{ __('Orientasi') }}
+                    </x-nav-link>
+
                 </div>
                 
             </div>
@@ -317,6 +328,13 @@
             onmouseover="this.style.color='#dc2626'"
             onmouseout="this.style.color='{{ request()->routeIs('selfreport.index') ? '#dc2626' : 'white' }}'">
             {{ __('Report') }}
+        </x-responsive-nav-link>
+
+        <x-responsive-nav-link :href="route('orientation.index')" :active="request()->routeIs('orientation.*')"
+            style="{{ request()->routeIs('orientation.*') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
+            onmouseover="this.style.color='#dc2626'"
+            onmouseout="this.style.color='{{ request()->routeIs('orientation.*') ? '#dc2626' : 'white' }}'">
+            {{ __('Orientasi') }}
         </x-responsive-nav-link>
         
         @if(session('comp') == '0001' && session('nik') == '924330')
