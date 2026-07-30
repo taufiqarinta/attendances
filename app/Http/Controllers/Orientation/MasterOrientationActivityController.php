@@ -79,7 +79,7 @@ class MasterOrientationActivityController extends Controller
         $plantIds = explode(',', $request->plant_ids);
         $plantIds = array_map('intval', $plantIds);
         
-        $activity = DB::connection('dev_test')->transaction(function () use ($request, $plantIds) {
+        $activity = DB::connection('hris_kobin')->transaction(function () use ($request, $plantIds) {
             return MasterOrientationActivity::create([
                 'code_activity' => $this->nextActivityCode(),
                 'activity_name' => $request->activity_name,

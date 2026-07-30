@@ -14,7 +14,7 @@ class ParticipantOrientationController extends Controller
     /**
      * Database connection name
      */
-    protected $dbConnection = 'dev_test';
+    protected $dbConnection = 'hris_kobin';
 
     /**
      * Get list of orientation programs for a participant

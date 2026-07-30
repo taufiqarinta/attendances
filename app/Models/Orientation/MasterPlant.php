@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class MasterPlant extends Model
 {
     use HasFactory;
-    protected $connection = 'dev_test';
+    protected $connection = 'hris_kobin';
     protected $table = 'master_plants';
 
     protected $fillable = [

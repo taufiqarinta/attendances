@@ -19,10 +19,10 @@ class OrientationProgramController extends Controller
     /**
      * Database connection name for development/test database
      */
-    protected $dbConnection = 'dev_test';
+    protected $dbConnection = 'hris_kobin';
 
     /**
-     * Daftar orientation program dari database dev_test.
+     * Daftar orientation program dari database hris_kobin.
      */
     public function index(Request $request)
     {
@@ -157,7 +157,7 @@ class OrientationProgramController extends Controller
             'participants.*.jabatan' => 'nullable|string|max:255',
             'participants.*.dept' => 'nullable|string|max:255',
             'activities' => 'required|array|min:1',
-            'activities.*.activity_id' => 'required|exists:dev_test.master_orientation_activities,id',
+            'activities.*.activity_id' => 'required|exists:hris_kobin.master_orientation_activities,id',
             'activities.*.tanggal' => 'required|date',
             'activities.*.waktu_mulai' => 'required',
             'activities.*.waktu_selesai' => 'required',
@@ -213,14 +213,14 @@ class OrientationProgramController extends Controller
         $request->merge(['participants' => $this->normalizeParticipants($request->input('participants', []))]);
 
         $request->validate([
-            'plant_id' => 'required|exists:dev_test.master_plants,id',
+            'plant_id' => 'required|exists:hris_kobin.master_plants,id',
             'participants' => 'required|array|min:1',
             'participants.*.nik' => 'required|string|max:100',
             'participants.*.nama' => 'required|string|max:255',
             'participants.*.jabatan' => 'nullable|string|max:255',
             'participants.*.dept' => 'nullable|string|max:255',
             'activities' => 'required|array|min:1',
-            'activities.*.activity_id' => 'required|exists:dev_test.master_orientation_activities,id',
+            'activities.*.activity_id' => 'required|exists:hris_kobin.master_orientation_activities,id',
             'activities.*.tanggal' => 'required|date',
             'activities.*.waktu_mulai' => 'required',
             'activities.*.waktu_selesai' => 'required',
@@ -828,7 +828,7 @@ class OrientationProgramController extends Controller
 
         try {
             $request->validate([
-                'id' => 'required|exists:dev_test.orientation_activities,id',
+                'id' => 'required|exists:hris_kobin.orientation_activities,id',
                 'score' => 'required|numeric|min:0|max:100',
                 'score_note' => 'nullable|string|max:255',
             ]);
@@ -861,7 +861,7 @@ class OrientationProgramController extends Controller
 
         try {
             $request->validate([
-                'id' => 'required|exists:dev_test.orientation_activities,id',
+                'id' => 'required|exists:hris_kobin.orientation_activities,id',
                 'status' => 'required|in:pending,ongoing,completed,cancelled',
             ]);
 
@@ -937,7 +937,7 @@ class OrientationProgramController extends Controller
     {
         try {
             $request->validate([
-                'id' => 'required|exists:dev_test.orientation_activities,id'
+                'id' => 'required|exists:hris_kobin.orientation_activities,id'
             ]);
 
             $activity = OrientationActivity::find($request->id);
