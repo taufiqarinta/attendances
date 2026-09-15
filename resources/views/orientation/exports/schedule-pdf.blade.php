@@ -14,10 +14,10 @@
 
         body {
             font-family: "Times New Roman", Times, serif;
-            font-size: 12px;
+            font-size: 10px;
             color: #000;
             background: #fff;
-            padding: 20px 30px;
+            padding: 14px 16px;
         }
 
         .container {
@@ -30,21 +30,21 @@
             align-items: center;
             justify-content: space-between;
             border-bottom: 3px solid #7A1113;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-            min-height: 80px;
+            padding-bottom: 10px;
+            margin-bottom: 14px;
+            min-height: 62px;
         }
 
         .header-left {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 12px;
             flex: 1;
         }
 
         .logo {
-            width: 80px;
-            height: 80px;
+            width: 60px;
+            height: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -58,8 +58,8 @@
         }
 
         .logo-placeholder {
-            width: 75px;
-            height: 75px;
+            width: 56px;
+            height: 56px;
             border: 1px dashed #999;
             display: flex;
             justify-content: center;
@@ -73,7 +73,7 @@
         }
 
         .title-section h1 {
-            font-size: 30px;
+            font-size: 22px;
             font-weight: bold;
             color: #000;
             letter-spacing: 2px;
@@ -81,16 +81,16 @@
         }
 
         .title-section .subtitle {
-            font-size: 14px;
+            font-size: 11px;
             color: #666;
             margin-top: 2px;
         }
 
         .header-right {
             text-align: right;
-            font-size: 11px;
+            font-size: 9px;
             color: #333;
-            min-width: 200px;
+            min-width: 135px;
             flex-shrink: 0;
         }
 
@@ -103,10 +103,10 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding: 10px 0;
+            margin-bottom: 14px;
+            padding: 7px 0;
             border-bottom: 1px dashed #ccc;
-            font-size: 12px;
+            font-size: 9px;
         }
 
         .program-info .left {
@@ -134,16 +134,16 @@
             background: #ff4c4c;
             color: #fff;
             border: 1px solid #555;
-            padding: 7px 6px;
-            font-size: 12px;
+            padding: 5px 3px;
+            font-size: 8px;
             font-weight: normal;
             text-align: center;
         }
 
         .schedule-table td {
             border: 1px solid #555;
-            padding: 6px 8px;
-            font-size: 11px;
+            padding: 4px 3px;
+            font-size: 8px;
             vertical-align: middle;
         }
 
@@ -174,7 +174,7 @@
         .date-cell {
             text-align: center;
             vertical-align: middle;
-            font-size: 11pt;
+            font-size: 8px;
             width: 14%;
             font-weight: bold;
         }
@@ -182,7 +182,7 @@
         .place-cell {
             text-align: center;
             vertical-align: middle;
-            font-size: 11pt;
+            font-size: 8px;
             width: 14%;
             font-weight: bold;
         }
@@ -190,7 +190,7 @@
         .break-cell {
             text-align: center;
             font-weight: bold;
-            font-size: 12px;
+            font-size: 8px;
             background: #d9d9d9;
         }
 
@@ -200,18 +200,51 @@
         }
 
         .activity-cell {
-            padding-left: 10px;
+            padding-left: 4px;
             width: 28%;
         }
 
         .pic-cell {
-            padding-left: 8px;
+            padding-left: 4px;
             width: 16%;
         }
 
         .position-cell {
-            padding-left: 8px;
+            padding-left: 4px;
             width: 14%;
+        }
+
+        .participant-section {
+            margin-top: 24px;
+        }
+
+        .section-title {
+            border-left: 4px solid #7A1113;
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            padding-left: 8px;
+        }
+
+        .participant-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .participant-table th {
+            background: #7A1113;
+            border: 1px solid #555;
+            color: #fff;
+            font-size: 11px;
+            font-weight: normal;
+            padding: 6px;
+            text-align: center;
+        }
+
+        .participant-table td {
+            border: 1px solid #555;
+            font-size: 10px;
+            padding: 5px 6px;
         }
 
         /* ================= FOOTER ================= */
@@ -395,6 +428,40 @@
             </tbody>
 
         </table>
+
+        {{-- ================= PARTICIPANTS ================= --}}
+        <div class="participant-section">
+            <div class="section-title">Daftar Peserta Orientation</div>
+
+            <table class="participant-table">
+                <thead>
+                    <tr>
+                        <th width="6%">No</th>
+                        <th width="18%">NIK</th>
+                        <th width="31%">Nama</th>
+                        <th width="25%">Jabatan</th>
+                        <th width="20%">Departemen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($participants ?? [] as $index => $participant)
+                        <tr>
+                            <td class="text-center">{{ $index + 1 }}</td>
+                            <td>{{ is_array($participant) ? $participant['nik'] ?? '-' : $participant }}</td>
+                            <td>{{ is_array($participant) ? $participant['nama'] ?? '-' : '-' }}</td>
+                            <td>{{ is_array($participant) ? $participant['jabatan'] ?? '-' : '-' }}</td>
+                            <td>{{ is_array($participant) ? $participant['dept'] ?? '-' : '-' }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="text-center" style="padding:20px;color:#999;">
+                                <strong>Belum ada peserta</strong>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
 
         {{-- ================= FOOTER ================= --}}
         <div class="footer">

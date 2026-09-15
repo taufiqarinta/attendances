@@ -29,12 +29,18 @@ class OrientationProgramController extends Controller
         $perPage = (int) $request->input('per_page', 10);
         $perPage = in_array($perPage, [10, 25, 50, 100], true) ? $perPage : 10;
         $search = trim((string) $request->input('search'));
+        // Only the orientation administrator can create or change program setup.
         $canManage = $this->canManageOrientation();
         $userNik = $this->currentUserNik();
 
         $programs = OrientationProgram::query()
             ->with(['plant', 'activities', 'category'])
-            ->when(!$canManage, fn($query) => $query->whereJsonContains('participants', ['nik' => $userNik]))
+            ->when(!$canManage, function ($query) use ($userNik) {
+                $query->where(function ($query) use ($userNik) {
+                    $query->whereJsonContains('participants', ['nik' => $userNik])
+                        ->orWhereJsonContains('hr_pic', ['nik' => $userNik]);
+                });
+            })
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('batch_name', 'like', "%{$search}%")
@@ -51,7 +57,12 @@ class OrientationProgramController extends Controller
 
 
         $allPrograms = OrientationProgram::select(['id', 'participants', 'status'])
-            ->when(!$canManage, fn($query) => $query->whereJsonContains('participants', ['nik' => $userNik]))
+            ->when(!$canManage, function ($query) use ($userNik) {
+                $query->where(function ($query) use ($userNik) {
+                    $query->whereJsonContains('participants', ['nik' => $userNik])
+                        ->orWhereJsonContains('hr_pic', ['nik' => $userNik]);
+                });
+            })
             ->get();
 
         $statistics = [
@@ -422,7 +433,7 @@ class OrientationProgramController extends Controller
     public function show(OrientationProgram $orientation)
     {
         $this->authorizeOrientationViewer($orientation);
-        $canManage = $this->canManageOrientation();
+        $canManage = $this->canManageOrientation($orientation);
 
         $orientation->load(['plant', 'activities.masterActivity']);
 
@@ -954,10 +965,6 @@ class OrientationProgramController extends Controller
      */
     public function updateScore(Request $request)
     {
-        if (!$this->canManageOrientation()) {
-            return response()->json(['message' => 'Anda tidak memiliki akses untuk mengubah nilai kegiatan.'], 403);
-        }
-
         try {
             $request->validate([
                 'id' => 'required|exists:dev_test.orientation_activities,id',
@@ -965,7 +972,11 @@ class OrientationProgramController extends Controller
                 'score_note' => 'nullable|string|max:255',
             ]);
 
-            $activity = OrientationActivity::find($request->id);
+            $activity = OrientationActivity::findOrFail($request->id);
+            if (!$this->canManageOrientation($activity->orientation)) {
+                return response()->json(['message' => 'Anda tidak memiliki akses untuk mengubah nilai kegiatan.'], 403);
+            }
+
             $activity->update([
                 'score' => $request->score,
                 'score_note' => $request->score_note,
@@ -987,17 +998,17 @@ class OrientationProgramController extends Controller
      */
     public function updateStatus(Request $request)
     {
-        if (!$this->canManageOrientation()) {
-            return response()->json(['message' => 'Anda tidak memiliki akses untuk mengubah status kegiatan.'], 403);
-        }
-
         try {
             $request->validate([
                 'id' => 'required|exists:dev_test.orientation_activities,id',
                 'status' => 'required|in:pending,ongoing,completed,cancelled',
             ]);
 
-            $activity = OrientationActivity::find($request->id);
+            $activity = OrientationActivity::findOrFail($request->id);
+            if (!$this->canManageOrientation($activity->orientation)) {
+                return response()->json(['message' => 'Anda tidak memiliki akses untuk mengubah status kegiatan.'], 403);
+            }
+
 
             // Data yang akan diupdate
             $data = ['status' => $request->status];
@@ -1099,7 +1110,7 @@ class OrientationProgramController extends Controller
      */
     public function cancel(OrientationProgram $orientation)
     {
-        $this->authorizeOrientationManager();
+        $this->authorizeOrientationManager($orientation);
 
         try {
             DB::connection($this->dbConnection)->transaction(function () use ($orientation) {
@@ -1131,7 +1142,7 @@ class OrientationProgramController extends Controller
      */
     public function complete(OrientationProgram $orientation)
     {
-        $this->authorizeOrientationManager();
+        $this->authorizeOrientationManager($orientation);
 
         try {
             DB::connection($this->dbConnection)->transaction(function () use ($orientation) {
@@ -1160,7 +1171,7 @@ class OrientationProgramController extends Controller
      */
     public function exportSchedule(OrientationProgram $orientation)
     {
-        $this->authorizeOrientationManager();
+        $this->authorizeOrientationManager($orientation);
 
         $orientation->load(['plant', 'activities.masterActivity']);
 
@@ -1211,6 +1222,7 @@ class OrientationProgramController extends Controller
         $data = [
             'orientation' => $orientation,
             'groupedActivities' => $groupedActivities,
+            'participants' => $participants,
             'totalParticipants' => $totalParticipants,
             'plantName' => $orientation->plant->name_plant ?? '-',
             'batchNumber' => $batchNumber,
@@ -1218,7 +1230,7 @@ class OrientationProgramController extends Controller
         ];
 
         $pdf = Pdf::loadView('orientation.exports.schedule-pdf', $data);
-        $pdf->setPaper('A4', 'landscape');
+        $pdf->setPaper('A4', 'portrait');
         $pdf->setOptions([
             'defaultFont' => 'times',
             'isHtml5ParserEnabled' => true,
@@ -1252,7 +1264,7 @@ class OrientationProgramController extends Controller
      */
     public function exportParticipants(OrientationProgram $orientation)
     {
-        $this->authorizeOrientationManager();
+        $this->authorizeOrientationManager($orientation);
 
         $orientation->load(['plant']);
         $participants = $orientation->participants ?? [];
@@ -1271,11 +1283,16 @@ class OrientationProgramController extends Controller
     }
 
     /**
-     * Hanya NIK administrator Orientation yang dapat mengelola data.
+     * Administrator can manage every program. HR PIC can manage only the
+     * program where their NIK is explicitly assigned in the hr_pic JSON.
      */
-    private function canManageOrientation(): bool
+    private function canManageOrientation(?OrientationProgram $orientation = null): bool
     {
-        return $this->currentUserNik() === '924330';
+        if ($this->currentUserNik() === '924330') {
+            return true;
+        }
+
+        return $orientation !== null && $this->isAssignedHrPic($orientation);
     }
 
     private function currentUserNik(): string
@@ -1283,9 +1300,13 @@ class OrientationProgramController extends Controller
         return trim((string) session('nik', ''));
     }
 
-    private function authorizeOrientationManager(): void
+    private function authorizeOrientationManager(?OrientationProgram $orientation = null): void
     {
-        abort_unless($this->canManageOrientation(), 403, 'Anda tidak memiliki akses untuk mengelola Orientation Program.');
+        abort_unless(
+            $this->canManageOrientation($orientation),
+            403,
+            'Anda tidak memiliki akses untuk mengelola Orientation Program.'
+        );
     }
 
     private function authorizeOrientationViewer(OrientationProgram $orientation): void
@@ -1303,7 +1324,7 @@ class OrientationProgramController extends Controller
             return false;
         }
 
-        if ($this->canManageOrientation()) {
+        if ($this->canManageOrientation($orientation)) {
             return true;
         }
 
@@ -1315,16 +1336,23 @@ class OrientationProgramController extends Controller
         });
     }
 
+    private function isAssignedHrPic(OrientationProgram $orientation): bool
+    {
+        $userNik = $this->currentUserNik();
+
+        return $userNik !== '' && collect($orientation->hr_pic ?? [])->contains(function ($hrPic) use ($userNik) {
+            $hrPicNik = is_array($hrPic) ? ($hrPic['nik'] ?? '') : $hrPic;
+
+            return (string) $hrPicNik === $userNik;
+        });
+    }
+
 
     /**
      * Simpan kehadiran + pre/post test, lalu set status kegiatan.
      */
     public function saveAttendance(Request $request)
     {
-        if (!$this->canManageOrientation()) {
-            return response()->json(['message' => 'Tidak memiliki akses.'], 403);
-        }
-
         $request->validate([
             'id' => 'required|exists:' . $this->dbConnection . '.orientation_activities,id',
             'attendances' => 'required|array',
@@ -1338,6 +1366,9 @@ class OrientationProgramController extends Controller
 
         try {
             $activity = OrientationActivity::findOrFail($request->id);
+            if (!$this->canManageOrientation($activity->orientation)) {
+                return response()->json(['message' => 'Tidak memiliki akses.'], 403);
+            }
 
             $data = [
                 'attendances' => $request->attendances,

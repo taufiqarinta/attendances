@@ -105,20 +105,13 @@
                     {{-- JADWAL & MATERI --}}
                     @include('orientation.component-detail.jadwal-materi')
 
-                    @php
-                        $hrPicNiks = collect($orientation->hr_pic ?? [])
-                            ->pluck('nik')
-                            ->filter()
-                            ->all();
-                    @endphp
-
-                    @if ($canManage || in_array(session('username'), $hrPicNiks))
+                    @if ($canManage)
                         {{-- PESERTA --}}
                         @include('orientation.component-detail.participant')
                     @endif
 
                     {{-- INFORMASI & CATATAN --}}
-                    @if ($canManage || in_array(session('username'), $hrPicNiks))
+                    @if ($canManage)
                         @include('orientation.component-detail.informasi-catatan')
                     @endif
                 </div>
@@ -134,7 +127,7 @@
                     {{-- Timeline --}}
                     @include('orientation.component-detail.timeline')
 
-                    @if ($canManage || in_array(session('username'), $hrPicNiks))
+                    @if ($canManage)
                         {{-- AKSI CEPAT - VERSION 2 --}}
                         <div class="rounded-2xl border border-gray-200 bg-white shadow-sm">
                             <div class="border-b border-gray-100 px-5 py-3.5">
@@ -167,30 +160,6 @@
                                         <div class="text-left">
                                             <div class="text-sm font-medium text-gray-800">Export Jadwal</div>
                                             <div class="text-[10px] text-gray-500">PDF • Unduh jadwal lengkap</div>
-                                        </div>
-                                    </div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </a>
-
-                                {{-- Export Peserta PDF --}}
-                                <a href="{{ route('orientation.export.participants', $orientation->id) }}"
-                                    target="_blank"
-                                    class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 hover:border-green-200 hover:bg-green-50/30 transition">
-                                    <div class="flex items-center gap-3">
-                                        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600"
-                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                            </svg>
-                                        </div>
-                                        <div class="text-left">
-                                            <div class="text-sm font-medium text-gray-800">Export Peserta</div>
-                                            <div class="text-[10px] text-gray-500">PDF • Unduh daftar peserta</div>
                                         </div>
                                     </div>
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none"
