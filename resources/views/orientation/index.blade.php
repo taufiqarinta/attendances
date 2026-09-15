@@ -279,15 +279,19 @@
                                             </svg>
                                         </span>
                                     </th>
+
+                                    <th
+                                        class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                        Kategori</th>
                                     <th
                                         class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-gray-500">
                                         Nama Program</th>
                                     <th
                                         class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                                        Lokasi</th>
+                                        Periode</th>
                                     <th
                                         class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                                        Kegiatan</th>
+                                        PIC HR</th>
                                     <th
                                         class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-gray-500">
                                         Peserta</th>
@@ -332,9 +336,9 @@
                                         $statusKey = $program->status ?? 'draft';
                                         $participants = count($program->participants ?? []);
                                         $isEditLocked = $program->activities->contains(function ($activity) {
-                                            return in_array($activity->status, ['ongoing', 'completed'], true)
-                                                || $activity->started_at
-                                                || $activity->completed_at;
+                                            return in_array($activity->status, ['ongoing', 'completed'], true) ||
+                                                $activity->started_at ||
+                                                $activity->completed_at;
                                         });
                                     @endphp
                                     <tr class="hover:bg-red-50/30 transition group cursor-pointer"
@@ -342,6 +346,20 @@
                                         {{-- No --}}
                                         <td class="px-4 py-3 font-medium text-gray-700 text-sm">
                                             {{ str_pad($programs->firstItem() + $index, 2, '0', STR_PAD_LEFT) }}
+                                        </td>
+
+                                        {{-- Kategori --}}
+                                        <td class="px-4 py-3">
+                                            <span
+                                                class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium {{ $batchColor[$batchIndex] }}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3"
+                                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                                {{ $program->category->category_name ?? 'Tidak ada kategori' }}
+                                            </span>
                                         </td>
 
                                         {{-- Program --}}
@@ -370,24 +388,48 @@
                                             </div>
                                         </td>
 
-                                        {{-- Lokasi --}}
+                                        {{-- Periode --}}
                                         <td class="px-4 py-3">
-                                            <div class="flex items-center gap-1.5">
-                                                <svg xmlns="http://www.w3.org/2000/svg"
-                                                    class="h-3.5 w-3.5 text-gray-400" fill="none"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                </svg>
-                                                <span
-                                                    class="text-sm text-gray-700">{{ $program->plant->name_plant ?? 'Tidak ada lokasi' }}</span>
-                                            </div>
+                                            @php
+                                                $dates = $program->activities->pluck('activity_date')->filter()->sort();
+                                                $startDate = $dates->first();
+                                                $endDate = $dates->last();
+                                            @endphp
+
+                                            @if ($startDate && $endDate)
+                                                <div class="flex flex-col gap-0.5">
+                                                    <div class="flex items-center gap-1.5 text-sm text-gray-700">
+                                                        <svg class="h-3.5 w-3.5 text-gray-400" fill="none"
+                                                            stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                        </svg>
+                                                        <span class="font-medium">
+                                                            {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }}
+                                                        </span>
+                                                        <span class="text-gray-400">→</span>
+                                                        <span class="font-medium">
+                                                            {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
+                                                        </span>
+                                                    </div>
+                                                    <div class="text-xs text-gray-500">
+                                                        {{ $program->activities->count() }} kegiatan
+                                                        @if ($startDate->format('Y-m-d') === $endDate->format('Y-m-d'))
+                                                            • 1 hari
+                                                        @else
+                                                            •
+                                                            {{ \Carbon\Carbon::parse($startDate)->diffInDays(\Carbon\Carbon::parse($endDate)) + 1 }}
+                                                            hari
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <span class="text-sm text-gray-400">-</span>
+                                            @endif
                                         </td>
 
-                                        {{-- Jumlah Kegiatan --}}
+                                        {{-- PIC HR --}}
                                         <td class="px-4 py-3">
                                             <div class="flex items-center gap-1.5">
                                                 <svg xmlns="http://www.w3.org/2000/svg"
@@ -398,10 +440,9 @@
                                                         d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                 </svg>
                                                 <div>
-                                                    <div class="text-sm font-medium text-gray-700">
-                                                        {{ $program->activities->count() }} Kegiatan
+                                                    <div class="text-sm font-semibold text-gray-800">
+                                                        {{ $program->hr_pic[0]['nama'] ?? 'Tidak ada PIC HR' }}
                                                     </div>
-                                                    <div class="text-xs text-gray-400">Rincian orientation</div>
                                                 </div>
                                             </div>
                                         </td>
@@ -441,21 +482,20 @@
                                             <div class="flex items-center justify-center gap-1">
                                                 @if ($canManage)
                                                     @if ($isEditLocked)
-                                                        <button type="button"
-                                                            onclick="showEditLockedAlert()"
+                                                        <button type="button" onclick="showEditLockedAlert()"
                                                             aria-label="Edit orientation tidak tersedia"
                                                             class="p-1.5 rounded-lg hover:bg-amber-50 text-gray-400 hover:text-amber-600 transition group-hover:opacity-100 opacity-70">
-                                                    @else
-                                                        <a href="{{ route('orientation.edit', $program) }}"
-                                                            aria-label="Edit orientation"
-                                                            class="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition group-hover:opacity-100 opacity-70">
+                                                        @else
+                                                            <a href="{{ route('orientation.edit', $program) }}"
+                                                                aria-label="Edit orientation"
+                                                                class="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition group-hover:opacity-100 opacity-70">
                                                     @endif
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
-                                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                                        </svg>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                    </svg>
                                                     @if ($isEditLocked)
                                                         </button>
                                                     @else

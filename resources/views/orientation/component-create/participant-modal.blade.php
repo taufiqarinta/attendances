@@ -87,8 +87,7 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-bold text-gray-800">Pilih Peserta Orientation</h3>
-                        <p class="text-xs text-gray-500"
-                            x-text="'Plant: ' + (selectedPlant ? selectedPlant.code : 'Belum dipilih')"></p>
+                        <p class="text-xs text-gray-500">Semua karyawan (tanpa filter plant)</p>
                     </div>
                 </div>
                 <button @click="closeModal()" class="p-2 rounded-xl hover:bg-gray-100 transition">
@@ -209,7 +208,8 @@
                                     class="cursor-pointer transition-all duration-150 hover:bg-red-50/30 group"
                                     :class="item.selected ? 'bg-red-50/40 hover:bg-red-50/60' : ''">
                                     <td class="px-4 py-3.5 text-center" @click.stop>
-                                        <input type="checkbox" x-model="item.selected" @change="updateSelectedParticipants()"
+                                        <input type="checkbox" x-model="item.selected"
+                                            @change="updateSelectedParticipants()"
                                             class="rounded border-gray-300 text-red-600 focus:ring-red-500 focus:ring-2 h-4 w-4 cursor-pointer transition-all"
                                             :class="item.selected ? 'scale-105' : ''">
                                     </td>
@@ -363,27 +363,16 @@
                         };
                     }
 
-                    return {nik: String(participant), nama: String(participant), jabatan: '', dept: ''};
+                    return {
+                        nik: String(participant),
+                        nama: String(participant),
+                        jabatan: '',
+                        dept: ''
+                    };
                 });
-                // Listen for plant selection from the plant dropdown
-                this.selectedPlant = window.selectedPlantData || null;
 
-                // Pada halaman edit, tampilkan nama peserta lama tanpa perlu membuka modal.
-                if (this.initialParticipantNiks.length > 0 && this.selectedPlant) {
-                    this.fetchParticipants();
-                }
-
-                // Set up a mutation observer or use a setInterval to check for plant changes
-                setInterval(() => {
-                    if (window.selectedPlantData && this.selectedPlant?.id !== window
-                        .selectedPlantData?.id) {
-                        this.selectedPlant = window.selectedPlantData;
-                        // Reset participants when plant changes
-                        this.pesertaData = [];
-                        this.selectedParticipants = [];
-                        this.errorMessage = '';
-                    }
-                }, 500);
+                // Hapus setInterval plant watch
+                // Tidak ada reset peserta saat plant berubah
             },
 
             async initParticipants() {
@@ -391,21 +380,12 @@
             },
 
             async openModal() {
-                // Check if plant is selected
-                if (!window.selectedPlantData) {
-                    this.errorMessage = 'Silakan pilih Plant terlebih dahulu!';
-                    return;
-                }
-
-                this.selectedPlant = window.selectedPlantData;
-                this.errorMessage = '';
-
-                // Reset search when opening modal
+                // Tidak perlu cek plant lagi
                 this.searchPeserta = '';
                 this.currentPage = 1;
                 this.selectAll = false;
 
-                // If no data, fetch from API
+                // Jika belum ada data, fetch dari API
                 if (this.pesertaData.length === 0) {
                     await this.fetchParticipants();
                 }
@@ -422,19 +402,12 @@
             },
 
             async fetchParticipants() {
-                if (!this.selectedPlant) {
-                    this.errorMessage = 'Plant belum dipilih';
-                    return;
-                }
-
                 this.loading = true;
                 this.errorMessage = '';
 
                 try {
-                    const plantCode = this.selectedPlant.code || this.selectedPlant.id ||
-                        '1000';
-                    const url =
-                        `https://web.kobin.co.id/api/attendance/live/api_get_users.php?plant=${plantCode}`;
+                    // Tidak pakai parameter plant lagi
+                    const url = 'https://web.kobin.co.id/api/attendance/live/api_get_users.php';
 
                     const response = await fetch(url);
 
@@ -445,7 +418,6 @@
                     const result = await response.json();
 
                     if (result.success && result.data) {
-                        // Map API data to match component structure
                         const selectedNiks = this.initialParticipantNiks.map(String);
                         this.pesertaData = result.data.map(user => ({
                             nik: user.nik || '',
@@ -463,7 +435,6 @@
                             selected: selectedNiks.includes(String(user.nik))
                         }));
 
-                        // Mengganti placeholder NIK dengan nama peserta dari API.
                         this.updateSelectedParticipants();
                     } else {
                         throw new Error(result.message || 'Gagal mengambil data peserta');

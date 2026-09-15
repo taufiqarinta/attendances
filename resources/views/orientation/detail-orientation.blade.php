@@ -105,11 +105,20 @@
                     {{-- JADWAL & MATERI --}}
                     @include('orientation.component-detail.jadwal-materi')
 
-                    {{-- PESERTA --}}
-                    @include('orientation.component-detail.participant')
+                    @php
+                        $hrPicNiks = collect($orientation->hr_pic ?? [])
+                            ->pluck('nik')
+                            ->filter()
+                            ->all();
+                    @endphp
+
+                    @if ($canManage || in_array(session('username'), $hrPicNiks))
+                        {{-- PESERTA --}}
+                        @include('orientation.component-detail.participant')
+                    @endif
 
                     {{-- INFORMASI & CATATAN --}}
-                    @if ($canManage)
+                    @if ($canManage || in_array(session('username'), $hrPicNiks))
                         @include('orientation.component-detail.informasi-catatan')
                     @endif
                 </div>
@@ -125,107 +134,110 @@
                     {{-- Timeline --}}
                     @include('orientation.component-detail.timeline')
 
-                    @if ($canManage)
+                    @if ($canManage || in_array(session('username'), $hrPicNiks))
                         {{-- AKSI CEPAT - VERSION 2 --}}
                         <div class="rounded-2xl border border-gray-200 bg-white shadow-sm">
-                        <div class="border-b border-gray-100 px-5 py-3.5">
-                            <div class="flex items-center gap-2.5">
-                                <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-50">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-purple-600"
-                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h3 class="font-semibold text-gray-800 text-sm">Aksi Cepat</h3>
-                                    <p class="text-[10px] text-gray-500">Kelola program dengan cepat</p>
+                            <div class="border-b border-gray-100 px-5 py-3.5">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-50">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-purple-600"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-semibold text-gray-800 text-sm">Aksi Cepat</h3>
+                                        <p class="text-[10px] text-gray-500">Kelola program dengan cepat</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="p-4 space-y-2.5">
-                            {{-- Export Jadwal PDF --}}
-                            <a href="{{ route('orientation.export.schedule', $orientation->id) }}" target="_blank"
-                                class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 hover:border-blue-200 hover:bg-blue-50/30 transition">
-                                <div class="flex items-center gap-3">
-                                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600"
-                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
-                                    </div>
-                                    <div class="text-left">
-                                        <div class="text-sm font-medium text-gray-800">Export Jadwal</div>
-                                        <div class="text-[10px] text-gray-500">PDF • Unduh jadwal lengkap</div>
-                                    </div>
-                                </div>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 5l7 7-7 7" />
-                                </svg>
-                            </a>
-
-                            {{-- Export Peserta PDF --}}
-                            <a href="{{ route('orientation.export.participants', $orientation->id) }}" target="_blank"
-                                class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 hover:border-green-200 hover:bg-green-50/30 transition">
-                                <div class="flex items-center gap-3">
-                                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600"
-                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                        </svg>
-                                    </div>
-                                    <div class="text-left">
-                                        <div class="text-sm font-medium text-gray-800">Export Peserta</div>
-                                        <div class="text-[10px] text-gray-500">PDF • Unduh daftar peserta</div>
-                                    </div>
-                                </div>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 5l7 7-7 7" />
-                                </svg>
-                            </a>
-
-                            {{-- Batalkan Program --}}
-                            @if ($orientation->status !== 'completed' && $orientation->status !== 'cancelled')
-                                <form action="{{ route('orientation.cancel', $orientation->id) }}" method="POST"
-                                    onsubmit="return confirmCancelProgram('{{ $orientation->batch_name }}')">
-                                    @csrf
-                                    <button type="submit"
-                                        class="flex w-full items-center justify-between rounded-xl border border-red-200 bg-red-50/30 px-4 py-3 hover:border-red-300 hover:bg-red-50 transition">
-                                        <div class="flex items-center gap-3">
-                                            <div
-                                                class="flex h-8 w-8 items-center justify-center rounded-lg bg-red-100">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-600"
-                                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                            </div>
-                                            <div class="text-left">
-                                                <div class="text-sm font-medium text-red-700">Batalkan Program</div>
-                                                <div class="text-[10px] text-red-500">Konfirmasi • Batalkan seluruh
-                                                    program</div>
-                                            </div>
+                            <div class="p-4 space-y-2.5">
+                                {{-- Export Jadwal PDF --}}
+                                <a href="{{ route('orientation.export.schedule', $orientation->id) }}" target="_blank"
+                                    class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 hover:border-blue-200 hover:bg-blue-50/30 transition">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600"
+                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
                                         </div>
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-400"
-                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9 5l7 7-7 7" />
-                                        </svg>
-                                    </button>
-                                </form>
-                            @endif
+                                        <div class="text-left">
+                                            <div class="text-sm font-medium text-gray-800">Export Jadwal</div>
+                                            <div class="text-[10px] text-gray-500">PDF • Unduh jadwal lengkap</div>
+                                        </div>
+                                    </div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </a>
+
+                                {{-- Export Peserta PDF --}}
+                                <a href="{{ route('orientation.export.participants', $orientation->id) }}"
+                                    target="_blank"
+                                    class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 hover:border-green-200 hover:bg-green-50/30 transition">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-green-50">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600"
+                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                            </svg>
+                                        </div>
+                                        <div class="text-left">
+                                            <div class="text-sm font-medium text-gray-800">Export Peserta</div>
+                                            <div class="text-[10px] text-gray-500">PDF • Unduh daftar peserta</div>
+                                        </div>
+                                    </div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </a>
+
+                                {{-- Batalkan Program --}}
+                                @if ($orientation->status !== 'completed' && $orientation->status !== 'cancelled')
+                                    <form action="{{ route('orientation.cancel', $orientation->id) }}" method="POST"
+                                        onsubmit="return confirmCancelProgram('{{ $orientation->batch_name }}')">
+                                        @csrf
+                                        <button type="submit"
+                                            class="flex w-full items-center justify-between rounded-xl border border-red-200 bg-red-50/30 px-4 py-3 hover:border-red-300 hover:bg-red-50 transition">
+                                            <div class="flex items-center gap-3">
+                                                <div
+                                                    class="flex h-8 w-8 items-center justify-center rounded-lg bg-red-100">
+                                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                                        class="h-4 w-4 text-red-600" fill="none"
+                                                        viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                </div>
+                                                <div class="text-left">
+                                                    <div class="text-sm font-medium text-red-700">Batalkan Program
+                                                    </div>
+                                                    <div class="text-[10px] text-red-500">Konfirmasi • Batalkan seluruh
+                                                        program</div>
+                                                </div>
+                                            </div>
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-400"
+                                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
                         </div>
-                    </div>
 
                         {{-- Finish Button --}}
-                        @if ($orientation->status !== 'completed' && $orientation->status !== 'cancelled')
+                        {{-- @if ($orientation->status !== 'completed' && $orientation->status !== 'cancelled')
                         <form action="{{ route('orientation.complete', $orientation->id) }}" method="POST"
                             onsubmit="return confirmCompleteProgram('{{ $orientation->batch_name }}')">
                             @csrf
@@ -261,7 +273,7 @@
                                 <span class="text-sm font-semibold text-red-700">Program telah dibatalkan</span>
                             </div>
                         </div>
-                        @endif
+                        @endif --}}
                     @endif
                 </div>
             </div>

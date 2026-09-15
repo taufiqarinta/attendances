@@ -23,25 +23,82 @@
 
             <div class="mt-4 rounded-2xl border border-gray-100 bg-white shadow-sm">
                 <div class="p-5">
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+
+                        {{-- Kategori (Readonly) --}}
+                        <div>
+                            <label class="mb-1.5 block text-xs font-semibold text-gray-700">Kategori</label>
+                            <div
+                                class="flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+                                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50">
+                                    <svg class="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M7 7h.01M7 3h5a2 2 0 012 2v5.586a1 1 0 01-.293.707l-7.414 7.414a1 1 0 01-1.414 0L2.293 15.12a1 1 0 010-1.414L9.707 6.293A1 1 0 0110.414 6H13a1 1 0 001-1V3z" />
+                                    </svg>
+                                </div>
+                                <div class="text-left">
+                                    <div class="text-sm font-medium text-gray-800">
+                                        {{ $category->category_name ?? 'Tidak ada kategori' }}
+                                    </div>
+                                    <div class="text-xs text-gray-500">
+                                        Kode: {{ $category->code_category ?? '-' }} · Kategori tidak dapat diubah
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Plant (Readonly) --}}
                         <div>
                             <label class="mb-1.5 block text-xs font-semibold text-gray-700">Plant</label>
                             <div
                                 class="flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
-                                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50"><svg
-                                        class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24"
+                                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50">
+                                    <svg class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24"
                                         stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M19 11H5m14-4H5m14 8H5" />
-                                    </svg></div>
+                                    </svg>
+                                </div>
                                 <div class="text-left">
                                     <div class="text-sm font-medium text-gray-800">
-                                        {{ $orientation->plant?->name_plant }}</div>
-                                    <div class="text-xs text-gray-500">Kode: {{ $orientation->plant?->code }} · Plant
-                                        tidak dapat diubah</div>
+                                        {{ $orientation->plant?->name_plant ?? '-' }}
+                                    </div>
+                                    <div class="text-xs text-gray-500">
+                                        Kode: {{ $orientation->plant?->code ?? '-' }} · Plant tidak dapat diubah
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
+                        {{-- HR PIC (Readonly) --}}
+                        <div>
+                            <label class="mb-1.5 block text-xs font-semibold text-gray-700">HR PIC</label>
+                            <div
+                                class="flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+                                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50">
+                                    <svg class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                </div>
+                                <div class="text-left">
+                                    <div class="text-sm font-medium text-gray-800">
+                                        {{ $hrPic['nama'] ?? 'Tidak ada HR PIC' }}
+                                    </div>
+                                    <div class="text-xs text-gray-500">
+                                        NIK: {{ $hrPic['nik'] ?? '-' }} · {{ $hrPic['jabatan'] ?? '-' }} · Tidak dapat
+                                        diubah
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    {{-- Peserta (Full width, di bawah) --}}
+                    <div class="mt-4">
                         @include('orientation.component-create.participant-modal')
                     </div>
                 </div>

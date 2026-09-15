@@ -1,5 +1,5 @@
 <nav x-data="{ open: false }"
-     style="
+    style="
         background-image: url('{{ asset('bg-login.png') }}');
         background-size: cover;
         background-position: center;
@@ -22,20 +22,16 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')"
-                        class="text-white"
-                        onmouseover="this.style.color='#dc2626'"
-                        onmouseout="this.style.color='white'">
+                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-white"
+                        onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='white'">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    
-                    <x-nav-link :href="route('biodata')" :active="request()->routeIs('biodata')"
-                        class="text-white"
-                        onmouseover="this.style.color='#dc2626'"
-                        onmouseout="this.style.color='white'">
+
+                    <x-nav-link :href="route('biodata')" :active="request()->routeIs('biodata')" class="text-white"
+                        onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='white'">
                         {{ __('Biodata') }}
                     </x-nav-link>
-                    
+
                     <!-- <div class="hidden sm:flex sm:items-center sm:ms-10 granitfiesta">
                         <x-dropdown align="right" width="48">
                             <x-slot name="trigger">
@@ -56,11 +52,11 @@
                                 <x-dropdown-link :href="route('biodata')" :active="request()->routeIs('biodata')">
                                     {{ __('Biodata') }}
                                 </x-dropdown-link>
-                                @if(session('comp') == '0001' && session('nik') == '924330')
-                                <x-dropdown-link :href="route('approval.biodata')" :active="request()->routeIs('approval.biodata')">
+                                @if (session('comp') == '0001' && session('nik') == '924330')
+<x-dropdown-link :href="route('approval.biodata')" :active="request()->routeIs('approval.biodata')">
                                     {{ __('Approval Biodata') }}
                                 </x-dropdown-link>
-                                @endif
+@endif
                             </x-slot>
                         </x-dropdown>
                     </div> -->
@@ -68,14 +64,17 @@
                     <div class="hidden sm:flex sm:items-center sm:ms-10 granitfiesta">
                         <x-dropdown align="right" width="48">
                             <x-slot name="trigger">
-                                <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('daftartoko.*') ? 'text-white' : '' }}"
-                                    onmouseover="this.style.color='#dc2626'"
-                                    onmouseout="this.style.color='white'">
+                                <button
+                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('daftartoko.*') ? 'text-white' : '' }}"
+                                    onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='white'">
                                     <div>{{ __('Data Absensi') }}</div>
 
                                     <div class="ml-1">
-                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                clip-rule="evenodd" />
                                         </svg>
                                     </div>
                                 </button>
@@ -85,10 +84,10 @@
                                 <x-dropdown-link :href="route('absensi.index')" :active="request()->routeIs('absensi.index')">
                                     {{ __('Absensi') }}
                                 </x-dropdown-link>
-                                @if(session('comp') == '0001' && session('nik') == '924330')
-                                <x-dropdown-link :href="route('allabsensi.index')" :active="request()->routeIs('allabsensi.index')">
-                                    {{ __('Absensi Seluruh Karyawan') }}
-                                </x-dropdown-link>
+                                @if (session('comp') == '0001' && session('nik') == '924330')
+                                    <x-dropdown-link :href="route('allabsensi.index')" :active="request()->routeIs('allabsensi.index')">
+                                        {{ __('Absensi Seluruh Karyawan') }}
+                                    </x-dropdown-link>
                                 @endif
                             </x-slot>
                         </x-dropdown>
@@ -97,14 +96,17 @@
                     <div class="hidden sm:flex sm:items-center sm:ms-10 granitfiesta">
                         <x-dropdown align="right" width="48">
                             <x-slot name="trigger">
-                                <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('daftartoko.*') ? 'text-white' : '' }}"
-                                    onmouseover="this.style.color='#dc2626'"
-                                    onmouseout="this.style.color='white'">
+                                <button
+                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('daftartoko.*') ? 'text-white' : '' }}"
+                                    onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='white'">
                                     <div>{{ __('Time Management') }}</div>
 
                                     <div class="ml-1">
-                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                clip-rule="evenodd" />
                                         </svg>
                                     </div>
                                 </button>
@@ -121,47 +123,53 @@
                         </x-dropdown>
                     </div>
 
-                    @if(session('comp') == '0001' && session('nik') == '924330')
-                    <div class="hidden sm:flex sm:items-center sm:ms-10 granitfiesta">
-                        <x-dropdown align="right" width="48">
-                            <x-slot name="trigger">
-                                <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('daftartoko.*') ? 'text-white' : '' }}"
-                                    onmouseover="this.style.color='#dc2626'"
-                                    onmouseout="this.style.color='white'">
-                                    <div>{{ __('Summary Report') }}</div>
-
-                                    <div class="ml-1">
-                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                        </svg>
-                                    </div>
-                                </button>
-                            </x-slot>
-
-                            <x-slot name="content">
-                                <x-dropdown-link :href="route('report.index')" :active="request()->routeIs('report.index')">
-                                    {{ __('Employee') }}
-                                </x-dropdown-link>
-                                <x-dropdown-link :href="route('summary.index')" :active="request()->routeIs('summary.index')">
-                                    {{ __('Plant') }}
-                                </x-dropdown-link>
-                            </x-slot>
-                        </x-dropdown>
-                    </div>
-                    @endif
-
-                    @if(session('comp') == '0001' && session('nik') == '924330')
+                    @if (session('comp') == '0001' && session('nik') == '924330')
                         <div class="hidden sm:flex sm:items-center sm:ms-10 granitfiesta">
                             <x-dropdown align="right" width="48">
                                 <x-slot name="trigger">
-                                    <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('daftartoko.*') ? 'text-white' : '' }}"
-                                        onmouseover="this.style.color='#dc2626'"
-                                        onmouseout="this.style.color='white'">
+                                    <button
+                                        class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('daftartoko.*') ? 'text-white' : '' }}"
+                                        onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='white'">
+                                        <div>{{ __('Summary Report') }}</div>
+
+                                        <div class="ml-1">
+                                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                    clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                    </button>
+                                </x-slot>
+
+                                <x-slot name="content">
+                                    <x-dropdown-link :href="route('report.index')" :active="request()->routeIs('report.index')">
+                                        {{ __('Employee') }}
+                                    </x-dropdown-link>
+                                    <x-dropdown-link :href="route('summary.index')" :active="request()->routeIs('summary.index')">
+                                        {{ __('Plant') }}
+                                    </x-dropdown-link>
+                                </x-slot>
+                            </x-dropdown>
+                        </div>
+                    @endif
+
+                    @if (session('comp') == '0001' && session('nik') == '924330')
+                        <div class="hidden sm:flex sm:items-center sm:ms-10 granitfiesta">
+                            <x-dropdown align="right" width="48">
+                                <x-slot name="trigger">
+                                    <button
+                                        class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('daftartoko.*') ? 'text-white' : '' }}"
+                                        onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='white'">
                                         <div>{{ __('Application') }}</div>
 
                                         <div class="ml-1">
-                                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                    clip-rule="evenodd" />
                                             </svg>
                                         </div>
                                     </button>
@@ -181,14 +189,17 @@
                         <div class="hidden sm:flex sm:items-center sm:ms-10 granitfiesta">
                             <x-dropdown align="right" width="48">
                                 <x-slot name="trigger">
-                                    <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('daftartoko.*') ? 'text-white' : '' }}"
-                                        onmouseover="this.style.color='#dc2626'"
-                                        onmouseout="this.style.color='white'">
+                                    <button
+                                        class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('daftartoko.*') ? 'text-white' : '' }}"
+                                        onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='white'">
                                         <div>{{ __('Master Data') }}</div>
 
                                         <div class="ml-1">
-                                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                    clip-rule="evenodd" />
                                             </svg>
                                         </div>
                                     </button>
@@ -198,23 +209,28 @@
                                     <x-dropdown-link :href="route('geofence-plant.index')" :active="request()->routeIs('geofence-plant')">
                                         {{ __('Lokasi Absen') }}
                                     </x-dropdown-link>
+                                    {{-- </x-dropdown-link :href="route('orientation.master-category.index')"
+                                        :active="request()->routeIs('orientation.master-category.index')">
+                                    {{ __('Kategori Training') }}
+                                    </x-dropdown-link> --}}
+                                    <x-dropdown-link :href="route('master-category.index')" :active="request()->routeIs('master-category.index')">
+                                        {{ __('Kategori Training') }}
+                                    </x-dropdown-link>
                                     <x-dropdown-link :href="route('orientation.master-activity.index')" :active="request()->routeIs('orientation.master-activity.index')">
-                                        {{ __('Kegiatan Orientation') }}
+                                        {{ __('Topik Training') }}
                                     </x-dropdown-link>
                                 </x-slot>
                             </x-dropdown>
                         </div>
                     @endif
 
-                    <x-nav-link :href="route('orientation.index')" :active="request()->routeIs('orientation.index')"
-                        class="text-white"
-                        onmouseover="this.style.color='#dc2626'"
-                        onmouseout="this.style.color='white'">
+                    <x-nav-link :href="route('orientation.index')" :active="request()->routeIs('orientation.index')" class="text-white"
+                        onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='white'">
                         {{ __('Orientasi') }}
                     </x-nav-link>
 
                 </div>
-                
+
             </div>
 
             <!-- Settings Dropdown -->
@@ -223,8 +239,7 @@
                     <x-slot name="trigger">
                         <button
                             class="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 transition duration-150 ease-in-out text-white border border-transparent rounded-md focus:outline-none"
-                                onmouseover="this.style.color='#dc2626'"
-                                onmouseout="this.style.color='white'">
+                            onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='white'">
                             <div>{{ session('username') }}</div>
 
                             <div class="ms-1">
@@ -261,8 +276,7 @@
             <div class="flex items-center -me-2 sm:hidden">
                 <button @click="open = ! open"
                     class="inline-flex items-center justify-center p-2 text-white transition duration-150 ease-in-out rounded-md focus:outline-none"
-                        onmouseover="this.style.color='#dc2626'"
-                        onmouseout="this.style.color='white'">
+                    onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='white'">
                     <svg class="w-6 h-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{ 'hidden': open, 'inline-flex': !open }" class="inline-flex"
                             stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -292,8 +306,8 @@
             onmouseout="this.style.color='{{ request()->routeIs('biodata') ? '#dc2626' : 'white' }}'">
             {{ __('Biodata') }}
         </x-responsive-nav-link>
-        @if(session('comp') == '0001' && session('nik') == '924330')
-        <!-- <x-responsive-nav-link :href="route('approval.biodata')" :active="request()->routeIs('approval.biodata')"
+        @if (session('comp') == '0001' && session('nik') == '924330')
+            <!-- <x-responsive-nav-link :href="route('approval.biodata')" :active="request()->routeIs('approval.biodata')"
             style="{{ request()->routeIs('approval.biodata') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
             onmouseover="this.style.color='#dc2626'"
             onmouseout="this.style.color='{{ request()->routeIs('approval.biodata') ? '#dc2626' : 'white' }}'">
@@ -306,23 +320,23 @@
             onmouseout="this.style.color='{{ request()->routeIs('absensi.index') ? '#dc2626' : 'white' }}'">
             {{ __('Absensi') }}
         </x-responsive-nav-link>
-        
-        @if(session('comp') == '0001' && session('nik') == '924330')
-        <x-responsive-nav-link :href="route('allabsensi.index')" :active="request()->routeIs('allabsensi.index')"
-            style="{{ request()->routeIs('absensi.index') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
-            onmouseover="this.style.color='#dc2626'"
-            onmouseout="this.style.color='{{ request()->routeIs('allabsensi.index') ? '#dc2626' : 'white' }}'">
-            {{ __('Absensi Seluruh Karyawan') }}
-        </x-responsive-nav-link>
+
+        @if (session('comp') == '0001' && session('nik') == '924330')
+            <x-responsive-nav-link :href="route('allabsensi.index')" :active="request()->routeIs('allabsensi.index')"
+                style="{{ request()->routeIs('absensi.index') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
+                onmouseover="this.style.color='#dc2626'"
+                onmouseout="this.style.color='{{ request()->routeIs('allabsensi.index') ? '#dc2626' : 'white' }}'">
+                {{ __('Absensi Seluruh Karyawan') }}
+            </x-responsive-nav-link>
         @endif
-        
+
         <x-responsive-nav-link :href="route('izin.index')" :active="request()->routeIs('izin.index')"
             style="{{ request()->routeIs('izin.index') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
             onmouseover="this.style.color='#dc2626'"
             onmouseout="this.style.color='{{ request()->routeIs('izin.index') ? '#dc2626' : 'white' }}'">
             {{ __('Leave') }}
         </x-responsive-nav-link>
-        
+
         <x-responsive-nav-link :href="route('selfreport.index')" :active="request()->routeIs('selfreport.index')"
             style="{{ request()->routeIs('selfreport.index') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
             onmouseover="this.style.color='#dc2626'"
@@ -336,35 +350,35 @@
             onmouseout="this.style.color='{{ request()->routeIs('orientation.*') ? '#dc2626' : 'white' }}'">
             {{ __('Orientasi') }}
         </x-responsive-nav-link>
-        
-        @if(session('comp') == '0001' && session('nik') == '924330')
-        <x-responsive-nav-link :href="route('report.index')" :active="request()->routeIs('report.index')"
-            style="{{ request()->routeIs('report.index') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
-            onmouseover="this.style.color='#dc2626'"
-            onmouseout="this.style.color='{{ request()->routeIs('report.index') ? '#dc2626' : 'white' }}'">
-            {{ __('Summary Employee') }}
-        </x-responsive-nav-link>
-        
-        <x-responsive-nav-link :href="route('summary.index')" :active="request()->routeIs('summary.index')"
-            style="{{ request()->routeIs('summary.index') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
-            onmouseover="this.style.color='#dc2626'"
-            onmouseout="this.style.color='{{ request()->routeIs('summary.index') ? '#dc2626' : 'white' }}'">
-            {{ __('Summary Plant') }}
-        </x-responsive-nav-link>
-        
-        <x-responsive-nav-link :href="route('approval.page')" :active="request()->routeIs('approval.page')"
-            style="{{ request()->routeIs('approval.page') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
-            onmouseover="this.style.color='#dc2626'"
-            onmouseout="this.style.color='{{ request()->routeIs('approval.page') ? '#dc2626' : 'white' }}'">
-            {{ __('Leave Approval') }}
-        </x-responsive-nav-link>
-        
-        <x-responsive-nav-link :href="route('history.index')" :active="request()->routeIs('history.index')"
-            style="{{ request()->routeIs('history.index') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
-            onmouseover="this.style.color='#dc2626'"
-            onmouseout="this.style.color='{{ request()->routeIs('history.index') ? '#dc2626' : 'white' }}'">
-            {{ __('History Approval') }}
-        </x-responsive-nav-link>
+
+        @if (session('comp') == '0001' && session('nik') == '924330')
+            <x-responsive-nav-link :href="route('report.index')" :active="request()->routeIs('report.index')"
+                style="{{ request()->routeIs('report.index') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
+                onmouseover="this.style.color='#dc2626'"
+                onmouseout="this.style.color='{{ request()->routeIs('report.index') ? '#dc2626' : 'white' }}'">
+                {{ __('Summary Employee') }}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link :href="route('summary.index')" :active="request()->routeIs('summary.index')"
+                style="{{ request()->routeIs('summary.index') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
+                onmouseover="this.style.color='#dc2626'"
+                onmouseout="this.style.color='{{ request()->routeIs('summary.index') ? '#dc2626' : 'white' }}'">
+                {{ __('Summary Plant') }}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link :href="route('approval.page')" :active="request()->routeIs('approval.page')"
+                style="{{ request()->routeIs('approval.page') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
+                onmouseover="this.style.color='#dc2626'"
+                onmouseout="this.style.color='{{ request()->routeIs('approval.page') ? '#dc2626' : 'white' }}'">
+                {{ __('Leave Approval') }}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link :href="route('history.index')" :active="request()->routeIs('history.index')"
+                style="{{ request()->routeIs('history.index') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
+                onmouseover="this.style.color='#dc2626'"
+                onmouseout="this.style.color='{{ request()->routeIs('history.index') ? '#dc2626' : 'white' }}'">
+                {{ __('History Approval') }}
+            </x-responsive-nav-link>
         @endif
 
         <!-- Responsive Settings Options -->
@@ -375,8 +389,7 @@
             </div>
 
             <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile.edit')"
-                    :active="request()->routeIs('profile.edit')"
+                <x-responsive-nav-link :href="route('profile.edit')" :active="request()->routeIs('profile.edit')"
                     style="{{ request()->routeIs('profile.edit') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
                     onmouseover="this.style.color='#dc2626'"
                     onmouseout="this.style.color='{{ request()->routeIs('profile.edit') ? '#dc2626' : 'white' }}'">

@@ -146,9 +146,12 @@
                      this.selectedPlant = plant;
                      this.isOpen = false;
                      console.log('Plant selected:', plant);
-                     // Simpan ke global variable untuk akses di submit
                      window.selectedPlantId = plant.id;
                      window.selectedPlantData = plant;
+
+                     // TIDAK mereset peserta — peserta tetap bebas
+                     // window.selectedParticipants tidak disentuh
+
                      window.dispatchEvent(new CustomEvent('orientation-plant-selected', {
                          detail: plant
                      }));

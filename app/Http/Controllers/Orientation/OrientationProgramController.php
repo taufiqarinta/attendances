@@ -19,7 +19,7 @@ class OrientationProgramController extends Controller
     /**
      * Database connection name for development/test database
      */
-    protected $dbConnection = 'hris_kobin';
+    protected $dbConnection = 'dev_test';
 
     /**
      * Daftar orientation program dari database hris_kobin.
@@ -33,7 +33,7 @@ class OrientationProgramController extends Controller
         $userNik = $this->currentUserNik();
 
         $programs = OrientationProgram::query()
-            ->with(['plant', 'activities'])
+            ->with(['plant', 'activities', 'category'])
             ->when(!$canManage, fn($query) => $query->whereJsonContains('participants', ['nik' => $userNik]))
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
@@ -48,6 +48,7 @@ class OrientationProgramController extends Controller
             ->latest()
             ->paginate($perPage)
             ->withQueryString();
+
 
         $allPrograms = OrientationProgram::select(['id', 'participants', 'status'])
             ->when(!$canManage, fn($query) => $query->whereJsonContains('participants', ['nik' => $userNik]))
@@ -74,10 +75,43 @@ class OrientationProgramController extends Controller
         $masterOrientationActivities = MasterOrientationActivity::where('status', 1)
             ->orderBy('activity_name', 'asc')
             ->get();
+        $categories = \App\Models\Orientation\MasterOrientationCategory::where('status', 1) // <-- TAMBAH
+            ->orderBy('category_name', 'asc')
+            ->get();
+
+        // Ambil daftar HR PIC dari API users (contoh: filter role HR)
+        $hrPics = [];
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(5)
+                ->get('https://web.kobin.co.id/api/attendance/live/api_get_users.php');
+
+            if ($response->successful()) {
+                $data = $response->json();
+                if (!empty($data['success']) && !empty($data['data'])) {
+                    $hrPics = collect($data['data'])
+                        ->filter(fn($u) => str_contains(strtolower($u['jabatan'] ?? ''), 'hr')
+                            || str_contains(strtolower($u['divisi'] ?? ''), 'hr'))
+                        ->map(fn($u) => [
+                            'nik' => (string) ($u['nik'] ?? ''),
+                            'nama' => $u['nama'] ?? '',
+                            'jabatan' => $u['jabatan'] ?? '',
+                            'dept' => $u['dept'] ?? '',
+                        ])
+                        ->filter(fn($u) => $u['nik'] !== '')
+                        ->values()
+                        ->all();
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::error('Gagal load HR PIC: ' . $e->getMessage());
+        }
+
 
         return view('orientation.create-orientation', compact(
             'plants',
-            'masterOrientationActivities'
+            'masterOrientationActivities',
+            'categories',
+            'hrPics'
         ));
     }
 
@@ -94,7 +128,7 @@ class OrientationProgramController extends Controller
                 ->with('edit_blocked', 'Program tidak dapat diedit karena terdapat kegiatan yang sudah dimulai atau selesai.');
         }
 
-        $orientation->load(['plant', 'activities.masterActivity']);
+        $orientation->load(['plant', 'activities.masterActivity', 'category']);
 
         // Ambil semua NIK PIC dari kegiatan untuk diambil datanya sekaligus
         $niks = $orientation->activities->pluck('pic_employee_id')->filter()->unique()->values()->all();
@@ -104,6 +138,9 @@ class OrientationProgramController extends Controller
             ->orderBy('activity_name', 'asc')
             ->get();
         $initialParticipants = $orientation->participants ?? [];
+        $hrPics = $orientation->hr_pic ?? [];
+        $hrPic = !empty($hrPics) ? $hrPics[0] : null;
+        $category = $orientation->category;
 
         $kegiatanRows = $orientation->activities->map(function (OrientationActivity $activity) use ($allPicData) {
             $picNik = $activity->pic_employee_id;
@@ -130,6 +167,8 @@ class OrientationProgramController extends Controller
             'masterOrientationActivities',
             'initialParticipants',
             'kegiatanRows',
+            'hrPic',
+            'category'
         ));
     }
 
@@ -157,7 +196,7 @@ class OrientationProgramController extends Controller
             'participants.*.jabatan' => 'nullable|string|max:255',
             'participants.*.dept' => 'nullable|string|max:255',
             'activities' => 'required|array|min:1',
-            'activities.*.activity_id' => 'required|exists:hris_kobin.master_orientation_activities,id',
+            'activities.*.activity_id' => 'required|exists:dev_test.master_orientation_activities,id',
             'activities.*.tanggal' => 'required|date',
             'activities.*.waktu_mulai' => 'required',
             'activities.*.waktu_selesai' => 'required',
@@ -168,16 +207,10 @@ class OrientationProgramController extends Controller
         $activityIds = collect($request->input('activities'))->pluck('activity_id')->unique();
         $allowedActivityIds = MasterOrientationActivity::whereIn('id', $activityIds)
             ->where('status', true)
-            ->get()
-            ->filter(fn(MasterOrientationActivity $activity) => in_array(
-                (string) $orientation->master_plants_id,
-                array_map('strval', $activity->plants ?? []),
-                true
-            ))
             ->pluck('id');
 
         if ($allowedActivityIds->count() !== $activityIds->count()) {
-            return response()->json(['message' => 'Terdapat kegiatan yang tidak tersedia untuk plant program ini.'], 422);
+            return response()->json(['message' => 'Terdapat kegiatan yang tidak valid.'], 422);
         }
 
         DB::connection($this->dbConnection)->transaction(function () use ($request, $orientation) {
@@ -210,17 +243,25 @@ class OrientationProgramController extends Controller
     {
         $this->authorizeOrientationManager();
 
-        $request->merge(['participants' => $this->normalizeParticipants($request->input('participants', []))]);
+        // Normalisasi hr_pic & participants
+        $request->merge([
+            'participants' => $this->normalizeParticipants($request->input('participants', [])),
+            'hr_pic' => $this->normalizeHrPic($request->input('hr_pic', [])), // <-- TAMBAH
+        ]);
 
         $request->validate([
-            'plant_id' => 'required|exists:hris_kobin.master_plants,id',
+            'category_id' => 'required|exists:dev_test.master_orientation_categories,id', // <-- TAMBAH
+            'plant_id' => 'required|exists:dev_test.master_plants,id',
+            'hr_pic' => 'required|array|min:1', // <-- TAMBAH
+            'hr_pic.*.nik' => 'required|string|max:100',
+            'hr_pic.*.nama' => 'required|string|max:255',
             'participants' => 'required|array|min:1',
             'participants.*.nik' => 'required|string|max:100',
             'participants.*.nama' => 'required|string|max:255',
             'participants.*.jabatan' => 'nullable|string|max:255',
             'participants.*.dept' => 'nullable|string|max:255',
             'activities' => 'required|array|min:1',
-            'activities.*.activity_id' => 'required|exists:hris_kobin.master_orientation_activities,id',
+            'activities.*.activity_id' => 'required|exists:dev_test.master_orientation_activities,id',
             'activities.*.tanggal' => 'required|date',
             'activities.*.waktu_mulai' => 'required',
             'activities.*.waktu_selesai' => 'required',
@@ -232,13 +273,13 @@ class OrientationProgramController extends Controller
         $activityIds = collect($request->input('activities'))->pluck('activity_id')->unique();
         $allowedActivityIds = MasterOrientationActivity::whereIn('id', $activityIds)
             ->where('status', true)
-            ->get()
-            ->filter(fn(MasterOrientationActivity $activity) => in_array(
-                (string) $request->plant_id,
-                array_map('strval', $activity->plants ?? []),
-                true
-            ))
             ->pluck('id');
+
+        if ($allowedActivityIds->count() !== $activityIds->count()) {
+            return response()->json([
+                'message' => 'Terdapat kegiatan yang tidak valid atau tidak aktif.',
+            ], 422);
+        }
 
         if ($allowedActivityIds->count() !== $activityIds->count()) {
             return response()->json([
@@ -247,19 +288,16 @@ class OrientationProgramController extends Controller
         }
 
         $orientation = DB::connection($this->dbConnection)->transaction(function () use ($request) {
-            // ================================================================
-            // HITUNG NOMOR URUT BATCH MENGGUNAKAN COUNT
-            // ================================================================
-            // Hitung total program yang sudah ada
             $totalPrograms = OrientationProgram::count();
             $nextBatchNumber = $totalPrograms + 1;
             $batchName = 'Kobin Orientation Program Batch ' . $nextBatchNumber;
-            // ================================================================
 
             $orientation = OrientationProgram::create([
+                'category_id' => $request->category_id,        // <-- TAMBAH
                 'batch_name' => $batchName,
                 'master_plants_id' => $request->plant_id,
                 'participants' => array_values($request->participants),
+                'hr_pic' => array_values($request->hr_pic),    // <-- TAMBAH
                 'status' => 'active',
             ]);
 
@@ -289,6 +327,34 @@ class OrientationProgramController extends Controller
 
         return redirect()->route('orientation.index')
             ->with('success', 'Orientation program berhasil dibuat.');
+    }
+
+    /**
+     * Simpan snapshot HR PIC agar nama dapat ditampilkan tanpa API.
+     */
+    private function normalizeHrPic(mixed $hrPic): array
+    {
+        if (!is_array($hrPic)) {
+            return [];
+        }
+
+        return collect($hrPic)
+            ->map(function ($pic) {
+                if (is_string($pic) || is_numeric($pic)) {
+                    return ['nik' => (string) $pic, 'nama' => (string) $pic];
+                }
+
+                return [
+                    'nik' => (string) ($pic['nik'] ?? ''),
+                    'nama' => (string) ($pic['nama'] ?? ''),
+                    'jabatan' => $pic['jabatan'] ?? null,
+                    'dept' => $pic['dept'] ?? null,
+                ];
+            })
+            ->filter(fn(array $pic) => $pic['nik'] !== '')
+            ->unique('nik')
+            ->values()
+            ->all();
     }
 
     /**
@@ -358,16 +424,17 @@ class OrientationProgramController extends Controller
         $this->authorizeOrientationViewer($orientation);
         $canManage = $this->canManageOrientation();
 
-        $orientation->load([
-            'plant',
-            'activities.masterActivity'
-        ]);
+        $orientation->load(['plant', 'activities.masterActivity']);
 
-        // Ambil semua NIK PIC dari kegiatan untuk diambil datanya sekaligus
+        // ============================================================
+        // 1. AMBIL DATA PIC (untuk info trainer di kegiatan)
+        // ============================================================
         $niks = $orientation->activities->pluck('pic_employee_id')->filter()->unique()->values()->all();
         $allPicData = $this->getMultiplePicData($niks);
 
-        // Ambil data kegiatan dengan informasi lengkap
+        // ============================================================
+        // 2. BUILD KEGIATAN ROWS
+        // ============================================================
         $kegiatanRows = $orientation->activities->map(function (OrientationActivity $activity) use ($allPicData) {
             $picNik = $activity->pic_employee_id;
             $picData = $allPicData[$picNik] ?? null;
@@ -398,32 +465,76 @@ class OrientationProgramController extends Controller
             ];
         })->values()->all();
 
-        // Ambil data peserta dari JSON field di OrientationProgram
+        // ============================================================
+        // 3. DATA PESERTA (dari JSON field)
+        // ============================================================
         $participantsFromDb = $orientation->participants ?? [];
         $totalParticipants = count($participantsFromDb);
 
-        // Ambil semua NIK peserta untuk mendapatkan data lengkap
+        // Ambil data lengkap peserta dari API
         $participantNiks = collect($participantsFromDb)->pluck('nik')->filter()->values()->all();
         $allParticipantData = $this->getMultiplePicData($participantNiks);
 
-        // Enrich data peserta dengan informasi lengkap dan progress - ubah menjadi Collection
-        $participantDetails = collect($participantsFromDb)->map(function ($participant) use ($allParticipantData, $orientation) {
-            $nik = $participant['nik'] ?? null;
+        // ============================================================
+        // 4. BUILD $participantDetails (gabungan data peserta + attendance)
+        // ============================================================
+        $totalActivities = $orientation->activities->count();
+
+        $participantDetails = collect($participantsFromDb)->map(function ($participant) use (
+            $allParticipantData,
+            $orientation,
+            $totalActivities,
+            $kegiatanRows
+        ) {
+            $nik = is_array($participant) ? ($participant['nik'] ?? null) : $participant;
             $data = $nik ? ($allParticipantData[$nik] ?? null) : null;
 
-            // Hitung progress peserta berdasarkan activities yang sudah completed
-            $participantActivities = $orientation->activities
-                ->where('pic_employee_id', $nik);
+            // ---------------------------------------------------------
+            // Agregasi attendance dari SEMUA kegiatan
+            // ---------------------------------------------------------
+            $hadirCount = 0;
+            $preTestScores = [];
+            $postTestScores = [];
+            $notes = [];
+            $breakdown = [];
 
-            $totalActivities = $participantActivities->count();
-            $completedActivities = $participantActivities->where('status', 'completed')->count();
-            $progress = $totalActivities > 0 ? round(($completedActivities / $totalActivities) * 100) : 0;
+            foreach ($orientation->activities as $activity) {
+                $attendance = collect($activity->attendances ?? [])->firstWhere('nik', $nik);
+                $kegiatanInfo = collect($kegiatanRows)->firstWhere('id', $activity->id);
 
-            // Tentukan status berdasarkan progress
+                $isPresent = !empty($attendance['is_present']);
+                $preTest = $attendance['pre_test'] ?? null;
+                $postTest = $attendance['post_test'] ?? null;
+                $note = $attendance['note'] ?? null;
+
+                if ($isPresent) $hadirCount++;
+                if ($preTest !== null && $preTest !== '') $preTestScores[] = (float) $preTest;
+                if ($postTest !== null && $postTest !== '') $postTestScores[] = (float) $postTest;
+                if (!empty($note)) $notes[] = $note;
+
+                $breakdown[] = [
+                    'activity_id' => $activity->id,
+                    'title' => $kegiatanInfo['title'] ?? 'Kegiatan',
+                    'tanggal' => $kegiatanInfo['tanggal_formatted'] ?? '-',
+                    'is_present' => $isPresent,
+                    'pre_test' => $preTest,
+                    'post_test' => $postTest,
+                    'note' => $note,
+                ];
+            }
+
+            // ---------------------------------------------------------
+            // Hitung status & progress
+            // ---------------------------------------------------------
+            $attendancePercentage = $totalActivities > 0
+                ? round(($hadirCount / $totalActivities) * 100)
+                : 0;
+
+            // Status peserta: completed jika hadir 100%
             $status = 'pending';
-            if ($progress == 100 && $totalActivities > 0) {
+            if ($attendancePercentage == 100 && $totalActivities > 0) {
                 $status = 'completed';
-            } elseif ($progress > 0) {
+            } elseif ($hadirCount > 0) {
                 $status = 'active';
             }
 
@@ -433,15 +544,30 @@ class OrientationProgramController extends Controller
                 'jabatan' => $data['jabatan'] ?? ($participant['jabatan'] ?? '-'),
                 'dept' => $data['dept'] ?? ($participant['dept'] ?? '-'),
                 'email' => $data['email'] ?? ($participant['email'] ?? '-'),
-                'status' => $status,
-                'progress' => $progress,
+                'join_date' => is_array($participant) ? ($participant['join_date'] ?? null) : null,
+
+                // Agregat
+                'hadir_count' => $hadirCount,
                 'total_activities' => $totalActivities,
-                'completed_activities' => $completedActivities,
-                'join_date' => $participant['join_date'] ?? null,
+                'attendance_percentage' => $attendancePercentage,
+                'pre_test_avg' => count($preTestScores) > 0
+                    ? round(array_sum($preTestScores) / count($preTestScores), 1) : null,
+                'post_test_avg' => count($postTestScores) > 0
+                    ? round(array_sum($postTestScores) / count($postTestScores), 1) : null,
+                'notes' => $notes,
+
+                // Status
+                'status' => $status,
+                'progress' => $attendancePercentage,
+
+                // Detail per kegiatan
+                'activity_breakdown' => $breakdown,
             ];
         });
 
-        // Statistik peserta - gunakan Collection methods
+        // ============================================================
+        // 5. STATISTIK PESERTA
+        // ============================================================
         $participantStats = [
             'total' => $participantDetails->count(),
             'completed' => $participantDetails->where('status', 'completed')->count(),
@@ -449,35 +575,36 @@ class OrientationProgramController extends Controller
             'pending' => $participantDetails->where('status', 'pending')->count(),
         ];
 
-        // Hitung statistik kegiatan
-        $totalActivities = $orientation->activities->count();
+        // ============================================================
+        // 6. STATISTIK KEGIATAN
+        // ============================================================
         $completedActivities = $orientation->activities->where('status', 'completed')->count();
         $pendingActivities = $orientation->activities->where('status', 'pending')->count();
         $inProgressActivities = $orientation->activities->where('status', 'in_progress')->count();
 
-        // Kelompokkan kegiatan berdasarkan tanggal
+        // ============================================================
+        // 7. KEGIATAN BY DATE
+        // ============================================================
         $activitiesByDate = $orientation->activities
-            ->groupBy(function ($activity) {
-                return $activity->activity_date?->format('Y-m-d') ?? 'no-date';
-            })
+            ->groupBy(fn($activity) => $activity->activity_date?->format('Y-m-d') ?? 'no-date')
             ->map(function ($activities, $date) {
                 return [
                     'date' => $date,
                     'date_formatted' => $date !== 'no-date' ? date('d M Y', strtotime($date)) : 'Tanggal tidak tersedia',
-                    'activities' => $activities->map(function ($activity) {
-                        return [
-                            'id' => $activity->id,
-                            'name' => $activity->masterActivity?->activity_name ?? 'Kegiatan',
-                            'start_time' => $activity->start_time?->format('H:i') ?? '-',
-                            'end_time' => $activity->end_time?->format('H:i') ?? '-',
-                            'pic' => $activity->pic_employee_id,
-                            'status' => $activity->status ?? 'pending',
-                        ];
-                    })->values()->all()
+                    'activities' => $activities->map(fn($activity) => [
+                        'id' => $activity->id,
+                        'name' => $activity->masterActivity?->activity_name ?? 'Kegiatan',
+                        'start_time' => $activity->start_time?->format('H:i') ?? '-',
+                        'end_time' => $activity->end_time?->format('H:i') ?? '-',
+                        'pic' => $activity->pic_employee_id,
+                        'status' => $activity->status ?? 'pending',
+                    ])->values()->all()
                 ];
             })->values()->all();
 
-        // Ambil semua master activities yang tersedia untuk plant ini
+        // ============================================================
+        // 8. MASTER ACTIVITIES YANG TERSEDIA
+        // ============================================================
         $availableActivities = MasterOrientationActivity::where('status', true)
             ->where(function ($query) use ($orientation) {
                 $query->whereJsonContains('plants', (string) $orientation->master_plants_id)
@@ -487,7 +614,9 @@ class OrientationProgramController extends Controller
             ->orderBy('activity_name', 'asc')
             ->get();
 
-        // Statistik program
+        // ============================================================
+        // 9. STATISTIK PROGRAM
+        // ============================================================
         $programStats = [
             'total_activities' => $totalActivities,
             'completed_activities' => $completedActivities,
@@ -495,14 +624,16 @@ class OrientationProgramController extends Controller
             'in_progress_activities' => $inProgressActivities,
             'total_participants' => $totalParticipants,
             'completion_percentage' => $totalActivities > 0
-                ? round(($completedActivities / $totalActivities) * 100)
-                : 0,
+                ? round(($completedActivities / $totalActivities) * 100) : 0,
         ];
 
-        // Cek apakah ada konflik jadwal
         $scheduleConflicts = $this->checkScheduleConflicts($orientation->activities);
 
-        // Kembalikan view dengan array asosiatif
+        // Attendances map untuk modal kehadiran
+        $attendancesByActivity = $orientation->activities->mapWithKeys(function ($activity) {
+            return [$activity->id => collect($activity->attendances ?? [])->keyBy('nik')->all()];
+        })->all();
+
         return view('orientation.detail-orientation', [
             'orientation' => $orientation,
             'kegiatanRows' => $kegiatanRows,
@@ -519,6 +650,7 @@ class OrientationProgramController extends Controller
             'programStats' => $programStats,
             'scheduleConflicts' => $scheduleConflicts,
             'canManage' => $canManage,
+            'attendancesByActivity' => $attendancesByActivity,
         ]);
     }
 
@@ -828,7 +960,7 @@ class OrientationProgramController extends Controller
 
         try {
             $request->validate([
-                'id' => 'required|exists:hris_kobin.orientation_activities,id',
+                'id' => 'required|exists:dev_test.orientation_activities,id',
                 'score' => 'required|numeric|min:0|max:100',
                 'score_note' => 'nullable|string|max:255',
             ]);
@@ -861,7 +993,7 @@ class OrientationProgramController extends Controller
 
         try {
             $request->validate([
-                'id' => 'required|exists:hris_kobin.orientation_activities,id',
+                'id' => 'required|exists:dev_test.orientation_activities,id',
                 'status' => 'required|in:pending,ongoing,completed,cancelled',
             ]);
 
@@ -937,7 +1069,7 @@ class OrientationProgramController extends Controller
     {
         try {
             $request->validate([
-                'id' => 'required|exists:hris_kobin.orientation_activities,id'
+                'id' => 'required|exists:dev_test.orientation_activities,id'
             ]);
 
             $activity = OrientationActivity::find($request->id);
@@ -1181,5 +1313,68 @@ class OrientationProgramController extends Controller
 
             return (string) $participantNik === $userNik;
         });
+    }
+
+
+    /**
+     * Simpan kehadiran + pre/post test, lalu set status kegiatan.
+     */
+    public function saveAttendance(Request $request)
+    {
+        if (!$this->canManageOrientation()) {
+            return response()->json(['message' => 'Tidak memiliki akses.'], 403);
+        }
+
+        $request->validate([
+            'id' => 'required|exists:' . $this->dbConnection . '.orientation_activities,id',
+            'attendances' => 'required|array',
+            'attendances.*.nik' => 'required|string',
+            'attendances.*.is_present' => 'required|boolean',
+            'attendances.*.pre_test' => 'nullable|numeric|min:0|max:100',
+            'attendances.*.post_test' => 'nullable|numeric|min:0|max:100',
+            'attendances.*.note' => 'nullable|string|max:255',
+            'next_status' => 'required|in:ongoing,completed',
+        ]);
+
+        try {
+            $activity = OrientationActivity::findOrFail($request->id);
+
+            $data = [
+                'attendances' => $request->attendances,
+                'status' => $request->next_status,
+            ];
+
+            if ($request->next_status === 'ongoing' && !$activity->started_at) {
+                $data['started_at'] = now();
+            }
+
+            if ($request->next_status === 'completed' && !$activity->completed_at) {
+                $data['completed_at'] = now();
+            }
+
+            $activity->update($data);
+
+            // Cek apakah semua kegiatan selesai → program completed
+            $orientation = $activity->orientation;
+            $total = $orientation->activities()->count();
+            $completed = $orientation->activities()->where('status', 'completed')->count();
+
+            if ($total > 0 && $total === $completed && in_array($orientation->status, ['active', 'pending'])) {
+                $orientation->update(['status' => 'completed']);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Kehadiran berhasil disimpan.',
+                'data' => [
+                    'status' => $activity->status,
+                    'started_at' => $activity->started_at,
+                    'completed_at' => $activity->completed_at,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error save attendance: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 }

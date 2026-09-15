@@ -17,6 +17,7 @@ use App\Http\Controllers\MasterLokasiEventController;
 use App\Http\Controllers\MasterTargetController;
 use App\Http\Controllers\OrderGatheringController;
 use App\Http\Controllers\Orientation\MasterOrientationActivityController;
+use App\Http\Controllers\Orientation\MasterOrientationCategoryController;
 use App\Http\Controllers\Orientation\OrientationProgramController;
 use App\Http\Controllers\PeringkatController;
 use App\Http\Controllers\ProfileController;
@@ -115,8 +116,10 @@ Route::middleware(['web', 'check.api.session'])->group(function () {
         return view('history.index');
     })->name('history.index');
     Route::prefix('orientation')->group(function () {
+        Route::resource('master-category', MasterOrientationCategoryController::class)
+        ->except(['show', 'create']);
 
-        /*
+    /*
     |--------------------------------------------------------------------------
     | Master Activity
     |--------------------------------------------------------------------------
@@ -167,6 +170,9 @@ Route::middleware(['web', 'check.api.session'])->group(function () {
 
             Route::get('/detail/{orientation}', 'show')
                 ->name('orientation.detail');
+                
+            Route::post('/activity/attendance', 'saveAttendance')
+                ->name('orientation.activity.attendance');
 
             /*
         |--------------------------------------------------------------------------
