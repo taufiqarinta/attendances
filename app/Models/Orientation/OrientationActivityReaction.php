@@ -13,16 +13,17 @@ class OrientationActivityReaction extends Model
 
     protected $table = 'orientation_activity_reactions';
 
-    protected $fillable = [
-        'orientation_activity_id',
-        'participant',
-        'reaction_id',
-        'note',
-    ];
+protected $fillable = [
+    'orientation_activity_id',
+    'employee_id',       
+    'reaction_id',
+    'note',
+    'rating',
+];
 
-    protected $casts = [
-        'participant' => 'array',
-    ];
+protected $casts = [
+    'employee_id' => 'array',   
+];
 
     /**
      * Relasi ke Orientation Activity

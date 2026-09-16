@@ -42,16 +42,113 @@
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 
                         {{-- Kategori --}}
-                        <div>
-                            <label class="mb-1.5 block text-xs font-semibold text-gray-700">Kategori <span
-                                    class="text-red-500">*</span></label>
-                            <select id="categorySelect"
-                                class="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm focus:border-red-400 focus:ring-2 focus:ring-red-100 focus:outline-none">
-                                <option value="">-- Pilih Kategori --</option>
-                                @foreach ($categories as $category)
-                                    <option value="{{ $category->id }}">{{ $category->category_name }}</option>
-                                @endforeach
-                            </select>
+                        {{-- Kategori (Searchable Dropdown) --}}
+                        <div x-data="categoryDropdown()" x-init="initCategories({{ json_encode($categories ?? []) }})" class="relative">
+                            <label class="mb-1.5 block text-xs font-semibold text-gray-700">
+                                Kategori <span class="text-red-500">*</span>
+                            </label>
+
+                            {{-- Tombol Dropdown --}}
+                            <button type="button" @click="toggleDropdown()"
+                                class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 transition hover:border-red-300 hover:bg-red-50"
+                                :class="isOpen ? 'border-red-400 ring-2 ring-red-100' : ''">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-600"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M7 7h.01M7 3h5a2 2 0 012 2v5.586a1 1 0 01-.293.707l-7.414 7.414a1 1 0 01-1.414 0L2.293 15.12a1 1 0 010-1.414L9.707 6.293A1 1 0 0110.414 6H13a1 1 0 001-1V3z" />
+                                        </svg>
+                                    </div>
+                                    <div class="text-left">
+                                        <div class="text-sm font-medium text-gray-800"
+                                            x-text="selectedCategory ? selectedCategory.category_name : 'Pilih Kategori'">
+                                        </div>
+                                        <div class="text-xs text-gray-500"
+                                            x-text="selectedCategory ? (selectedCategory.code_category ? 'Kode: ' + selectedCategory.code_category : 'Kategori terpilih') : 'Pilih kategori yang tersedia'">
+                                        </div>
+                                    </div>
+                                </div>
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                    class="h-4 w-4 text-gray-400 transition-transform duration-200"
+                                    :class="isOpen ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+
+                            {{-- Dropdown --}}
+                            <div x-show="isOpen" @click.away="closeDropdown()"
+                                x-transition:enter="transition ease-out duration-200"
+                                x-transition:enter-start="opacity-0 transform scale-95 -translate-y-2"
+                                x-transition:enter-end="opacity-100 transform scale-100 translate-y-0"
+                                class="absolute left-0 right-0 z-50 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden"
+                                style="box-shadow: 0 20px 60px rgba(0,0,0,0.15);">
+
+                                {{-- Search Input --}}
+                                <div class="p-3 border-b border-gray-100">
+                                    <div class="relative">
+                                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M21 21l-5.2-5.2m1.7-5.3a7 7 0 11-14 0a7 7 0 0114 0z" />
+                                        </svg>
+                                        <input type="text" x-model="searchQuery" @input="filterCategories()"
+                                            placeholder="Cari kategori..."
+                                            class="w-full rounded-lg border border-gray-200 pl-9 pr-4 py-2 text-sm focus:border-red-400 focus:ring-2 focus:ring-red-100 focus:outline-none transition">
+                                        <button x-show="searchQuery" @click="clearSearch()"
+                                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                            <svg class="h-4 w-4" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {{-- List Kategori --}}
+                                <div class="max-h-60 overflow-y-auto">
+                                    <template x-for="(cat, index) in filteredCategories" :key="index">
+                                        <button @click="selectCategory(cat)"
+                                            class="flex w-full items-center gap-3 px-4 py-3 hover:bg-red-50 transition group"
+                                            :class="selectedCategory && selectedCategory.id === cat.id ? 'bg-red-50/50' : ''">
+                                            <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-sm font-semibold"
+                                                :class="selectedCategory && selectedCategory.id === cat.id ?
+                                                    'bg-red-500 text-white' :
+                                                    'bg-gray-100 text-gray-600 group-hover:bg-red-100 group-hover:text-red-600'">
+                                                <span x-text="getInitials(cat.category_name)"></span>
+                                            </div>
+                                            <div class="flex-1 text-left">
+                                                <div class="text-sm font-medium text-gray-800"
+                                                    x-text="cat.category_name"></div>
+                                                <div class="text-xs text-gray-500">
+                                                    <span x-show="cat.code_category"
+                                                        x-text="'Kode: ' + cat.code_category"></span>
+                                                </div>
+                                            </div>
+                                            <svg x-show="selectedCategory && selectedCategory.id === cat.id"
+                                                class="h-5 w-5 text-red-600 flex-shrink-0" fill="none"
+                                                stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        </button>
+                                    </template>
+
+                                    {{-- No Results --}}
+                                    <div x-show="filteredCategories.length === 0" class="px-4 py-8 text-center">
+                                        <svg class="h-12 w-12 mx-auto text-gray-300 mb-3" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <p class="text-sm text-gray-500">Tidak ada kategori ditemukan</p>
+                                        <p class="text-xs text-gray-400 mt-1">Coba kata kunci lainnya</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         {{-- HR PIC (Searchable Dropdown) --}}
@@ -233,6 +330,79 @@
                                 }
                             }
                         </script>
+                        <script>
+                            function categoryDropdown() {
+                                return {
+                                    isOpen: false,
+                                    searchQuery: '',
+                                    selectedCategory: null,
+                                    categories: [],
+                                    filteredCategories: [],
+
+                                    initCategories(categories) {
+                                        // Normalize: pastikan id sebagai number/string konsisten
+                                        this.categories = (categories || []).map(c => ({
+                                            id: c.id,
+                                            category_name: c.category_name,
+                                            code_category: c.code_category || null
+                                        }));
+                                        this.filteredCategories = this.categories;
+                                    },
+
+                                    toggleDropdown() {
+                                        this.isOpen = !this.isOpen;
+                                        if (this.isOpen) {
+                                            this.filteredCategories = this.categories;
+                                            this.searchQuery = '';
+                                        }
+                                    },
+
+                                    closeDropdown() {
+                                        this.isOpen = false;
+                                    },
+
+                                    filterCategories() {
+                                        if (!this.searchQuery.trim()) {
+                                            this.filteredCategories = this.categories;
+                                            return;
+                                        }
+
+                                        const query = this.searchQuery.toLowerCase().trim();
+                                        this.filteredCategories = this.categories.filter(cat =>
+                                            (cat.category_name && cat.category_name.toLowerCase().includes(query)) ||
+                                            (cat.code_category && String(cat.code_category).toLowerCase().includes(query))
+                                        );
+                                    },
+
+                                    clearSearch() {
+                                        this.searchQuery = '';
+                                        this.filterCategories();
+                                    },
+
+                                    selectCategory(cat) {
+                                        this.selectedCategory = cat;
+                                        this.isOpen = false;
+                                        console.log('Category selected:', cat);
+                                        window.selectedCategory = cat;
+                                        window.selectedCategoryId = cat.id;
+                                        window.dispatchEvent(new CustomEvent('orientation-category-selected', {
+                                            detail: cat
+                                        }));
+                                    },
+
+                                    getInitials(name) {
+                                        if (!name) return '?';
+                                        const words = name.trim().split(' ');
+                                        if (words.length === 1) {
+                                            return words[0].charAt(0).toUpperCase();
+                                        }
+                                        const first = words[0].charAt(0).toUpperCase();
+                                        const last = words[words.length - 1].charAt(0).toUpperCase();
+                                        return first + last;
+                                    }
+                                }
+                            }
+                        </script>
 
                         {{-- Plant Dropdown --}}
                         @include('orientation.component-create.dropdwon-plant')
@@ -272,7 +442,7 @@
     <script>
         async function submitOrientation() {
             const plantId = window.selectedPlantId;
-            const categoryId = document.getElementById('categorySelect')?.value;
+            const categoryId = window.selectedCategoryId || null;
             const hrPic = window.selectedHrPic || null;
             const hrPicNik = hrPic?.nik;
 

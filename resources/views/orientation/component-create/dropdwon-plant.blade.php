@@ -1,5 +1,5 @@
      <div x-data="plantDropdown()" x-init="initPlants({{ json_encode($plants) }})" class="relative">
-         <label class="mb-1.5 block text-xs font-semibold text-gray-700">Plant</label>
+         <label class="mb-1.5 block text-xs font-semibold text-gray-700">Plant <span class="text-red-500">*</span></label>
 
          {{-- Tombol Dropdown --}}
          <button type="button" @click="toggleDropdown()"

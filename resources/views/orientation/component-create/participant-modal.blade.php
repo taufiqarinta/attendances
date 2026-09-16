@@ -1,7 +1,8 @@
 <div x-data="participantModal()" class="space-y-6">
     <!-- Peserta -->
     <div>
-        <label class="mb-1.5 block text-xs font-semibold text-gray-700">Peserta Orientation</label>
+        <label class="mb-1.5 block text-xs font-semibold text-gray-700">Peserta Orientation <span
+                class="text-red-500">*</span></label>
         <button type="button" @click="openModal()"
             class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 transition hover:border-red-300 hover:bg-red-50">
             <div class="flex items-center gap-3">

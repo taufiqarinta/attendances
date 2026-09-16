@@ -15,9 +15,9 @@
         body {
             font-family: "Times New Roman", Times, serif;
             font-size: 10px;
-            color: #000;
+            color: #1F2937;
             background: #fff;
-            padding: 14px 16px;
+            padding: 14px 18px;
         }
 
         .container {
@@ -30,25 +30,30 @@
             align-items: center;
             justify-content: space-between;
             border-bottom: 3px solid #7A1113;
-            padding-bottom: 10px;
-            margin-bottom: 14px;
-            min-height: 62px;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+            min-height: 68px;
+            gap: 16px;
         }
 
         .header-left {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
+            /* jarak logo ke title — kecil biar rapat */
             flex: 1;
+            min-width: 0;
         }
 
         .logo {
-            width: 60px;
-            height: 60px;
+            width: 62px;
+            height: 62px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            margin-right: 4px;
+            /* jarak tambahan tipis */
         }
 
         .logo img {
@@ -58,44 +63,60 @@
         }
 
         .logo-placeholder {
-            width: 56px;
-            height: 56px;
-            border: 1px dashed #999;
+            width: 58px;
+            height: 58px;
+            border: 1px dashed #7A1113;
+            color: #7A1113;
             display: flex;
             justify-content: center;
             align-items: center;
             font-size: 10px;
-            background: #f9f9f9;
+            background: #FEF2F2;
+            border-radius: 4px;
+            font-weight: bold;
         }
 
         .title-section {
             flex: 1;
+            min-width: 0;
+            padding-left: 4px;
+            /* sedikit padding biar rapi */
         }
 
         .title-section h1 {
             font-size: 22px;
             font-weight: bold;
-            color: #000;
+            color: #7A1113;
             letter-spacing: 2px;
             margin: 0;
+            line-height: 1.1;
         }
 
         .title-section .subtitle {
             font-size: 11px;
-            color: #666;
-            margin-top: 2px;
+            color: #6B7280;
+            margin-top: 4px;
+            font-style: italic;
         }
 
         .header-right {
             text-align: right;
             font-size: 9px;
-            color: #333;
-            min-width: 135px;
+            color: #374151;
+            min-width: 150px;
             flex-shrink: 0;
+            border-left: 2px solid #FEE2E2;
+            padding-left: 12px;
+        }
+
+        .header-right .row {
+            margin-bottom: 3px;
+            line-height: 1.3;
         }
 
         .header-right .label {
             font-weight: bold;
+            color: #7A1113;
         }
 
         /* ================= INFO ================= */
@@ -103,24 +124,27 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 14px;
-            padding: 7px 0;
-            border-bottom: 1px dashed #ccc;
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            background: #FEF2F2;
+            border-left: 3px solid #7A1113;
+            border-radius: 2px;
             font-size: 9px;
         }
 
         .program-info .left {
             display: flex;
-            gap: 30px;
+            gap: 24px;
             flex-wrap: wrap;
         }
 
         .program-info .label {
             font-weight: bold;
+            color: #7A1113;
         }
 
         .program-info .right {
-            color: #666;
+            color: #6B7280;
         }
 
         /* ================= TABLE ================= */
@@ -131,24 +155,27 @@
         }
 
         .schedule-table th {
-            background: #ff4c4c;
+            background: #7A1113;
             color: #fff;
-            border: 1px solid #555;
-            padding: 5px 3px;
-            font-size: 8px;
-            font-weight: normal;
+            border: 1px solid #4A0A0C;
+            padding: 6px 4px;
+            font-size: 9px;
+            font-weight: bold;
             text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .schedule-table td {
-            border: 1px solid #555;
-            padding: 4px 3px;
-            font-size: 8px;
+            border: 1px solid #D1D5DB;
+            padding: 5px 4px;
+            font-size: 9px;
             vertical-align: middle;
+            color: #1F2937;
         }
 
         .bg-gray {
-            background: #d9d9d9;
+            background: #F9FAFB;
         }
 
         .bg-white {
@@ -174,56 +201,70 @@
         .date-cell {
             text-align: center;
             vertical-align: middle;
-            font-size: 8px;
-            width: 14%;
+            font-size: 9px;
+            width: 13%;
             font-weight: bold;
+            color: #7A1113;
+            background: #FEF2F2;
         }
 
         .place-cell {
             text-align: center;
             vertical-align: middle;
-            font-size: 8px;
-            width: 14%;
+            font-size: 9px;
+            width: 13%;
             font-weight: bold;
+            color: #1F2937;
         }
 
         .break-cell {
             text-align: center;
             font-weight: bold;
-            font-size: 8px;
-            background: #d9d9d9;
+            font-size: 9px;
+            background: #FEE2E2;
+            color: #7A1113;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
 
         .time-cell {
             text-align: center;
-            width: 14%;
+            width: 12%;
+            font-weight: 500;
         }
 
         .activity-cell {
-            padding-left: 4px;
-            width: 28%;
+            padding-left: 8px;
+            width: 30%;
+            font-weight: 500;
         }
 
         .pic-cell {
-            padding-left: 4px;
-            width: 16%;
+            padding-left: 8px;
+            width: 18%;
         }
 
         .position-cell {
-            padding-left: 4px;
+            padding-left: 8px;
             width: 14%;
+            color: #6B7280;
+            font-style: italic;
         }
 
+        /* ================= PARTICIPANTS ================= */
         .participant-section {
-            margin-top: 24px;
+            margin-top: 22px;
+            page-break-inside: avoid;
         }
 
         .section-title {
             border-left: 4px solid #7A1113;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: bold;
-            margin-bottom: 8px;
-            padding-left: 8px;
+            margin-bottom: 10px;
+            padding-left: 10px;
+            color: #7A1113;
+            letter-spacing: 0.5px;
         }
 
         .participant-table {
@@ -233,32 +274,40 @@
 
         .participant-table th {
             background: #7A1113;
-            border: 1px solid #555;
+            border: 1px solid #4A0A0C;
             color: #fff;
-            font-size: 11px;
-            font-weight: normal;
-            padding: 6px;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 7px 6px;
             text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .participant-table td {
-            border: 1px solid #555;
+            border: 1px solid #D1D5DB;
             font-size: 10px;
-            padding: 5px 6px;
+            padding: 6px 8px;
+            color: #1F2937;
+        }
+
+        .participant-table tbody tr:nth-child(even) td {
+            background: #F9FAFB;
         }
 
         /* ================= FOOTER ================= */
         .footer {
-            margin-top: 25px;
+            margin-top: 22px;
             padding-top: 12px;
             border-top: 2px solid #7A1113;
             text-align: center;
-            font-size: 10px;
-            color: #888;
+            font-size: 9px;
+            color: #6B7280;
         }
 
         .footer span {
             font-weight: bold;
+            color: #7A1113;
         }
     </style>
 
@@ -267,7 +316,6 @@
 <body>
 
     <div class="container">
-
         {{-- ================= HEADER ================= --}}
         <div class="header">
 
@@ -293,13 +341,11 @@
                     @if (isset($logoExists) && $logoExists && !empty($logoBase64))
                         <img src="data:{{ $logoType }};base64,{{ $logoBase64 }}" alt="Logo Kobin">
                     @else
-                        <div class="logo-placeholder">
-                            LOGO
-                        </div>
+                        <div class="logo-placeholder">LOGO</div>
                     @endif
                 </div>
 
-                {{-- TITLE --}}
+                {{-- TITLE — tepat di sebelah kanan logo --}}
                 <div class="title-section">
                     <h1>KOBIN ORIENTATION PROGRAM</h1>
                     <div class="subtitle">{{ $orientation->batch_name ?? 'Batch Name' }}</div>
@@ -309,8 +355,9 @@
 
             {{-- HEADER RIGHT --}}
             <div class="header-right">
-                <div><span class="label">Nama :</span> Tim HO</div>
-                <div style="margin-top:4px;"><span class="label">Periode :</span> {{ $period ?? '-' }}</div>
+                <div class="row"><span class="label">Nama :</span> Tim HO</div>
+                <div class="row"><span class="label">Periode :</span> {{ $period ?? '-' }}</div>
+                <div class="row"><span class="label">Lokasi :</span> {{ $plantName ?? '-' }}</div>
             </div>
 
         </div>
@@ -321,12 +368,12 @@
 
             <div class="left">
                 <span>
-                    <span class="label">Lokasi :</span>
-                    {{ $plantName ?? '-' }}
-                </span>
-                <span>
                     <span class="label">Total Peserta :</span>
                     {{ $totalParticipants ?? 0 }} Orang
+                </span>
+                <span>
+                    <span class="label">Total Kegiatan :</span>
+                    {{ collect($groupedActivities ?? [])->sum(fn($g) => count($g['rows'] ?? [])) }} Materi
                 </span>
             </div>
 
@@ -343,11 +390,11 @@
 
             <thead>
                 <tr>
-                    <th width="14%">Tanggal</th>
-                    <th width="14%">Waktu</th>
-                    <th width="14%">Tempat</th>
-                    <th width="28%">Kegiatan</th>
-                    <th width="16%">PIC</th>
+                    <th width="13%">Tanggal</th>
+                    <th width="12%">Waktu</th>
+                    <th width="13%">Tempat</th>
+                    <th width="30%">Kegiatan</th>
+                    <th width="18%">PIC</th>
                     <th width="14%">Jabatan</th>
                 </tr>
             </thead>
@@ -372,26 +419,26 @@
 
                         <tr>
 
-                            {{-- ================= TANGGAL (ROWSPAN) ================= --}}
+                            {{-- TANGGAL (ROWSPAN) --}}
                             @if ($index == 0)
                                 <td rowspan="{{ $rowCount }}" class="date-cell">
                                     {{ $group['date_formatted'] ?? '-' }}
                                 </td>
                             @endif
 
-                            {{-- ================= WAKTU ================= --}}
+                            {{-- WAKTU --}}
                             <td class="time-cell {{ $bgClass }}">
                                 {{ $row['time'] ?? '-' }}
                             </td>
 
-                            {{-- ================= TEMPAT (ROWSPAN) ================= --}}
+                            {{-- TEMPAT (ROWSPAN) --}}
                             @if ($index == 0)
                                 <td rowspan="{{ $rowCount }}" class="place-cell">
                                     {{ $plantName ?? '-' }}
                                 </td>
                             @endif
 
-                            {{-- ================= ISTIRAHAT / BREAK ================= --}}
+                            {{-- ISTIRAHAT / BREAK --}}
                             @if ($isBreakTime)
                                 <td colspan="3" class="break-cell">
                                     {{ $isLunch ? 'ISTIRAHAT MAKAN' : 'ISTIRAHAT' }}

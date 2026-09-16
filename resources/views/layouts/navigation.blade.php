@@ -213,6 +213,9 @@
                                         :active="request()->routeIs('orientation.master-category.index')">
                                     {{ __('Kategori Training') }}
                                     </x-dropdown-link> --}}
+                                    <x-dropdown-link :href="route('master-reaksi-evaluasi.index')" :active="request()->routeIs('master-reaksi-evaluasi.index')">
+                                        {{ __('Master Reaksi Evaluasi') }}
+                                    </x-dropdown-link>
                                     <x-dropdown-link :href="route('master-category.index')" :active="request()->routeIs('master-category.index')">
                                         {{ __('Kategori Training') }}
                                     </x-dropdown-link>
