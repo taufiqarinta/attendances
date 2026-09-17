@@ -212,7 +212,7 @@
                             </x-dropdown>
                         </div>
                     @endif
-                    {{-- @php
+                    @php
                         $isOrientationAdmin = \App\Models\Orientation\UserAccessOrientation::where(
                             'nik',
                             session('nik'),
@@ -264,7 +264,7 @@
                             </x-dropdown>
                         </div>
                     @endif
-                    @php
+                    {{-- @php
                         $hasOrientationAccess = \App\Models\Orientation\UserAccessOrientation::where(
                             'nik',
                             session('nik'),
@@ -272,12 +272,12 @@
                             ->where('status', 'ACTIVE')
                             ->exists();
                     @endphp
-                    @if ($hasOrientationAccess)
-                        <x-nav-link :href="route('orientation.index')" :active="request()->routeIs('orientation.index')" class="text-white"
-                            onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='white'">
-                            {{ __('Orientasi') }}
-                        </x-nav-link>
-                    @endif --}}
+                    @if ($hasOrientationAccess) --}}
+                    <x-nav-link :href="route('orientation.index')" :active="request()->routeIs('orientation.index')" class="text-white"
+                        onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='white'">
+                        {{ __('Orientasi') }}
+                    </x-nav-link>
+                    {{-- @endif --}}
 
                 </div>
 
@@ -393,14 +393,12 @@
             onmouseout="this.style.color='{{ request()->routeIs('selfreport.index') ? '#dc2626' : 'white' }}'">
             {{ __('Report') }}
         </x-responsive-nav-link>
-        {{-- @if ($hasOrientationAccess)
-            <x-responsive-nav-link :href="route('orientation.index')" :active="request()->routeIs('orientation.*')"
-                style="{{ request()->routeIs('orientation.*') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
-                onmouseover="this.style.color='#dc2626'"
-                onmouseout="this.style.color='{{ request()->routeIs('orientation.*') ? '#dc2626' : 'white' }}'">
-                {{ __('Orientasi') }}
-            </x-responsive-nav-link>
-        @endif --}}
+        <x-responsive-nav-link :href="route('orientation.index')" :active="request()->routeIs('orientation.*')"
+            style="{{ request()->routeIs('orientation.*') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
+            onmouseover="this.style.color='#dc2626'"
+            onmouseout="this.style.color='{{ request()->routeIs('orientation.*') ? '#dc2626' : 'white' }}'">
+            {{ __('Orientasi') }}
+        </x-responsive-nav-link>
         @if (session('comp') == '0001' && session('nik') == '924330')
             <x-responsive-nav-link :href="route('report.index')" :active="request()->routeIs('report.index')"
                 style="{{ request()->routeIs('report.index') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"

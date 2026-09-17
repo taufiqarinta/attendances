@@ -58,13 +58,13 @@ class MasterOrientationActivityController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'category_id' => 'required|exists:dev_test.master_orientation_categories,id',
+            'category_id' => 'required|exists:hris_kobin.master_orientation_categories,id',
             'activity_name' => 'required|string|max:150',
             'description' => 'nullable|string',
             'status' => 'required|boolean'
         ]);
 
-        $activity = DB::connection('dev_test')->transaction(function () use ($request) {
+        $activity = DB::connection('hris_kobin')->transaction(function () use ($request) {
             return MasterOrientationActivity::create([
                 'category_id' => $request->category_id,
                 'code_activity' => $this->nextActivityCode(),
@@ -104,7 +104,7 @@ class MasterOrientationActivityController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'category_id' => 'required|exists:dev_test.master_orientation_categories,id',
+            'category_id' => 'required|exists:hris_kobin.master_orientation_categories,id',
             'activity_name' => 'required|string|max:150',
             'description' => 'nullable|string',
             'status' => 'required|boolean'

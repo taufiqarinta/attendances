@@ -9,7 +9,7 @@ class OrientationActivityReaction extends Model
 {
     use HasFactory;
 
-    protected $connection = 'dev_test';
+    protected $connection = 'hris_kobin';
 
     protected $table = 'orientation_activity_reactions';
 
