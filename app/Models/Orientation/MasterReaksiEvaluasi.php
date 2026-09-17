@@ -9,7 +9,7 @@ class MasterReaksiEvaluasi extends Model
 {
     use HasFactory;
 
-    protected $connection = 'dev_test';
+    protected $connection = 'hris_kobin';
 
     protected $table = 'master_reaksi_evaluasi';
 
