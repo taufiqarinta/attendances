@@ -10,6 +10,7 @@ use App\Models\Orientation\MasterReaksiEvaluasi;
 use App\Models\Orientation\OrientationActivity;
 use App\Models\Orientation\OrientationActivityReaction;
 use App\Models\Orientation\OrientationProgram;
+use App\Models\Orientation\UserAccessOrientation;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -71,7 +72,7 @@ class OrientationProgramController extends Controller
             ->when(!empty($periodTo), function ($q) use ($periodTo) {
                 $q->whereHas('activities', fn($a) => $a->whereDate('activity_date', '<=', $periodTo));
             })
-            ->latest()
+            ->latest('id')
             ->paginate($perPage)
             ->withQueryString();
 
@@ -1391,10 +1392,23 @@ class OrientationProgramController extends Controller
      */
     private function canManageOrientation(?OrientationProgram $orientation = null): bool
     {
-        if ($this->currentUserNik() === '924330') {
+        $nik = $this->currentUserNik();
+
+        // Super Admin / Admin khusus
+        if ($nik === '924330') {
             return true;
         }
 
+        // User yang terdaftar di access orientation
+        $hasOrientationAccess = UserAccessOrientation::where('nik', $nik)
+            ->where('status', 'ACTIVE')
+            ->exists();
+
+        if ($hasOrientationAccess) {
+            return true;
+        }
+
+        // PIC HR yang ditugaskan pada orientation tertentu
         return $orientation !== null && $this->isAssignedHrPic($orientation);
     }
 

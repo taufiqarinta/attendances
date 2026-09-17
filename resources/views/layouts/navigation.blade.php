@@ -154,7 +154,6 @@
                             </x-dropdown>
                         </div>
                     @endif
-
                     @if (session('comp') == '0001' && session('nik') == '924330')
                         <div class="hidden sm:flex sm:items-center sm:ms-10 granitfiesta">
                             <x-dropdown align="right" width="48">
@@ -209,10 +208,49 @@
                                     <x-dropdown-link :href="route('geofence-plant.index')" :active="request()->routeIs('geofence-plant')">
                                         {{ __('Lokasi Absen') }}
                                     </x-dropdown-link>
-                                    {{-- </x-dropdown-link :href="route('orientation.master-category.index')"
-                                        :active="request()->routeIs('orientation.master-category.index')">
-                                    {{ __('Kategori Training') }}
-                                    </x-dropdown-link> --}}
+                                </x-slot>
+                            </x-dropdown>
+                        </div>
+                    @endif
+                    @php
+                        $isOrientationAdmin = \App\Models\Orientation\UserAccessOrientation::where(
+                            'nik',
+                            session('nik'),
+                        )
+                            ->where('status', 'ACTIVE')
+                            ->where('role', 'ADMIN')
+                            ->exists();
+                    @endphp
+                    @if ($isOrientationAdmin)
+                        <div class="hidden sm:flex sm:items-center sm:ms-10 granitfiesta">
+                            <x-dropdown align="right" width="48">
+                                <x-slot name="trigger">
+                                    <button
+                                        class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('daftartoko.*') ? 'text-white' : '' }}"
+                                        onmouseover="this.style.color='#dc2626'"
+                                        onmouseout="this.style.color='white'">
+                                        <div>{{ __('Master Data Orientation') }}</div>
+
+                                        <div class="ml-1">
+                                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                    clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                    </button>
+                                </x-slot>
+
+                                <x-slot name="content">
+                                    @php
+                                        $hasOrientationAccess = \App\Models\Orientation\UserAccessOrientation::where(
+                                            'nik',
+                                            session('nik'),
+                                        )
+                                            ->where('status', 'ACTIVE')
+                                            ->exists();
+                                    @endphp
                                     <x-dropdown-link :href="route('master-reaksi-evaluasi.index')" :active="request()->routeIs('master-reaksi-evaluasi.index')">
                                         {{ __('Master Reaksi Evaluasi') }}
                                     </x-dropdown-link>
@@ -226,11 +264,20 @@
                             </x-dropdown>
                         </div>
                     @endif
-
-                    <x-nav-link :href="route('orientation.index')" :active="request()->routeIs('orientation.index')" class="text-white"
-                        onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='white'">
-                        {{ __('Orientasi') }}
-                    </x-nav-link>
+                    @php
+                        $hasOrientationAccess = \App\Models\Orientation\UserAccessOrientation::where(
+                            'nik',
+                            session('nik'),
+                        )
+                            ->where('status', 'ACTIVE')
+                            ->exists();
+                    @endphp
+                    @if ($hasOrientationAccess)
+                        <x-nav-link :href="route('orientation.index')" :active="request()->routeIs('orientation.index')" class="text-white"
+                            onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='white'">
+                            {{ __('Orientasi') }}
+                        </x-nav-link>
+                    @endif
 
                 </div>
 
@@ -346,14 +393,14 @@
             onmouseout="this.style.color='{{ request()->routeIs('selfreport.index') ? '#dc2626' : 'white' }}'">
             {{ __('Report') }}
         </x-responsive-nav-link>
-
-        <x-responsive-nav-link :href="route('orientation.index')" :active="request()->routeIs('orientation.*')"
-            style="{{ request()->routeIs('orientation.*') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
-            onmouseover="this.style.color='#dc2626'"
-            onmouseout="this.style.color='{{ request()->routeIs('orientation.*') ? '#dc2626' : 'white' }}'">
-            {{ __('Orientasi') }}
-        </x-responsive-nav-link>
-
+        @if ($hasOrientationAccess)
+            <x-responsive-nav-link :href="route('orientation.index')" :active="request()->routeIs('orientation.*')"
+                style="{{ request()->routeIs('orientation.*') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
+                onmouseover="this.style.color='#dc2626'"
+                onmouseout="this.style.color='{{ request()->routeIs('orientation.*') ? '#dc2626' : 'white' }}'">
+                {{ __('Orientasi') }}
+            </x-responsive-nav-link>
+        @endif
         @if (session('comp') == '0001' && session('nik') == '924330')
             <x-responsive-nav-link :href="route('report.index')" :active="request()->routeIs('report.index')"
                 style="{{ request()->routeIs('report.index') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
