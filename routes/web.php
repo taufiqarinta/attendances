@@ -17,6 +17,8 @@ use App\Http\Controllers\MasterLokasiEventController;
 use App\Http\Controllers\MasterTargetController;
 use App\Http\Controllers\OrderGatheringController;
 use App\Http\Controllers\Orientation\MasterOrientationActivityController;
+use App\Http\Controllers\Orientation\MasterOrientationCategoryController;
+use App\Http\Controllers\Orientation\MasterReaksiEvaluasiController;
 use App\Http\Controllers\Orientation\OrientationProgramController;
 use App\Http\Controllers\PeringkatController;
 use App\Http\Controllers\ProfileController;
@@ -114,7 +116,19 @@ Route::middleware(['web', 'check.api.session'])->group(function () {
     Route::get('/history', function () {
         return view('history.index');
     })->name('history.index');
+
+
+    Route::prefix('orientation')->name('master-reaksi-evaluasi.')->group(function () {
+        Route::get('/master-reaksi-evaluasi', [MasterReaksiEvaluasiController::class, 'index'])->name('index');
+        Route::post('/master-reaksi-evaluasi', [MasterReaksiEvaluasiController::class, 'store'])->name('store');
+        Route::get('/master-reaksi-evaluasi/{id}/edit', [MasterReaksiEvaluasiController::class, 'edit'])->name('edit');
+        Route::put('/master-reaksi-evaluasi/{id}', [MasterReaksiEvaluasiController::class, 'update'])->name('update');
+        Route::delete('/master-reaksi-evaluasi/{id}', [MasterReaksiEvaluasiController::class, 'destroy'])->name('destroy');
+    });
     Route::prefix('orientation')->group(function () {
+        Route::resource('master-category', MasterOrientationCategoryController::class)
+            ->except(['show', 'create']);
+
 
         /*
     |--------------------------------------------------------------------------
@@ -167,6 +181,15 @@ Route::middleware(['web', 'check.api.session'])->group(function () {
 
             Route::get('/detail/{orientation}', 'show')
                 ->name('orientation.detail');
+
+            Route::post('/activity/attendance', 'saveAttendance')
+                ->name('orientation.activity.attendance');
+
+            Route::post('/activity/reaction', [OrientationProgramController::class, 'saveReaction'])
+                ->name('orientation.activity.reaction');
+
+            Route::get('/activity/{activityId}/reactions', [OrientationProgramController::class, 'getReactions'])
+                ->name('orientation.activity.reactions');
 
             /*
         |--------------------------------------------------------------------------

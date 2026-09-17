@@ -1,350 +1,416 @@
-<div id="orientationActivities" class="mt-4 rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden" x-data="{
-    modalTambahBaris: false,
-    activities: [],
-    filteredActivities: [],
-    selectedPlant: null,
-    picData: [],
-    selectedActivity: null,
-    selectedActivityId: '',
-    activityDropdownOpen: false,
-    activitySearch: '',
-    selectedPic: null,
-    searchActivity: '',
-    searchPic: '',
-    isLoading: false,
-    kegiatanRows: [],
-    editingIndex: null,
-
-    init() {
-        this.selectedPlant = window.selectedPlantData || null;
-
-        // Load activities from PHP
-        this.loadActivitiesFromPHP();
-
-        // Load kegiatan rows from PHP
-        this.loadKegiatanRowsFromPHP();
-
-        this.filterActivitiesByPlant();
-        window.addEventListener('orientation-plant-selected', (event) => {
-            this.selectedPlant = event.detail;
-            if (this.kegiatanRows.length > 0) {
+<div id="orientationActivities" class="mt-4 rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden"
+    x-data="{
+        modalTambahBaris: false,
+        activities: [],
+        filteredActivities: [],
+        selectedPlant: null,
+        selectedCategoryId: '',
+        picData: [],
+        selectedActivity: null,
+        selectedActivityId: '',
+        activityDropdownOpen: false,
+        activitySearch: '',
+        selectedPic: null,
+        searchActivity: '',
+        searchPic: '',
+        isLoading: false,
+        kegiatanRows: [],
+        editingIndex: null,
+    
+        init() {
+            this.selectedPlant = window.selectedPlantData || null;
+            this.selectedCategoryId = this.getSelectedCategoryId() || ''; // <-- TAMBAH
+    
+            // Load activities from PHP
+            this.loadActivitiesFromPHP();
+            this.loadKegiatanRowsFromPHP();
+    
+            // Filter awal
+            this.filterActivitiesByCategoryAndPlant();
+    
+            // Watch perubahan Plant
+            window.addEventListener('orientation-plant-selected', (event) => {
+                this.selectedPlant = event.detail;
+                if (this.kegiatanRows.length > 0) this.kegiatanRows = [];
+                this.selectedActivity = null;
+                this.selectedActivityId = '';
+                this.activityDropdownOpen = false;
+                this.activitySearch = '';
+                window.selectedActivityId = null;
+                window.selectedActivityData = null;
+                this.filterActivitiesByCategoryAndPlant();
+            });
+    
+            // Watch perubahan Kategori
+            window.addEventListener('orientation-category-selected', (event) => {
+                const detail = event.detail;
+                // Support object atau string ID
+                this.selectedCategoryId = (detail && typeof detail === 'object') ? detail.id : detail;
+    
+                if (this.kegiatanRows.length > 0) this.kegiatanRows = [];
+                this.selectedActivity = null;
+                this.selectedActivityId = '';
+                this.activityDropdownOpen = false;
+                this.activitySearch = '';
+                window.selectedActivityId = null;
+                window.selectedActivityData = null;
+                this.filterActivitiesByCategoryAndPlant();
+            });
+    
+            this.loadPICs();
+        },
+    
+        loadActivitiesFromPHP() {
+            try {
+                const activitiesData = {{ \Illuminate\Support\Js::from($masterOrientationActivities ?? []) }};
+                this.activities = activitiesData;
+                this.filteredActivities = activitiesData;
+                console.log('Activities loaded:', this.activities.length);
+            } catch (e) {
+                console.error('Error loading activities:', e);
+                this.activities = [];
+                this.filteredActivities = [];
+            }
+        },
+    
+        getSelectedCategoryId() {
+            if (this.selectedCategoryId) return this.selectedCategoryId;
+            // Fallback ke global variable yang di-set oleh Alpine categoryDropdown()
+            return window.selectedCategoryId || null;
+        },
+    
+        filterActivitiesByCategoryAndPlant() {
+            const categoryId = this.selectedCategoryId; // <-- pakai state
+            const selectedPlant = window.selectedPlantData;
+    
+            if (!categoryId) {
+                this.filteredActivities = [];
+                return;
+            }
+    
+            this.filteredActivities = this.activities.filter(item => {
+                // Filter by category
+                if (String(item.category_id) !== String(categoryId)) {
+                    return false;
+                }
+    
+                // Filter by plant (opsional)
+                if (selectedPlant) {
+                    let plantIds = item.plants || [];
+                    if (typeof plantIds === 'string') {
+                        try { plantIds = JSON.parse(plantIds); } catch (e) { plantIds = []; }
+                    }
+                    if (Array.isArray(plantIds) && plantIds.length > 0) {
+                        if (!plantIds.map(String).includes(String(selectedPlant.id))) {
+                            return false;
+                        }
+                    }
+                }
+    
+                return true;
+            });
+        },
+    
+        loadKegiatanRowsFromPHP() {
+            try {
+                const rowsData = {{ \Illuminate\Support\Js::from($kegiatanRows ?? []) }};
+                this.kegiatanRows = rowsData;
+                console.log('Kegiatan rows loaded:', this.kegiatanRows.length);
+            } catch (e) {
+                console.error('Error loading kegiatan rows:', e);
                 this.kegiatanRows = [];
             }
-            this.selectedActivity = null;
-            this.selectedActivityId = '';
-            this.activityDropdownOpen = false;
-            this.activitySearch = '';
-            window.selectedActivityId = null;
-            window.selectedActivityData = null;
-            this.filterActivitiesByPlant(event.detail);
-        });
-
-        // Load PICs from API
-        this.loadPICs();
-    },
-
-    loadActivitiesFromPHP() {
-        try {
-            const activitiesData = {{ \Illuminate\Support\Js::from($masterOrientationActivities ?? []) }};
-            this.activities = activitiesData;
-            this.filteredActivities = activitiesData;
-            console.log('Activities loaded:', this.activities.length);
-        } catch (e) {
-            console.error('Error loading activities:', e);
-            this.activities = [];
-            this.filteredActivities = [];
-        }
-    },
-
-    loadKegiatanRowsFromPHP() {
-        try {
-            const rowsData = {{ \Illuminate\Support\Js::from($kegiatanRows ?? []) }};
-            this.kegiatanRows = rowsData;
-            console.log('Kegiatan rows loaded:', this.kegiatanRows.length);
-        } catch (e) {
-            console.error('Error loading kegiatan rows:', e);
-            this.kegiatanRows = [];
-        }
-    },
-
-    filterActivitiesByPlant(selectedPlant = window.selectedPlantData) {
-        if (!selectedPlant) {
-            this.filteredActivities = [];
-            return;
-        }
-
-        this.filteredActivities = this.activities.filter(item => {
-            let plantIds = item.plants || [];
-            if (typeof plantIds === 'string') {
-                try { plantIds = JSON.parse(plantIds); } catch (error) { plantIds = []; }
+        },
+    
+        filterActivitiesByPlant(selectedPlant = window.selectedPlantData) {
+            if (!selectedPlant) {
+                this.filteredActivities = [];
+                return;
             }
-            return Array.isArray(plantIds) && plantIds.map(String).includes(String(selectedPlant.id));
-        });
-    },
-
-    async loadPICs() {
-        try {
-            const response = await fetch('https://web.kobin.co.id/api/attendance/live/api_get_users.php');
-            const result = await response.json();
-
-            if (result.success && result.data) {
-                this.picData = result.data.map(user => ({
-                    nik: user.nik,
-                    nama: user.nama,
-                    jabatan: user.jabatan || '-',
-                    dept: user.dept || '-',
-                    plant: user.plant || ''
-                }));
-                this.enrichKegiatanRowsWithPic();
-                console.log('PICs loaded:', this.picData.length);
+    
+            this.filteredActivities = this.activities.filter(item => {
+                let plantIds = item.plants || [];
+                if (typeof plantIds === 'string') {
+                    try { plantIds = JSON.parse(plantIds); } catch (error) { plantIds = []; }
+                }
+                return Array.isArray(plantIds) && plantIds.map(String).includes(String(selectedPlant.id));
+            });
+        },
+    
+        async loadPICs() {
+            try {
+                const response = await fetch('https://web.kobin.co.id/api/attendance/live/api_get_users.php');
+                const result = await response.json();
+    
+                if (result.success && result.data) {
+                    this.picData = result.data.map(user => ({
+                        nik: user.nik,
+                        nama: user.nama,
+                        jabatan: user.jabatan || '-',
+                        dept: user.dept || '-',
+                        plant: user.plant || ''
+                    }));
+                    this.enrichKegiatanRowsWithPic();
+                    console.log('PICs loaded:', this.picData.length);
+                }
+            } catch (error) {
+                console.error('Error loading PICs:', error);
+                this.picData = [];
             }
-        } catch (error) {
-            console.error('Error loading PICs:', error);
-            this.picData = [];
-        }
-    },
-
-    // Lengkapi nama dan jabatan pada kegiatan lama berdasarkan NIK dari API user.
-    enrichKegiatanRowsWithPic() {
-        this.kegiatanRows = this.kegiatanRows.map(row => {
-            const picNik = String(row.pic_nik || row.pic || '').trim();
-            const user = this.picData.find(item => String(item.nik || '').trim() === picNik);
-
-            if (!user) {
+        },
+    
+        // Lengkapi nama dan jabatan pada kegiatan lama berdasarkan NIK dari API user.
+        enrichKegiatanRowsWithPic() {
+            this.kegiatanRows = this.kegiatanRows.map(row => {
+                const picNik = String(row.pic_nik || row.pic || '').trim();
+                const user = this.picData.find(item => String(item.nik || '').trim() === picNik);
+    
+                if (!user) {
+                    return {
+                        ...row,
+                        pic_nik: picNik,
+                        pic: row.pic || picNik,
+                        jabatan: row.jabatan || '-'
+                    };
+                }
+    
                 return {
                     ...row,
-                    pic_nik: picNik,
-                    pic: row.pic || picNik,
-                    jabatan: row.jabatan || '-'
+                    pic_nik: user.nik,
+                    pic: user.nama || picNik,
+                    jabatan: user.jabatan || '-'
                 };
+            });
+        },
+    
+        filterActivities() {
+            const categoryId = this.selectedCategoryId; // <-- pakai state
+            const selectedPlant = window.selectedPlantData;
+            const query = this.searchActivity.trim().toLowerCase();
+    
+            this.filteredActivities = this.activities.filter(item => {
+                if (String(item.category_id) !== String(categoryId)) return false;
+    
+                if (selectedPlant) {
+                    let plantIds = item.plants || [];
+                    if (typeof plantIds === 'string') {
+                        try { plantIds = JSON.parse(plantIds); } catch (e) { plantIds = []; }
+                    }
+                    if (Array.isArray(plantIds) && plantIds.length > 0) {
+                        if (!plantIds.map(String).includes(String(selectedPlant.id))) return false;
+                    }
+                }
+    
+                if (query) {
+                    return (item.activity_name && item.activity_name.toLowerCase().includes(query)) ||
+                        (item.description && item.description.toLowerCase().includes(query));
+                }
+    
+                return true;
+            });
+        },
+    
+        selectActivity(item) {
+            this.selectedActivity = item;
+            this.selectedActivityId = String(item.id);
+            this.activityDropdownOpen = false;
+            this.activitySearch = '';
+            this.searchActivity = item.activity_name;
+            window.selectedActivityId = item.id;
+            window.selectedActivityData = item;
+        },
+    
+        selectActivityById(activityId) {
+            const activity = this.filteredActivities.find(item => String(item.id) === String(activityId));
+            if (activity) {
+                this.selectActivity(activity);
+                return;
             }
-
-            return {
-                ...row,
-                pic_nik: user.nik,
-                pic: user.nama || picNik,
-                jabatan: user.jabatan || '-'
+    
+            this.selectedActivity = null;
+            window.selectedActivityId = null;
+            window.selectedActivityData = null;
+        },
+    
+        get searchedActivities() {
+            const query = this.activitySearch.trim().toLowerCase();
+            if (!query) return this.filteredActivities;
+    
+            return this.filteredActivities.filter(item =>
+                (item.activity_name || '').toLowerCase().includes(query) ||
+                (item.description || '').toLowerCase().includes(query)
+            );
+        },
+    
+        selectPic(item) {
+            this.selectedPic = item;
+            this.searchPic = item.nama;
+            const jabatanField = document.getElementById('activity_position');
+            if (jabatanField) {
+                jabatanField.value = item.jabatan || '-';
+            }
+            const nikField = document.getElementById('activity_pic_nik');
+            if (nikField) {
+                nikField.value = item.nik || '';
+            }
+        },
+    
+        filterPICs() {
+            if (!this.searchPic.trim()) {
+                return this.picData;
+            }
+            const query = this.searchPic.toLowerCase().trim();
+            return this.picData.filter(item =>
+                (item.nama && item.nama.toLowerCase().includes(query)) ||
+                (item.nik && item.nik.includes(query)) ||
+                (item.jabatan && item.jabatan.toLowerCase().includes(query))
+            );
+        },
+    
+        tambahKegiatan() {
+            const activityId = window.selectedActivityId;
+            const activityData = window.selectedActivityData;
+            const tanggal = document.getElementById('activity_date').value;
+            const startTime = document.getElementById('activity_start_time').value;
+            const endTime = document.getElementById('activity_end_time').value;
+            const picNik = document.getElementById('activity_pic_nik').value;
+            const currentRow = this.editingIndex !== null ? this.kegiatanRows[this.editingIndex] : null;
+            const picName = this.selectedPic?.nama || currentRow?.pic || '';
+            const position = document.getElementById('activity_position').value;
+    
+            if (!activityId) {
+                alert('Silakan pilih kegiatan terlebih dahulu');
+                return;
+            }
+    
+            if (!tanggal) {
+                alert('Silakan pilih tanggal');
+                return;
+            }
+    
+            if (!startTime || !endTime) {
+                alert('Silakan isi waktu mulai dan selesai');
+                return;
+            }
+    
+            if (!picNik) {
+                alert('Silakan pilih PIC terlebih dahulu');
+                return;
+            }
+    
+            const newActivity = {
+                id: currentRow?.id || Date.now(),
+                activity_id: activityId,
+                title: activityData.activity_name,
+                description: activityData.description || '',
+                tanggal: tanggal,
+                waktu_mulai: startTime,
+                waktu_selesai: endTime,
+                pic: picName,
+                pic_nik: picNik,
+                jabatan: position,
+                icon: this.getRandomIcon(),
+                color: this.getRandomColor()
             };
-        });
-    },
-
-    filterActivities() {
-        if (!this.searchActivity.trim()) {
-            this.filterActivitiesByPlant();
-            return;
+    
+            if (this.editingIndex !== null) {
+                this.kegiatanRows.splice(this.editingIndex, 1, newActivity);
+            } else {
+                this.kegiatanRows.push(newActivity);
+            }
+    
+            this.resetActivityForm();
+            this.modalTambahBaris = false;
+        },
+    
+        editKegiatan(index) {
+            const row = this.kegiatanRows[index];
+            if (!row) return;
+    
+            const activity = this.activities.find(item => String(item.id) === String(row.activity_id));
+            this.editingIndex = index;
+            this.selectedActivity = activity || { id: row.activity_id, activity_name: row.title, description: row.description || '' };
+            this.selectedActivityId = String(row.activity_id);
+            window.selectedActivityId = row.activity_id;
+            window.selectedActivityData = this.selectedActivity;
+            this.selectedPic = { nik: row.pic_nik, nama: row.pic, jabatan: row.jabatan || '' };
+            this.modalTambahBaris = true;
+    
+            this.$nextTick(() => {
+                document.getElementById('activity_date').value = row.tanggal || '';
+                document.getElementById('activity_start_time').value = row.waktu_mulai || '';
+                document.getElementById('activity_end_time').value = row.waktu_selesai || '';
+                document.getElementById('activity_pic_nik').value = row.pic_nik || '';
+                document.getElementById('activity_position').value = row.jabatan || '';
+            });
+        },
+    
+        resetActivityForm() {
+            // Reset form
+            this.selectedActivity = null;
+            this.selectedActivityId = '';
+            this.selectedPic = null;
+            this.searchActivity = '';
+            this.searchPic = '';
+            window.selectedActivityId = null;
+            window.selectedActivityData = null;
+    
+            // Semua default kosong
+            document.getElementById('activity_date').value = '';
+            document.getElementById('activity_start_time').value = '';
+            document.getElementById('activity_end_time').value = '';
+            document.getElementById('activity_position').value = '';
+            document.getElementById('activity_pic_nik').value = '';
+    
+            this.editingIndex = null;
+        },
+    
+        hapusKegiatan(index) {
+            if (confirm('Apakah Anda yakin ingin menghapus kegiatan ini?')) {
+                this.kegiatanRows.splice(index, 1);
+            }
+        },
+    
+        getRandomIcon() {
+            const icons = ['📋', '👨‍🏫', '📦', '📊', '🎯', '💡', '📈', '🔧', '📝', '🎓', '🏆', '⭐'];
+            return icons[Math.floor(Math.random() * icons.length)];
+        },
+    
+        getRandomColor() {
+            const colors = [
+                'bg-red-50 text-red-600',
+                'bg-orange-50 text-orange-600',
+                'bg-green-50 text-green-600',
+                'bg-purple-50 text-purple-600',
+                'bg-blue-50 text-blue-600',
+                'bg-yellow-50 text-yellow-600',
+                'bg-pink-50 text-pink-600',
+                'bg-indigo-50 text-indigo-600'
+            ];
+            return colors[Math.floor(Math.random() * colors.length)];
+        },
+    
+        getInitials(name) {
+            if (!name) return '?';
+            const words = name.trim().split(' ');
+            if (words.length === 1) {
+                return words[0].charAt(0).toUpperCase();
+            }
+            const first = words[0].charAt(0).toUpperCase();
+            const last = words[words.length - 1].charAt(0).toUpperCase();
+            return first + last;
+        },
+    
+        formatDate(date) {
+            if (!date) return '-';
+            const d = new Date(date);
+            return d.toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
         }
-        const query = this.searchActivity.toLowerCase().trim();
-        this.filteredActivities = this.activities.filter(item => {
-            const plant = window.selectedPlantData;
-            const plantIds = Array.isArray(item.plants) ? item.plants : [];
-            if (!plant || !item.status || !plantIds.map(String).includes(String(plant.id))) return false;
-
-            return (item.activity_name && item.activity_name.toLowerCase().includes(query)) ||
-                (item.description && item.description.toLowerCase().includes(query));
-        });
-    },
-
-    selectActivity(item) {
-        this.selectedActivity = item;
-        this.selectedActivityId = String(item.id);
-        this.activityDropdownOpen = false;
-        this.activitySearch = '';
-        this.searchActivity = item.activity_name;
-        window.selectedActivityId = item.id;
-        window.selectedActivityData = item;
-    },
-
-    selectActivityById(activityId) {
-        const activity = this.filteredActivities.find(item => String(item.id) === String(activityId));
-        if (activity) {
-            this.selectActivity(activity);
-            return;
-        }
-
-        this.selectedActivity = null;
-        window.selectedActivityId = null;
-        window.selectedActivityData = null;
-    },
-
-    get searchedActivities() {
-        const query = this.activitySearch.trim().toLowerCase();
-        if (!query) return this.filteredActivities;
-
-        return this.filteredActivities.filter(item =>
-            (item.activity_name || '').toLowerCase().includes(query) ||
-            (item.description || '').toLowerCase().includes(query)
-        );
-    },
-
-    selectPic(item) {
-        this.selectedPic = item;
-        this.searchPic = item.nama;
-        const jabatanField = document.getElementById('activity_position');
-        if (jabatanField) {
-            jabatanField.value = item.jabatan || '-';
-        }
-        const nikField = document.getElementById('activity_pic_nik');
-        if (nikField) {
-            nikField.value = item.nik || '';
-        }
-    },
-
-    filterPICs() {
-        if (!this.searchPic.trim()) {
-            return this.picData;
-        }
-        const query = this.searchPic.toLowerCase().trim();
-        return this.picData.filter(item =>
-            (item.nama && item.nama.toLowerCase().includes(query)) ||
-            (item.nik && item.nik.includes(query)) ||
-            (item.jabatan && item.jabatan.toLowerCase().includes(query))
-        );
-    },
-
-    tambahKegiatan() {
-        const activityId = window.selectedActivityId;
-        const activityData = window.selectedActivityData;
-        const tanggal = document.getElementById('activity_date').value;
-        const startTime = document.getElementById('activity_start_time').value;
-        const endTime = document.getElementById('activity_end_time').value;
-        const picNik = document.getElementById('activity_pic_nik').value;
-        const currentRow = this.editingIndex !== null ? this.kegiatanRows[this.editingIndex] : null;
-        const picName = this.selectedPic?.nama || currentRow?.pic || '';
-        const position = document.getElementById('activity_position').value;
-
-        if (!activityId) {
-            alert('Silakan pilih kegiatan terlebih dahulu');
-            return;
-        }
-
-        if (!tanggal) {
-            alert('Silakan pilih tanggal');
-            return;
-        }
-
-        if (!startTime || !endTime) {
-            alert('Silakan isi waktu mulai dan selesai');
-            return;
-        }
-
-        if (!picNik) {
-            alert('Silakan pilih PIC terlebih dahulu');
-            return;
-        }
-
-        const newActivity = {
-            id: currentRow?.id || Date.now(),
-            activity_id: activityId,
-            title: activityData.activity_name,
-            description: activityData.description || '',
-            tanggal: tanggal,
-            waktu_mulai: startTime,
-            waktu_selesai: endTime,
-            pic: picName,
-            pic_nik: picNik,
-            jabatan: position,
-            icon: this.getRandomIcon(),
-            color: this.getRandomColor()
-        };
-
-        if (this.editingIndex !== null) {
-            this.kegiatanRows.splice(this.editingIndex, 1, newActivity);
-        } else {
-            this.kegiatanRows.push(newActivity);
-        }
-
-        this.resetActivityForm();
-        this.modalTambahBaris = false;
-    },
-
-    editKegiatan(index) {
-        const row = this.kegiatanRows[index];
-        if (!row) return;
-
-        const activity = this.activities.find(item => String(item.id) === String(row.activity_id));
-        this.editingIndex = index;
-        this.selectedActivity = activity || {id: row.activity_id, activity_name: row.title, description: row.description || ''};
-        this.selectedActivityId = String(row.activity_id);
-        window.selectedActivityId = row.activity_id;
-        window.selectedActivityData = this.selectedActivity;
-        this.selectedPic = {nik: row.pic_nik, nama: row.pic, jabatan: row.jabatan || ''};
-        this.modalTambahBaris = true;
-
-        this.$nextTick(() => {
-            document.getElementById('activity_date').value = row.tanggal || '';
-            document.getElementById('activity_start_time').value = row.waktu_mulai || '08:00';
-            document.getElementById('activity_end_time').value = row.waktu_selesai || '10:00';
-            document.getElementById('activity_pic_nik').value = row.pic_nik || '';
-            document.getElementById('activity_position').value = row.jabatan || '';
-        });
-    },
-
-    resetActivityForm() {
-
-        // Reset form
-        this.selectedActivity = null;
-        this.selectedActivityId = '';
-        this.selectedPic = null;
-        this.searchActivity = '';
-        this.searchPic = '';
-        window.selectedActivityId = null;
-        window.selectedActivityData = null;
-        document.getElementById('activity_date').value = '';
-        document.getElementById('activity_start_time').value = '08:00';
-        document.getElementById('activity_end_time').value = '10:00';
-        document.getElementById('activity_position').value = '';
-        document.getElementById('activity_pic_nik').value = '';
-
-        this.editingIndex = null;
-    },
-
-    hapusKegiatan(index) {
-        if (confirm('Apakah Anda yakin ingin menghapus kegiatan ini?')) {
-            this.kegiatanRows.splice(index, 1);
-        }
-    },
-
-    getRandomIcon() {
-        const icons = ['📋', '👨‍🏫', '📦', '📊', '🎯', '💡', '📈', '🔧', '📝', '🎓', '🏆', '⭐'];
-        return icons[Math.floor(Math.random() * icons.length)];
-    },
-
-    getRandomColor() {
-        const colors = [
-            'bg-red-50 text-red-600',
-            'bg-orange-50 text-orange-600',
-            'bg-green-50 text-green-600',
-            'bg-purple-50 text-purple-600',
-            'bg-blue-50 text-blue-600',
-            'bg-yellow-50 text-yellow-600',
-            'bg-pink-50 text-pink-600',
-            'bg-indigo-50 text-indigo-600'
-        ];
-        return colors[Math.floor(Math.random() * colors.length)];
-    },
-
-    getInitials(name) {
-        if (!name) return '?';
-        const words = name.trim().split(' ');
-        if (words.length === 1) {
-            return words[0].charAt(0).toUpperCase();
-        }
-        const first = words[0].charAt(0).toUpperCase();
-        const last = words[words.length - 1].charAt(0).toUpperCase();
-        return first + last;
-    },
-
-    formatDate(date) {
-        if (!date) return '-';
-        const d = new Date(date);
-        return d.toLocaleDateString('id-ID', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        });
-    }
-}"
-    x-init="init()">
+    }" x-init="init()">
 
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 px-5 py-4">
@@ -362,7 +428,8 @@
             </div>
         </div>
         <div class="flex items-center gap-2">
-            <button @click="editingIndex = null; resetActivityForm(); modalTambahBaris = true; $nextTick(() => { filterActivitiesByPlant(); })"
+            <button
+                @click="editingIndex = null; resetActivityForm(); modalTambahBaris = true; $nextTick(() => { filterActivitiesByCategoryAndPlant(); })"
                 class="inline-flex items-center gap-1.5 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
@@ -480,7 +547,7 @@
         x-transition:enter-end="opacity-100 transform scale-100"
         class="fixed inset-0 z-[999] flex items-center justify-center p-4">
 
-        <div class="w-full max-w-5xl max-h-[95vh] h-auto min-h-[80vh] flex flex-col rounded-2xl bg-white shadow-2xl"
+        <div class="w-full max-w-2xl max-h-[95vh] h-auto min-h-[80vh] flex flex-col rounded-2xl bg-white shadow-2xl"
             @click.stop>
 
             {{-- Modal Header --}}
@@ -494,8 +561,11 @@
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-lg font-bold text-gray-800" x-text="editingIndex === null ? 'Tambah Baris Kegiatan' : 'Edit Kegiatan'"></h3>
-                        <p class="text-sm text-gray-500" x-text="editingIndex === null ? 'Isi data kegiatan baru di bawah ini' : 'Perbarui data kegiatan yang dipilih'"></p>
+                        <h3 class="text-lg font-bold text-gray-800"
+                            x-text="editingIndex === null ? 'Tambah Baris Kegiatan' : 'Edit Kegiatan'"></h3>
+                        <p class="text-sm text-gray-500"
+                            x-text="editingIndex === null ? 'Isi data kegiatan baru di bawah ini' : 'Perbarui data kegiatan yang dipilih'">
+                        </p>
                     </div>
                 </div>
                 <button @click="modalTambahBaris = false" class="p-2 rounded-xl hover:bg-gray-100 transition">
@@ -508,52 +578,145 @@
 
             {{-- Modal Body --}}
             <div class="p-6 flex-1 overflow-y-auto">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-5">
 
-                    {{-- Kegiatan - Filter berdasarkan plant --}}
-                    <div class="md:col-span-2">
+                    {{-- Nama Kegiatan --}}
+                    <div>
                         <label class="mb-1.5 block text-sm font-semibold text-gray-700">
                             Nama Kegiatan <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
+                            {{-- Tombol Dropdown --}}
                             <button type="button"
-                                @click="if (selectedPlant && filteredActivities.length) { activityDropdownOpen = !activityDropdownOpen; activitySearch = ''; }"
-                                :disabled="!selectedPlant || filteredActivities.length === 0"
-                                class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 text-left text-sm transition hover:bg-gray-50 focus:border-red-500 focus:ring-red-500 focus:ring-1 disabled:cursor-not-allowed disabled:bg-gray-100">
-                                <span :class="selectedActivity ? 'text-gray-800' : 'text-gray-400'"
-                                    x-text="selectedActivity ? selectedActivity.activity_name : (selectedPlant ? 'Pilih kegiatan...' : 'Pilih plant terlebih dahulu')"></span>
-                                <svg class="h-4 w-4 text-gray-400 transition-transform" :class="activityDropdownOpen ? 'rotate-180' : ''"
-                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" />
+                                @click="if (selectedCategoryId && filteredActivities.length) { activityDropdownOpen = !activityDropdownOpen; activitySearch = ''; }"
+                                :disabled="!selectedCategoryId || filteredActivities.length === 0"
+                                class="flex w-full items-center justify-between rounded-xl border bg-white px-4 py-3 text-left text-sm transition
+               focus:outline-none focus:ring-2 focus:ring-red-100"
+                                :class="{
+                                    'border-gray-200 hover:border-red-300 hover:bg-red-50/30': selectedCategoryId &&
+                                        filteredActivities.length,
+                                    'border-gray-200 bg-gray-50 cursor-not-allowed opacity-70': !selectedCategoryId ||
+                                        filteredActivities.length === 0,
+                                    'border-red-400 ring-2 ring-red-100': activityDropdownOpen
+                                }">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+                                        :class="selectedActivity ? 'bg-red-50 text-red-600' : 'bg-gray-100 text-gray-400'">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5a2 2 0 002 2h2a2 2 0 002-2" />
+                                        </svg>
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="truncate text-sm font-medium"
+                                            :class="selectedActivity ? 'text-gray-800' : 'text-gray-400'"
+                                            x-text="selectedActivity
+                                ? selectedActivity.activity_name
+                                : (!selectedCategoryId
+                                    ? 'Pilih kategori terlebih dahulu'
+                                    : (filteredActivities.length === 0
+                                        ? 'Tidak ada kegiatan untuk kategori ini'
+                                        : 'Pilih kegiatan...'))">
+                                        </div>
+                                        <div class="truncate text-xs text-gray-400"
+                                            x-show="selectedActivity && selectedActivity.description"
+                                            x-text="selectedActivity?.description || ''"></div>
+                                    </div>
+                                </div>
+                                <svg class="h-4 w-4 shrink-0 text-gray-400 transition-transform duration-200"
+                                    :class="activityDropdownOpen ? 'rotate-180' : ''" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="m6 9 6 6 6-6" />
                                 </svg>
                             </button>
 
+                            {{-- Dropdown Panel --}}
                             <div x-show="activityDropdownOpen" x-cloak @click.away="activityDropdownOpen = false"
-                                class="absolute z-50 mt-1 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xl">
+                                x-transition:enter="transition ease-out duration-200"
+                                x-transition:enter-start="opacity-0 -translate-y-1"
+                                x-transition:enter-end="opacity-100 translate-y-0"
+                                class="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xl"
+                                style="box-shadow: 0 20px 60px rgba(0,0,0,0.15);">
+
                                 <div class="border-b border-gray-100 p-3">
-                                    <input type="text" x-model="activitySearch" x-ref="activitySearchInput"
-                                        x-init="$watch('activityDropdownOpen', value => { if (value) $nextTick(() => $refs.activitySearchInput.focus()) })"
-                                        placeholder="Cari kegiatan..."
-                                        class="w-full rounded-lg border-gray-200 px-3 py-2 text-sm focus:border-red-500 focus:ring-red-500 focus:ring-1">
+                                    <div class="relative">
+                                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M21 21l-5.2-5.2m1.7-5.3a7 7 0 11-14 0a7 7 0 0114 0z" />
+                                        </svg>
+                                        <input type="text" x-model="activitySearch" x-ref="activitySearchInput"
+                                            x-init="$watch('activityDropdownOpen', value => { if (value) $nextTick(() => $refs.activitySearchInput.focus()) })" placeholder="Cari kegiatan..."
+                                            class="w-full rounded-lg border border-gray-200 pl-9 pr-9 py-2 text-sm focus:border-red-400 focus:ring-2 focus:ring-red-100 focus:outline-none transition">
+                                        <button x-show="activitySearch" @click="activitySearch = ''" type="button"
+                                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                            <svg class="h-4 w-4" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
                                 </div>
+
                                 <div class="max-h-56 overflow-y-auto p-1">
                                     <template x-for="item in searchedActivities" :key="item.id">
                                         <button type="button" @click="selectActivity(item)"
-                                            class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition hover:bg-red-50">
-                                            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-50 text-sm font-semibold text-red-600"
+                                            class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition group"
+                                            :class="selectedActivity && selectedActivity.id === item.id ?
+                                                'bg-red-50/60' :
+                                                'hover:bg-red-50'">
+                                            <span
+                                                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-semibold transition"
+                                                :class="selectedActivity && selectedActivity.id === item.id ?
+                                                    'bg-red-500 text-white' :
+                                                    'bg-red-50 text-red-600 group-hover:bg-red-100'"
                                                 x-text="(item.activity_name || '?').charAt(0).toUpperCase()"></span>
-                                            <span class="flex-1">
-                                                <span class="block text-sm font-medium text-gray-800" x-text="item.activity_name"></span>
-                                                <span class="block text-xs text-gray-500" x-text="item.description || '-'"></span>
+                                            <span class="flex-1 min-w-0">
+                                                <span class="block truncate text-sm font-medium text-gray-800"
+                                                    x-text="item.activity_name"></span>
+                                                <span class="block truncate text-xs text-gray-500"
+                                                    x-text="item.description || '-'"></span>
                                             </span>
+                                            <svg x-show="selectedActivity && selectedActivity.id === item.id"
+                                                class="h-5 w-5 shrink-0 text-red-600" fill="none"
+                                                stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M5 13l4 4L19 7" />
+                                            </svg>
                                         </button>
                                     </template>
-                                    <p x-show="searchedActivities.length === 0" class="px-3 py-6 text-center text-sm text-gray-500">Kegiatan tidak ditemukan.</p>
+
+                                    <div x-show="searchedActivities.length === 0" class="px-4 py-10 text-center">
+                                        <svg class="h-12 w-12 mx-auto text-gray-300 mb-3" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <p class="text-sm text-gray-500">Kegiatan tidak ditemukan</p>
+                                        <p class="text-xs text-gray-400 mt-1">Coba kata kunci lainnya</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <p x-show="selectedPlant && filteredActivities.length === 0"
-                            class="mt-1 text-xs text-red-500">Tidak ada kegiatan untuk plant ini.</p>
+
+                        <p x-show="selectedCategoryId && filteredActivities.length === 0"
+                            class="mt-1.5 flex items-center gap-1 text-xs text-red-500">
+                            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 9v2m0 4h.01M4.293 4.293a1 1 0 011.414 0L12 10.586l6.293-6.293a1 1 0 111.414 1.414L13.414 12l6.293 6.293a1 1 0 01-1.414 1.414L12 13.414l-6.293 6.293a1 1 0 01-1.414-1.414L10.586 12 4.293 5.707a1 1 0 010-1.414z" />
+                            </svg>
+                            Tidak ada kegiatan untuk kategori ini.
+                        </p>
+                        <p x-show="!selectedCategoryId" class="mt-1.5 flex items-center gap-1 text-xs text-amber-500">
+                            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Silakan pilih kategori terlebih dahulu.
+                        </p>
                     </div>
 
                     {{-- Tanggal --}}
@@ -562,7 +725,7 @@
                             Tanggal <span class="text-red-500">*</span>
                         </label>
                         <input type="date" id="activity_date"
-                            class="w-full rounded-xl border-gray-200 bg-gray-50/50 px-4 py-3 text-sm focus:border-red-500 focus:ring-red-500 focus:ring-1 focus:bg-white transition-all duration-200">
+                            class="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 text-sm focus:border-red-500 focus:ring-red-500 focus:ring-1 focus:bg-white transition-all duration-200">
                     </div>
 
                     {{-- Waktu Mulai --}}
@@ -571,8 +734,7 @@
                             Waktu Mulai <span class="text-red-500">*</span>
                         </label>
                         <input type="time" id="activity_start_time"
-                            class="w-full rounded-xl border-gray-200 bg-gray-50/50 px-4 py-3 text-sm focus:border-red-500 focus:ring-red-500 focus:ring-1 focus:bg-white transition-all duration-200"
-                            value="08:00">
+                            class="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 text-sm focus:border-red-500 focus:ring-red-500 focus:ring-1 focus:bg-white transition-all duration-200">
                     </div>
 
                     {{-- Waktu Selesai --}}
@@ -581,11 +743,10 @@
                             Waktu Selesai <span class="text-red-500">*</span>
                         </label>
                         <input type="time" id="activity_end_time"
-                            class="w-full rounded-xl border-gray-200 bg-gray-50/50 px-4 py-3 text-sm focus:border-red-500 focus:ring-red-500 focus:ring-1 focus:bg-white transition-all duration-200"
-                            value="10:00">
+                            class="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 text-sm focus:border-red-500 focus:ring-red-500 focus:ring-1 focus:bg-white transition-all duration-200">
                     </div>
 
-                    {{-- PIC - Dari API get_users --}}
+                    {{-- PIC --}}
                     <div>
                         <label class="mb-1.5 block text-sm font-semibold text-gray-700">
                             PIC <span class="text-red-500">*</span>
@@ -599,52 +760,39 @@
                                 const parent = Alpine.$data(document.getElementById('orientationActivities'));
                                 this.filteredItems = parent.picData || [];
                             },
-                        
                             filterItems() {
                                 const parent = Alpine.$data(document.getElementById('orientationActivities'));
                                 const data = parent.picData || [];
-                        
-                                if (!this.search.trim()) {
-                                    this.filteredItems = data;
-                                    return;
-                                }
-                        
+                                if (!this.search.trim()) { this.filteredItems = data; return; }
                                 const query = this.search.toLowerCase().trim();
-                        
                                 this.filteredItems = data.filter(item =>
                                     (item.nama ?? '').toLowerCase().includes(query) ||
                                     (item.nik ?? '').includes(query) ||
                                     (item.jabatan ?? '').toLowerCase().includes(query)
                                 );
-                        
                             },
-                        
                             selectItem(item) {
                                 const parent = Alpine.$data(document.getElementById('orientationActivities'));
                                 this.selected = item;
                                 this.search = item.nama;
                                 this.open = false;
-                        
                                 parent.selectPic(item);
-                        
                             }
-                        }" x-init="
-                            init();
-                            const parent = Alpine.$data(document.getElementById('orientationActivities'));
-                            $watch(() => parent.selectedPic, value => {
-                                selected = value;
-                                search = value?.nama || '';
-                            });
-                            $watch('open', value => {
-                                if (value && !search && parent.selectedPic) {
-                                    selected = parent.selectedPic;
-                                    search = parent.selectedPic.nama || '';
-                                }
-                            });
-                        ">
+                        }" x-init="init();
+                        const parent = Alpine.$data(document.getElementById('orientationActivities'));
+                        $watch(() => parent.selectedPic, value => {
+                            selected = value;
+                            search = value?.nama || '';
+                        });
+                        $watch('open', value => {
+                            if (value && !search && parent.selectedPic) {
+                                selected = parent.selectedPic;
+                                search = parent.selectedPic.nama || '';
+                            }
+                        });">
                             <div @click="open = !open; filterItems()" class="relative cursor-pointer">
                                 <input type="text" x-model="search" readonly placeholder="Pilih PIC..."
-                                    class="w-full rounded-xl border-gray-200 bg-gray-50/50 pl-4 pr-10 py-3 text-sm cursor-pointer hover:bg-gray-50 focus:border-red-500 focus:ring-red-500 focus:ring-1 focus:bg-white transition-all duration-200">
+                                    class="w-full rounded-xl border border-gray-200 bg-gray-50/50 pl-4 pr-10 py-3 text-sm cursor-pointer hover:bg-gray-50 focus:border-red-500 focus:ring-red-500 focus:ring-1 focus:bg-white transition-all duration-200">
                                 <svg class="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 transition-transform duration-200"
                                     :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
@@ -725,7 +873,7 @@
                             Jabatan
                         </label>
                         <input type="text" id="activity_position" readonly
-                            class="w-full rounded-xl border-gray-200 bg-gray-100 px-4 py-3 text-sm text-gray-600 cursor-not-allowed"
+                            class="w-full rounded-xl border border-gray-200 bg-gray-100 px-4 py-3 text-sm text-gray-600 cursor-not-allowed"
                             placeholder="Otomatis terisi dari PIC">
                     </div>
 

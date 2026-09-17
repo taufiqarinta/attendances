@@ -160,68 +160,185 @@
 
             <div class="mt-4 rounded-xl bg-white p-5 shadow-sm border border-gray-100/80">
 
-                {{-- Search Bar --}}
-                <form action="{{ route('orientation.index') }}" method="GET"
-                    class="flex flex-col gap-4 lg:flex-row lg:items-center">
+                <form action="{{ route('orientation.index') }}" method="GET" id="filterForm">
 
-                    {{-- Search --}}
-                    <div class="flex-1 min-w-[200px]">
-                        <div class="relative group">
-                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                <svg xmlns="http://www.w3.org/2000/svg"
-                                    class="h-4 w-4 text-gray-400 group-focus-within:text-red-500 transition-colors duration-200"
-                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    {{-- Row 1: Search + Action Buttons --}}
+                    <div class="flex flex-col gap-4 lg:flex-row lg:items-center">
+
+                        {{-- Search --}}
+                        <div class="flex-1 min-w-[200px]">
+                            <div class="relative group">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                        class="h-4 w-4 text-gray-400 group-focus-within:text-red-500 transition-colors duration-200"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M21 21l-5.2-5.2m1.7-5.3a7 7 0 11-14 0a7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
+                                <input type="text" name="search" value="{{ $search }}"
+                                    placeholder="Cari program orientasi..."
+                                    class="h-10 w-full rounded-xl border-gray-200 bg-gray-50/50 pl-10 pr-4 text-sm focus:border-red-500 focus:ring-red-500 focus:ring-2 focus:bg-white transition-all duration-200 placeholder:text-gray-400">
+                            </div>
+                        </div>
+
+                        {{-- Action Buttons --}}
+                        <div class="flex items-center gap-2 lg:gap-3">
+                            <button type="submit"
+                                class="flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-gray-600 to-gray-700 px-5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:from-gray-700 hover:to-gray-800 hover:shadow-md active:scale-95">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                         d="M21 21l-5.2-5.2m1.7-5.3a7 7 0 11-14 0a7 7 0 0114 0z" />
                                 </svg>
-                            </div>
-                            <input type="text" name="search" value="{{ $search }}"
-                                placeholder="Cari program orientasi..."
-                                class="h-10 w-full rounded-xl border-gray-200 bg-gray-50/50 pl-10 pr-4 text-sm focus:border-red-500 focus:ring-red-500 focus:ring-2 focus:bg-white transition-all duration-200 placeholder:text-gray-400">
+                                Cari
+                            </button>
+
+                            @if ($hasActiveFilter)
+                                <a href="{{ route('orientation.index') }}"
+                                    class="flex h-10 items-center justify-center gap-2 rounded-xl bg-gray-200 px-4 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-300 hover:shadow-md active:scale-95">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    Reset
+                                </a>
+                            @endif
+
+                            @if ($canManage)
+                                <a href="{{ route('orientation.create') }}"
+                                    class="flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-red-600 to-red-700 px-5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:from-red-700 hover:to-red-800 hover:shadow-md active:scale-95">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    Buat Program
+                                </a>
+                            @endif
                         </div>
+
                     </div>
 
-                    {{-- Action Buttons --}}
-                    <div class="flex items-center gap-2 lg:gap-3">
-                        <button type="submit"
-                            class="flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-gray-600 to-gray-700 px-5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:from-gray-700 hover:to-gray-800 hover:shadow-md active:scale-95">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                    d="M21 21l-5.2-5.2m1.7-5.3a7 7 0 11-14 0a7 7 0 0114 0z" />
-                            </svg>
-                            Cari
-                        </button>
+                    {{-- Row 2: Filter Dropdowns --}}
+                    <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
 
-                        @if ($search)
-                            <a href="{{ route('orientation.index') }}"
-                                class="flex h-10 items-center justify-center gap-2 rounded-xl bg-gray-200 px-4 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-300 hover:shadow-md active:scale-95">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                        d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                                Reset
-                            </a>
-                        @endif
+                        {{-- Kategori --}}
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                                Kategori
+                            </label>
+                            <select name="category_id" onchange="document.getElementById('filterForm').submit()"
+                                class="h-10 w-full rounded-xl border-gray-200 bg-gray-50/50 px-3 text-sm focus:border-red-500 focus:ring-red-500 focus:ring-2 focus:bg-white transition-all duration-200">
+                                <option value="">Semua Kategori</option>
+                                @foreach ($categories as $cat)
+                                    <option value="{{ $cat->id }}"
+                                        {{ (string) $categoryId === (string) $cat->id ? 'selected' : '' }}>
+                                        {{ $cat->code_category }} - {{ $cat->category_name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
 
-                        @if ($canManage)
-                            <a href="{{ route('orientation.create') }}"
-                                class="flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-red-600 to-red-700 px-5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:from-red-700 hover:to-red-800 hover:shadow-md active:scale-95">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                        d="M12 4v16m8-8H4" />
-                                </svg>
-                                Buat Program
-                            </a>
-                        @endif
+                        {{-- Status --}}
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                                Status
+                            </label>
+                            <select name="status" onchange="document.getElementById('filterForm').submit()"
+                                class="h-10 w-full rounded-xl border-gray-200 bg-gray-50/50 px-3 text-sm focus:border-red-500 focus:ring-red-500 focus:ring-2 focus:bg-white transition-all duration-200">
+                                <option value="">Semua Status</option>
+                                @foreach ($statuses as $key => $label)
+                                    <option value="{{ $key }}" {{ $status === $key ? 'selected' : '' }}>
+                                        {{ $label }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Plant --}}
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                                Plant
+                            </label>
+                            <select name="plant_id" onchange="document.getElementById('filterForm').submit()"
+                                class="h-10 w-full rounded-xl border-gray-200 bg-gray-50/50 px-3 text-sm focus:border-red-500 focus:ring-red-500 focus:ring-2 focus:bg-white transition-all duration-200">
+                                <option value="">Semua Plant</option>
+                                @foreach ($plants as $plant)
+                                    <option value="{{ $plant->id }}"
+                                        {{ (string) $plantId === (string) $plant->id ? 'selected' : '' }}>
+                                        {{ $plant->code ? $plant->code . ' - ' : '' }}{{ $plant->name_plant }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Periode --}}
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                                Periode
+                            </label>
+                            <div class="flex items-center gap-2">
+                                <input type="date" name="period_from" value="{{ $periodFrom }}"
+                                    onchange="document.getElementById('filterForm').submit()"
+                                    class="h-10 w-full rounded-xl border-gray-200 bg-gray-50/50 px-2 text-xs focus:border-red-500 focus:ring-red-500 focus:ring-2 focus:bg-white transition-all duration-200">
+                                <span class="text-gray-400 text-xs">→</span>
+                                <input type="date" name="period_to" value="{{ $periodTo }}"
+                                    onchange="document.getElementById('filterForm').submit()"
+                                    class="h-10 w-full rounded-xl border-gray-200 bg-gray-50/50 px-2 text-xs focus:border-red-500 focus:ring-red-500 focus:ring-2 focus:bg-white transition-all duration-200">
+                            </div>
+                        </div>
+
                     </div>
+
+                    {{-- Active Filter Chips --}}
+                    @if ($hasActiveFilter)
+                        <div class="mt-4 flex flex-wrap items-center gap-2 pt-3 border-t border-gray-100">
+                            <span class="text-xs text-gray-500 font-medium">Filter aktif:</span>
+
+                            @if ($search)
+                                <span
+                                    class="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-700">
+                                    Pencarian: "{{ $search }}"
+                                </span>
+                            @endif
+
+                            @if ($categoryId)
+                                @php $activeCat = $categories->firstWhere('id', $categoryId); @endphp
+                                <span
+                                    class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 border border-red-100">
+                                    Kategori: {{ $activeCat->category_name ?? '-' }}
+                                </span>
+                            @endif
+
+                            @if ($status)
+                                <span
+                                    class="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 border border-blue-100">
+                                    Status: {{ $statuses[$status] ?? $status }}
+                                </span>
+                            @endif
+
+                            @if ($plantId)
+                                @php $activePlant = $plants->firstWhere('id', $plantId); @endphp
+                                <span
+                                    class="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 border border-green-100">
+                                    Plant: {{ $activePlant->name_plant ?? '-' }}
+                                </span>
+                            @endif
+
+                            @if ($periodFrom || $periodTo)
+                                <span
+                                    class="inline-flex items-center gap-1 rounded-full bg-orange-50 px-2.5 py-1 text-xs font-medium text-orange-700 border border-orange-100">
+                                    Periode: {{ $periodFrom ?: '...' }} → {{ $periodTo ?: '...' }}
+                                </span>
+                            @endif
+                        </div>
+                    @endif
 
                 </form>
 
             </div>
-
 
             {{-- ===================================================== --}}
             {{-- TABLE START --}}
@@ -236,7 +353,8 @@
                 <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50/50">
                     <div class="flex items-center gap-3">
                         <span class="text-sm font-medium text-gray-700">
-                            <span class="text-gray-900 font-semibold">{{ $programs->total() }}</span> Program Orientasi
+                            <span class="text-gray-900 font-semibold">{{ $programs->total() }}</span> Program
+                            Orientasi
                         </span>
                         <span class="h-4 w-px bg-gray-300"></span>
                         <span class="text-sm text-gray-500">
@@ -279,15 +397,19 @@
                                             </svg>
                                         </span>
                                     </th>
+
+                                    <th
+                                        class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                        Kategori</th>
                                     <th
                                         class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-gray-500">
                                         Nama Program</th>
                                     <th
                                         class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                                        Lokasi</th>
+                                        Periode</th>
                                     <th
                                         class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                                        Kegiatan</th>
+                                        PIC HR</th>
                                     <th
                                         class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-gray-500">
                                         Peserta</th>
@@ -332,9 +454,9 @@
                                         $statusKey = $program->status ?? 'draft';
                                         $participants = count($program->participants ?? []);
                                         $isEditLocked = $program->activities->contains(function ($activity) {
-                                            return in_array($activity->status, ['ongoing', 'completed'], true)
-                                                || $activity->started_at
-                                                || $activity->completed_at;
+                                            return in_array($activity->status, ['ongoing', 'completed'], true) ||
+                                                $activity->started_at ||
+                                                $activity->completed_at;
                                         });
                                     @endphp
                                     <tr class="hover:bg-red-50/30 transition group cursor-pointer"
@@ -342,6 +464,20 @@
                                         {{-- No --}}
                                         <td class="px-4 py-3 font-medium text-gray-700 text-sm">
                                             {{ str_pad($programs->firstItem() + $index, 2, '0', STR_PAD_LEFT) }}
+                                        </td>
+
+                                        {{-- Kategori --}}
+                                        <td class="px-4 py-3">
+                                            <span
+                                                class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium {{ $batchColor[$batchIndex] }}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3"
+                                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                                {{ $program->category->category_name ?? 'Tidak ada kategori' }}
+                                            </span>
                                         </td>
 
                                         {{-- Program --}}
@@ -370,24 +506,48 @@
                                             </div>
                                         </td>
 
-                                        {{-- Lokasi --}}
+                                        {{-- Periode --}}
                                         <td class="px-4 py-3">
-                                            <div class="flex items-center gap-1.5">
-                                                <svg xmlns="http://www.w3.org/2000/svg"
-                                                    class="h-3.5 w-3.5 text-gray-400" fill="none"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                </svg>
-                                                <span
-                                                    class="text-sm text-gray-700">{{ $program->plant->name_plant ?? 'Tidak ada lokasi' }}</span>
-                                            </div>
+                                            @php
+                                                $dates = $program->activities->pluck('activity_date')->filter()->sort();
+                                                $startDate = $dates->first();
+                                                $endDate = $dates->last();
+                                            @endphp
+
+                                            @if ($startDate && $endDate)
+                                                <div class="flex flex-col gap-0.5">
+                                                    <div class="flex items-center gap-1.5 text-sm text-gray-700">
+                                                        <svg class="h-3.5 w-3.5 text-gray-400" fill="none"
+                                                            stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                        </svg>
+                                                        <span class="font-medium">
+                                                            {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }}
+                                                        </span>
+                                                        <span class="text-gray-400">→</span>
+                                                        <span class="font-medium">
+                                                            {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}
+                                                        </span>
+                                                    </div>
+                                                    <div class="text-xs text-gray-500">
+                                                        {{ $program->activities->count() }} kegiatan
+                                                        @if ($startDate->format('Y-m-d') === $endDate->format('Y-m-d'))
+                                                            • 1 hari
+                                                        @else
+                                                            •
+                                                            {{ \Carbon\Carbon::parse($startDate)->diffInDays(\Carbon\Carbon::parse($endDate)) + 1 }}
+                                                            hari
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <span class="text-sm text-gray-400">-</span>
+                                            @endif
                                         </td>
 
-                                        {{-- Jumlah Kegiatan --}}
+                                        {{-- PIC HR --}}
                                         <td class="px-4 py-3">
                                             <div class="flex items-center gap-1.5">
                                                 <svg xmlns="http://www.w3.org/2000/svg"
@@ -398,10 +558,9 @@
                                                         d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                 </svg>
                                                 <div>
-                                                    <div class="text-sm font-medium text-gray-700">
-                                                        {{ $program->activities->count() }} Kegiatan
+                                                    <div class="text-sm font-semibold text-gray-800">
+                                                        {{ $program->hr_pic[0]['nama'] ?? 'Tidak ada PIC HR' }}
                                                     </div>
-                                                    <div class="text-xs text-gray-400">Rincian orientation</div>
                                                 </div>
                                             </div>
                                         </td>
@@ -441,21 +600,20 @@
                                             <div class="flex items-center justify-center gap-1">
                                                 @if ($canManage)
                                                     @if ($isEditLocked)
-                                                        <button type="button"
-                                                            onclick="showEditLockedAlert()"
+                                                        <button type="button" onclick="showEditLockedAlert()"
                                                             aria-label="Edit orientation tidak tersedia"
                                                             class="p-1.5 rounded-lg hover:bg-amber-50 text-gray-400 hover:text-amber-600 transition group-hover:opacity-100 opacity-70">
-                                                    @else
-                                                        <a href="{{ route('orientation.edit', $program) }}"
-                                                            aria-label="Edit orientation"
-                                                            class="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition group-hover:opacity-100 opacity-70">
+                                                        @else
+                                                            <a href="{{ route('orientation.edit', $program) }}"
+                                                                aria-label="Edit orientation"
+                                                                class="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition group-hover:opacity-100 opacity-70">
                                                     @endif
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
-                                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                                        </svg>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                    </svg>
                                                     @if ($isEditLocked)
                                                         </button>
                                                     @else

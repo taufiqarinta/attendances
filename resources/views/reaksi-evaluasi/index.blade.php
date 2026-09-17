@@ -19,12 +19,12 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-white" fill="none"
                             viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5a2 2 0 002 2h2a2 2 0 002-2" />
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                         </svg>
                     </div>
                     <div>
-                        <h1 class="text-2xl font-bold text-white">Master Topik Training</h1>
-                        <p class="text-sm text-red-100">Kelola master topik training untuk program orientasi karyawan
+                        <h1 class="text-2xl font-bold text-white">Master Reaksi Evaluasi</h1>
+                        <p class="text-sm text-red-100">Kelola master reaksi evaluasi untuk program orientasi karyawan
                             baru</p>
                     </div>
                 </div>
@@ -46,9 +46,9 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z" />
                         </svg>
-                        <input type="text" id="searchInput" placeholder="Cari kode atau kegiatan..."
+                        <input type="text" id="searchInput" placeholder="Cari reaksi evaluasi..."
                             class="h-10 w-full rounded-xl border border-gray-200 bg-white pl-10 pr-3 text-sm focus:border-red-500 focus:ring-red-500"
-                            onkeyup="searchActivities()">
+                            onkeyup="searchReaksi()">
                     </div>
 
                     {{-- Right Action --}}
@@ -56,7 +56,7 @@
                         <select id="statusFilter"
                             class="h-10 w-full sm:w-56 rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-700
                focus:border-red-500 focus:ring-red-500"
-                            onchange="filterActivities()">
+                            onchange="filterReaksi()">
                             <option value="all">Status : Semua</option>
                             <option value="1">Aktif</option>
                             <option value="0">Nonaktif</option>
@@ -69,7 +69,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 4v16m8-8H4" />
                             </svg>
-                            Tambah Training
+                            Tambah Reaksi Evaluasi
                         </button>
                     </div>
                 </div>
@@ -78,24 +78,15 @@
                 {{-- TABLE --}}
                 {{-- ===================================================== --}}
                 <div class="overflow-x-auto">
-                    <table class="w-full min-w-[768px]" id="activityTable">
+                    <table class="w-full min-w-[768px]" id="reaksiTable">
                         <thead class="bg-slate-50/80 border-y border-gray-200">
                             <tr>
                                 <th
                                     class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-12">
                                     No</th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider min-w-[150px]">
-                                    Kategori</th>
-                                <th
-                                    class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-28">
-                                    Kode Training</th>
-                                <th
-                                    class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider min-w-[150px]">
-                                    Nama Training</th>
-                                <th
-                                    class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider hidden md:table-cell min-w-[200px]">
-                                    Deskripsi</th>
+                                    class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider min-w-[200px]">
+                                    Nama Reaksi Evaluasi</th>
                                 <th
                                     class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-24">
                                     Status</th>
@@ -104,14 +95,12 @@
                                     Aksi</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100 bg-white" id="activityTableBody">
-                            @php $no = $activities->firstItem() ?? 1; @endphp
-                            @forelse($activities as $activity)
-                                <tr class="hover:bg-slate-50/60 transition-colors duration-150 activity-row group"
-                                    data-status="{{ $activity->status }}"
-                                    data-name="{{ strtolower($activity->activity_name) }}"
-                                    data-code="{{ strtolower($activity->code_activity ?? '') }}"
-                                    data-id="{{ $activity->id }}">
+                        <tbody class="divide-y divide-gray-100 bg-white" id="reaksiTableBody">
+                            @php $no = $reaksi->firstItem() ?? 1; @endphp
+                            @forelse($reaksi as $item)
+                                <tr class="hover:bg-slate-50/60 transition-colors duration-150 reaksi-row group"
+                                    data-status="{{ $item->status }}" data-name="{{ strtolower($item->reaksi_name) }}"
+                                    data-id="{{ $item->id }}">
 
                                     <td class="px-4 py-3.5 text-sm text-gray-500 text-center">
                                         <span
@@ -119,40 +108,27 @@
                                             {{ $no++ }}
                                         </span>
                                     </td>
-                                    <td class="px-4 py-3.5 text-sm text-gray-700">
-                                        {{ optional($activity->category)->category_name ?? '-' }}
-                                    </td>
-
-                                    <td class="px-4 py-3.5 text-sm font-semibold text-red-700">
-                                        {{ $activity->code_activity ?? '-' }}
-                                    </td>
 
                                     <td class="px-4 py-3.5">
                                         <div class="flex items-center gap-2">
                                             <div
-                                                class="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
-                                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor"
+                                                class="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-amber-50 to-amber-100 flex items-center justify-center">
+                                                <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor"
                                                     viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                         stroke-width="2"
-                                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5a2 2 0 002 2h2a2 2 0 002-2" />
+                                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                                                 </svg>
                                             </div>
                                             <div>
                                                 <div class="font-medium text-sm text-gray-800">
-                                                    {{ $activity->activity_name }}</div>
+                                                    {{ $item->reaksi_name }}</div>
                                             </div>
                                         </div>
                                     </td>
 
-                                    <td class="px-4 py-3.5 text-sm text-gray-500 hidden md:table-cell">
-                                        <div class="max-w-xs truncate">
-                                            {{ $activity->description ?? '-' }}
-                                        </div>
-                                    </td>
-
                                     <td class="px-4 py-3.5">
-                                        @if ($activity->status == 1)
+                                        @if ($item->status == 1)
                                             <span
                                                 class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 border border-emerald-200/50">
                                                 <span class="relative flex h-2 w-2">
@@ -174,9 +150,9 @@
 
                                     <td class="px-4 py-3.5">
                                         <div class="flex items-center justify-center gap-1">
-                                            <button onclick="openModal('edit', {{ $activity->id }})"
+                                            <button onclick="openModal('edit', {{ $item->id }})"
                                                 class="p-1.5 rounded-lg hover:bg-blue-50 transition-all duration-200 group/edit"
-                                                title="Edit Kegiatan">
+                                                title="Edit Reaksi Evaluasi">
                                                 <svg class="w-4 h-4 text-gray-400 group-hover/edit:text-blue-600 transition-colors"
                                                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -184,9 +160,9 @@
                                                         d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                 </svg>
                                             </button>
-                                            <button onclick="confirmDelete({{ $activity->id }})"
+                                            <button onclick="confirmDelete({{ $item->id }})"
                                                 class="p-1.5 rounded-lg hover:bg-red-50 transition-all duration-200 group/delete"
-                                                title="Hapus Kegiatan">
+                                                title="Hapus Reaksi Evaluasi">
                                                 <svg class="w-4 h-4 text-gray-400 group-hover/delete:text-red-600 transition-colors"
                                                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -199,7 +175,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-4 py-16 text-center">
+                                    <td colspan="4" class="px-4 py-16 text-center">
                                         <div class="flex flex-col items-center gap-4">
                                             <div
                                                 class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center">
@@ -207,14 +183,15 @@
                                                     stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                         stroke-width="1.5"
-                                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5a2 2 0 002 2h2a2 2 0 002-2" />
+                                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                                                 </svg>
                                             </div>
                                             <div>
                                                 <p class="text-base font-semibold text-gray-700">Belum ada data
-                                                    kegiatan</p>
+                                                    reaksi evaluasi</p>
                                                 <p class="text-sm text-gray-400 mt-1">Klik tombol <span
-                                                        class="font-medium text-gray-600">"Tambah Kegiatan"</span>
+                                                        class="font-medium text-gray-600">"Tambah Reaksi
+                                                        Evaluasi"</span>
                                                     untuk menambahkan data</p>
                                             </div>
                                         </div>
@@ -224,13 +201,14 @@
                         </tbody>
                     </table>
                 </div>
+
                 {{-- ===================================================== --}}
                 {{-- FOOTER TABLE WITH PAGINATION --}}
                 {{-- ===================================================== --}}
                 <div class="border-t border-gray-200 bg-gray-50 px-4 py-3">
                     <div class="flex justify-center lg:justify-end">
                         <div class="pagination-wrapper">
-                            {{ $activities->appends(request()->query())->onEachSide(1)->links() }}
+                            {{ $reaksi->appends(request()->query())->onEachSide(1)->links() }}
                         </div>
                     </div>
                 </div>
@@ -247,7 +225,7 @@
             class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto animate-scale-up relative">
             <div
                 class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl flex items-center justify-between z-10">
-                <h3 id="modalTitle" class="text-lg font-bold text-gray-800">Tambah Kegiatan</h3>
+                <h3 id="modalTitle" class="text-lg font-bold text-gray-800">Tambah Reaksi Evaluasi</h3>
                 <button onclick="closeModal()" class="p-1.5 rounded-lg hover:bg-gray-100 transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none"
                         viewBox="0 0 24 24" stroke="currentColor">
@@ -257,45 +235,25 @@
                 </button>
             </div>
 
-            <form id="modalForm" class="p-6 space-y-4" action="{{ route('orientation.master-activity.store') }}"
+            <form id="modalForm" class="p-6 space-y-4" action="{{ route('master-reaksi-evaluasi.store') }}"
                 method="POST">
                 @csrf
                 <input type="hidden" id="formId" name="id" value="">
                 <input type="hidden" name="_method" id="formMethod" value="POST">
-                {{-- Kategori --}}
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Kategori <span
-                            class="text-red-500">*</span></label>
-                    <select id="formKategori" name="category_id"
-                        class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-red-500 focus:ring-red-500 focus:outline-none"
-                        required>
-                        <option value="">-- Pilih Kategori --</option>
-                        @foreach ($categories as $category)
-                            <option value="{{ $category->id }}">{{ $category->category_name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                {{-- Nama Kegiatan --}}
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nama Kegiatan <span
-                            class="text-red-500">*</span></label>
-                    <input type="text" id="formNama" name="activity_name"
-                        class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-red-500 focus:ring-red-500 focus:outline-none"
-                        placeholder="Masukkan nama kegiatan" required>
-                </div>
 
-                {{-- Deskripsi Kegiatan --}}
+                {{-- Nama Reaksi Evaluasi --}}
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Deskripsi Kegiatan</label>
-                    <textarea id="formDeskripsi" name="description" rows="3"
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nama Reaksi Evaluasi <span
+                            class="text-red-500">*</span></label>
+                    <input type="text" id="formNama" name="reaksi_name"
                         class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-red-500 focus:ring-red-500 focus:outline-none"
-                        placeholder="Masukkan deskripsi kegiatan"></textarea>
+                        placeholder="Masukkan nama reaksi evaluasi" required>
+                    <p class="mt-1 text-xs text-red-500 hidden" id="errorNama"></p>
                 </div>
 
                 {{-- Status --}}
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1.5
-                    ">Status <span
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Status <span
                             class="text-red-500">*</span></label>
                     <select id="formStatus" name="status"
                         class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-red-500 focus:ring-red-500 focus:outline-none"
@@ -303,14 +261,17 @@
                         <option value="1">Aktif</option>
                         <option value="0">Nonaktif</option>
                     </select>
+                    <p class="mt-1 text-xs text-red-500 hidden" id="errorStatus"></p>
                 </div>
 
                 {{-- Tombol --}}
                 <div class="flex gap-3 pt-2 sticky bottom-0 bg-white py-3 border-t border-gray-100 -mx-6 px-6">
                     <button type="button" onclick="closeModal()"
                         class="flex-1 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition">Batal</button>
-                    <button type="submit"
-                        class="flex-1 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700 transition">Simpan</button>
+                    <button type="submit" id="submitBtn"
+                        class="flex-1 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700 transition disabled:opacity-60 disabled:cursor-not-allowed">
+                        Simpan
+                    </button>
                 </div>
             </form>
         </div>
@@ -340,7 +301,6 @@
         /* =======================================================
    PAGINATION LARAVEL TAILWIND
 ======================================================= */
-
         .pagination-wrapper nav {
             display: flex;
             justify-content: center;
@@ -350,7 +310,6 @@
 
         .pagination-wrapper nav>div:first-child {
             display: none;
-            /* Sembunyikan "Showing x to y..." */
         }
 
         .pagination-wrapper nav>div:last-child {
@@ -401,7 +360,6 @@
             height: 18px;
         }
 
-        /* Mobile */
         @media (max-width:640px) {
 
             .pagination-wrapper nav {
@@ -425,9 +383,55 @@
 
     <script>
         // =====================================================
+        // TOAST HELPER
+        // =====================================================
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+            }
+        });
+
+        function showSuccess(message) {
+            Toast.fire({
+                icon: 'success',
+                title: message
+            });
+        }
+
+        function showError(message) {
+            Toast.fire({
+                icon: 'error',
+                title: message
+            });
+        }
+
+        // =====================================================
+        // FLASH MESSAGE FROM SESSION
+        // =====================================================
+        @if (session('success'))
+            showSuccess(@json(session('success')));
+        @endif
+
+        @if (session('error'))
+            showError(@json(session('error')));
+        @endif
+
+        @if ($errors->any())
+            showError(@json($errors->first()));
+        @endif
+
+        // =====================================================
         // STATE MANAGEMENT
         // =====================================================
         const state = {
+            currentPage: 1,
+            rowsPerPage: 10,
             currentSearch: '',
             currentStatus: 'all',
             isModalOpen: false,
@@ -449,19 +453,19 @@
 
             if (type === 'create') {
                 state.isEditMode = false;
-                title.textContent = 'Tambah Kegiatan';
+                title.textContent = 'Tambah Reaksi Evaluasi';
                 formId.value = '';
                 formMethod.value = 'POST';
-                form.action = "{{ route('orientation.master-activity.store') }}";
+                form.action = "{{ route('master-reaksi-evaluasi.store') }}";
                 document.getElementById('formStatus').value = '1';
             } else if (type === 'edit') {
                 state.isEditMode = true;
                 state.editId = id;
-                title.textContent = 'Edit Kegiatan';
+                title.textContent = 'Edit Reaksi Evaluasi';
                 formId.value = id;
                 formMethod.value = 'PUT';
-                form.action = `/orientation/master-activity/${id}`;
-                fetchActivityData(id);
+                form.action = `/orientation/master-reaksi-evaluasi/${id}`;
+                fetchReaksiData(id);
             }
 
             overlay.classList.remove('hidden');
@@ -472,30 +476,24 @@
 
         function resetModalForm() {
             document.getElementById('formNama').value = '';
-            document.getElementById('formDeskripsi').value = '';
-            document.getElementById('formKategori').value = '';
+            document.getElementById('formNama').classList.remove('border-red-500');
+            document.getElementById('errorNama').classList.add('hidden');
+            document.getElementById('errorStatus').classList.add('hidden');
         }
 
-        function fetchActivityData(id) {
-            fetch(`/orientation/master-activity/${id}/edit`)
+        function fetchReaksiData(id) {
+            fetch(`/orientation/master-reaksi-evaluasi/${id}/edit`)
                 .then(response => {
                     if (!response.ok) throw new Error('Network response was not ok');
                     return response.json();
                 })
                 .then(data => {
-                    document.getElementById('formNama').value = data.activity_name;
-                    document.getElementById('formDeskripsi').value = data.description || '';
-                    document.getElementById('formKategori').value = data.category_id || '';
+                    document.getElementById('formNama').value = data.reaksi_name;
                     document.getElementById('formStatus').value = data.status == 1 ? '1' : '0';
                 })
                 .catch(error => {
-                    console.error('Error fetching activity data:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Gagal mengambil data kegiatan!',
-                        confirmButtonColor: '#dc2626'
-                    });
+                    console.error('Error fetching reaksi evaluasi data:', error);
+                    showError('Gagal mengambil data reaksi evaluasi!');
                     closeModal();
                 });
         }
@@ -508,17 +506,13 @@
             state.isModalOpen = false;
         }
 
-        function validateForm() {
-            return true;
-        }
-
         // =====================================================
         // CRUD OPERATIONS
         // =====================================================
         function confirmDelete(id) {
             Swal.fire({
                 title: 'Apakah Anda yakin?',
-                text: "Data kegiatan akan dihapus secara permanen!",
+                text: "Data reaksi evaluasi akan dihapus secara permanen!",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#dc2626',
@@ -528,40 +522,107 @@
                 reverseButtons: true
             }).then((result) => {
                 if (result.isConfirmed) {
-                    deleteActivity(id);
+                    deleteReaksi(id);
                 }
             });
         }
 
-        function deleteActivity(id) {
+        function deleteReaksi(id) {
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = `/orientation/master-activity/${id}`;
+            form.action = `/orientation/master-reaksi-evaluasi/${id}`;
             form.innerHTML = `
-        @csrf
-        @method('DELETE')
-    `;
+            @csrf
+            @method('DELETE')
+        `;
             document.body.appendChild(form);
             form.submit();
         }
 
         // =====================================================
+        // SUBMIT FORM VIA AJAX (dengan SweetAlert)
+        // =====================================================
+        async function submitFormAjax(e) {
+            e.preventDefault();
+
+            const form = document.getElementById('modalForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerHTML;
+
+            // Reset error
+            document.getElementById('errorNama').classList.add('hidden');
+            document.getElementById('formNama').classList.remove('border-red-500');
+
+            // Disable button
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Menyimpan...';
+
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    // Handle validation error
+                    if (response.status === 422 && data.errors) {
+                        if (data.errors.reaksi_name) {
+                            const errorNama = document.getElementById('errorNama');
+                            errorNama.textContent = data.errors.reaksi_name[0];
+                            errorNama.classList.remove('hidden');
+                            document.getElementById('formNama').classList.add('border-red-500');
+                        }
+                        showError(data.message || 'Validasi gagal. Periksa kembali input Anda.');
+                    } else {
+                        showError(data.message || 'Terjadi kesalahan pada server.');
+                    }
+                    return;
+                }
+
+                // Success
+                closeModal();
+                showSuccess(data.message || 'Data berhasil disimpan!');
+
+                // Reload halaman setelah 1 detik agar data ter-update
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+
+            } catch (error) {
+                console.error('Submit error:', error);
+                showError('Terjadi kesalahan jaringan. Silakan coba lagi.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        }
+
+        // =====================================================
         // SEARCH AND FILTER FUNCTIONS
         // =====================================================
-        function searchActivities() {
+        function searchReaksi() {
             const input = document.getElementById('searchInput');
             state.currentSearch = input.value.toLowerCase().trim();
             applyFilters();
         }
 
-        function filterActivities() {
+        function filterReaksi() {
             const select = document.getElementById('statusFilter');
             state.currentStatus = select.value;
             applyFilters();
         }
 
         function applyFilters() {
-            const rows = document.querySelectorAll('.activity-row');
+            const rows = document.querySelectorAll('.reaksi-row');
             const searchTerm = state.currentSearch;
             const statusFilter = state.currentStatus;
 
@@ -570,11 +631,7 @@
 
                 if (searchTerm) {
                     const name = row.getAttribute('data-name') || '';
-                    const code = row.getAttribute('data-code') || '';
-                    const description = row.querySelector('td:nth-child(5)')?.textContent?.toLowerCase() || '';
-
-                    if (!name.includes(searchTerm) && !code.includes(searchTerm) && !description.includes(
-                            searchTerm)) {
+                    if (!name.includes(searchTerm)) {
                         show = false;
                     }
                 }
@@ -594,110 +651,37 @@
         // EVENT LISTENERS
         // =====================================================
         document.addEventListener('DOMContentLoaded', function() {
-            // Modal form submit
-            document.getElementById('modalForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                if (validateForm()) {
-                    this.submit();
-                }
-            });
+            // Submit via AJAX
+            document.getElementById('modalForm').addEventListener('submit', submitFormAjax);
 
-            // Close modal on overlay click
             document.getElementById('modalOverlay').addEventListener('click', function(e) {
                 if (e.target === this) {
                     closeModal();
                 }
             });
 
-            // Keyboard shortcuts
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape' && state.isModalOpen) {
                     closeModal();
                 }
             });
 
-            // Search with debounce
             let searchTimeout;
             document.getElementById('searchInput').addEventListener('input', function() {
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(() => {
-                    searchActivities();
+                    searchReaksi();
                 }, 300);
             });
 
-            console.log('Master Kegiatan page initialized');
-        });
-
-        // =====================================================
-        // UTILITY FUNCTIONS
-        // =====================================================
-        function showToast(message, type = 'success') {
-            Swal.fire({
-                icon: type,
-                title: message,
-                showConfirmButton: false,
-                timer: 2000,
-                background: 'white',
-                toast: true,
-                position: 'top-end'
-            });
-        }
-
-        function refreshData() {
-            state.currentSearch = '';
-            state.currentStatus = 'all';
-
-            document.getElementById('searchInput').value = '';
-            document.getElementById('statusFilter').value = 'all';
-
-            applyFilters();
-        }
-
-        // =====================================================
-        // FLASH MESSAGE (SUCCESS / ERROR)
-        // =====================================================
-        document.addEventListener('DOMContentLoaded', function() {
-            @if (session('success'))
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    text: "{{ session('success') }}",
-                    showConfirmButton: false,
-                    timer: 2000,
-                    timerProgressBar: true,
-                    background: 'white',
-                    toast: true,
-                    position: 'top-end'
-                });
-            @endif
-
-            @if (session('error'))
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal!',
-                    text: "{{ session('error') }}",
-                    showConfirmButton: true,
-                    confirmButtonColor: '#dc2626'
-                });
-            @endif
-
-            @if ($errors->any())
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Validasi Gagal!',
-                    html: `{!! implode('<br>', $errors->all()) !!}`,
-                    confirmButtonColor: '#dc2626'
-                });
-            @endif
+            console.log('Master Reaksi Evaluasi page initialized');
         });
 
         // Export functions
         window.openModal = openModal;
         window.closeModal = closeModal;
         window.confirmDelete = confirmDelete;
-        window.searchActivities = searchActivities;
-        window.filterActivities = filterActivities;
-        window.refreshData = refreshData;
-        window.showToast = showToast;
+        window.searchReaksi = searchReaksi;
+        window.filterReaksi = filterReaksi;
     </script>
 </x-app-layout>

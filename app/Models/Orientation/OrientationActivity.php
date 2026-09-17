@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class OrientationActivity extends Model
 {
     use HasFactory;
-    protected $connection = 'hris_kobin';
+    protected $connection = 'dev_test';
     protected $table = 'orientation_activities';
 
     protected $fillable = [
@@ -23,6 +23,7 @@ class OrientationActivity extends Model
         'score_note',
         'started_at',
         'completed_at',
+        'attendances',
     ];
 
     protected $casts = [
@@ -32,6 +33,7 @@ class OrientationActivity extends Model
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
         'score' => 'decimal:2',
+        'attendances' => 'array',
     ];
 
     /**
