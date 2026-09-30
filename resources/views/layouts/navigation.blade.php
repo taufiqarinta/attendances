@@ -279,6 +279,15 @@
                     </x-nav-link>
                     {{-- @endif --}}
 
+                    <x-nav-link :href="route('payslip.index')" :active="request()->routeIs('payslip.index')" class="text-white"
+                        onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='white'">
+                        {{ __('Payslip Management') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('payslip.view')" :active="request()->routeIs('payslip.view')" class="text-white"
+                        onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='white'">
+                        {{ __('Payslip') }}
+                    </x-nav-link>
+
                 </div>
 
             </div>

@@ -30,6 +30,7 @@ use App\Http\Controllers\SuratPesananBarangController;
 use App\Http\Controllers\User\PermintaanController;
 use App\Http\Controllers\User\WelcomeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\Payroll\PayrollController;
 use App\Http\Controllers\WilayahController;
 use Illuminate\Support\Facades\Route;
 use Maatwebsite\Excel\Facades\Excel;
@@ -228,6 +229,25 @@ Route::middleware(['web', 'check.api.session'])->group(function () {
                 ->name('orientation.export.participants');
         });
     });
+
+    /*
+        |--------------------------------------------------------------------------
+        | Payslip Management 
+        |--------------------------------------------------------------------------
+    */
+    Route::get('/payslip', [PayrollController::class, 'index'])->name('payslip.index');
+    Route::get('/payslip/generate', [PayrollController::class, 'generatePage'])->name('payslip.generate');
+    Route::post('/payslip/generate', [PayrollController::class, 'generate'])->name('payslip.generate.store');
+    Route::get('/payslip/employees', [PayrollController::class, 'getEmployees'])->name('payslip.employees');
+    Route::get('/payslip/periods', [PayrollController::class, 'getPeriods'])->name('payslip.periods');
+    Route::get('/payslip/summary', [PayrollController::class, 'getSummary'])->name('payslip.summary');
+    Route::delete('/payslip/period/{id}', [PayrollController::class, 'deletePeriod'])->name('payslip.period.delete');
+    Route::delete('/payslip/employee/{id}', [PayrollController::class, 'deleteEmployee'])->name('payslip.employee.delete');
+    Route::post('/payslip/upload', [PayrollController::class, 'uploadSlip'])->name('payslip.upload');
+    Route::post('/payslip/slip/preview', [PayrollController::class, 'previewSlip'])->name('payslip.slip.preview')->middleware('throttle:10,1');
+    Route::delete('/payslip/slip/{id}', [PayrollController::class, 'deleteSlip'])->name('payslip.slip.delete');
+    
+    Route::get('/payslip-view', [PayrollController::class, 'payslipView'])->name('payslip.view');
 });
 
 Route::fallback(function () {
