@@ -278,11 +278,12 @@
                         {{ __('Training') }}
                     </x-nav-link>
                     {{-- @endif --}}
-
-                    <x-nav-link :href="route('payslip.index')" :active="request()->routeIs('payslip.index')" class="text-white"
-                        onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='white'">
-                        {{ __('Payslip Management') }}
-                    </x-nav-link>
+                    @if (session('comp') == '0001' && in_array(session('nik'), ['20924438', '20425679']))
+                        <x-nav-link :href="route('payslip.index')" :active="request()->routeIs('payslip.index')" class="text-white"
+                            onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='white'">
+                            {{ __('Payslip Management') }}
+                        </x-nav-link>
+                    @endif
                     <x-nav-link :href="route('payslip.view')" :active="request()->routeIs('payslip.view')" class="text-white"
                         onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='white'">
                         {{ __('Payslip') }}
@@ -437,6 +438,22 @@
                 {{ __('History Approval') }}
             </x-responsive-nav-link>
         @endif
+
+        @if (session('comp') == '0001' && in_array(session('nik'), ['20924438', '20425679']))
+            <x-responsive-nav-link :href="route('payslip.index')" :active="request()->routeIs('payslip.index')"
+                style="{{ request()->routeIs('payslip.index') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
+                onmouseover="this.style.color='#dc2626'"
+                onmouseout="this.style.color='{{ request()->routeIs('payslip.index') ? '#dc2626' : 'white' }}'">
+                {{ __('Payslip Management') }}
+            </x-responsive-nav-link>
+        @endif
+
+        <x-responsive-nav-link :href="route('payslip.view')" :active="request()->routeIs('payslip.view')"
+            style="{{ request()->routeIs('payslip.view') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
+            onmouseover="this.style.color='#dc2626'"
+            onmouseout="this.style.color='{{ request()->routeIs('payslip.view') ? '#dc2626' : 'white' }}'">
+            {{ __('Payslip') }}
+        </x-responsive-nav-link>
 
         <!-- Responsive Settings Options -->
         <div class="pt-4 pb-1 border-t border-gray-200">
