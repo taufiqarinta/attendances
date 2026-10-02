@@ -3,7 +3,7 @@
     <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
 
         <div class="text-center sm:text-left">
-            <h3 class="text-sm font-semibold text-gray-800">Siap Menyimpan Orientation?</h3>
+            <h3 class="text-sm font-semibold text-gray-800">Siap Menyimpan Training?</h3>
             <p class="text-xs text-gray-500">Pastikan seluruh data sudah benar sebelum disimpan.</p>
         </div>
 

@@ -10,7 +10,7 @@
             </div>
             <div>
                 <h3 class="font-semibold text-gray-800 text-sm">Rincian Program</h3>
-                <p class="text-xs text-gray-500">Informasi lengkap program orientation</p>
+                <p class="text-xs text-gray-500">Informasi lengkap program training</p>
             </div>
         </div>
     </div>

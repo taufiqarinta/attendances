@@ -23,10 +23,10 @@ class OrientationProgramController extends Controller
     /**
      * Database connection name for development/test database
      */
-    protected $dbConnection = 'hris_kobin';
+    protected $dbConnection = 'db_training';
 
     /**
-     * Daftar orientation program dari database hris_kobin.
+     * Daftar orientation program dari database db_training.
      */
     public function index(Request $request)
     {
@@ -142,9 +142,13 @@ class OrientationProgramController extends Controller
         $this->authorizeOrientationManager();
 
         $plants = MasterPlant::orderBy('name_plant', 'asc')->get();
-        $masterOrientationActivities = MasterOrientationActivity::where('status', 1)
+        $masterOrientationActivities = MasterOrientationActivity::with('categories')
+            ->where('status', 1)
             ->orderBy('activity_name', 'asc')
-            ->get();
+            ->get()
+            ->each(function ($activity) {
+                $activity->category_ids = $activity->categories->pluck('id')->map(fn($id) => (int) $id)->toArray();
+            });
         $categories = \App\Models\Orientation\MasterOrientationCategory::where('status', 1) // <-- TAMBAH
             ->orderBy('category_name', 'asc')
             ->get();
@@ -204,9 +208,13 @@ class OrientationProgramController extends Controller
         $niks = $orientation->activities->pluck('pic_employee_id')->filter()->unique()->values()->all();
         $allPicData = $this->getMultiplePicData($niks);
 
-        $masterOrientationActivities = MasterOrientationActivity::where('status', 1)
+        $masterOrientationActivities = MasterOrientationActivity::with('categories')
+            ->where('status', 1)
             ->orderBy('activity_name', 'asc')
-            ->get();
+            ->get()
+            ->each(function ($activity) {
+                $activity->category_ids = $activity->categories->pluck('id')->map(fn($id) => (int) $id)->toArray();
+            });
         $initialParticipants = $orientation->participants ?? [];
         $hrPics = $orientation->hr_pic ?? [];
         $hrPic = !empty($hrPics) ? $hrPics[0] : null;
@@ -266,7 +274,7 @@ class OrientationProgramController extends Controller
             'participants.*.jabatan' => 'nullable|string|max:255',
             'participants.*.dept' => 'nullable|string|max:255',
             'activities' => 'required|array|min:1',
-            'activities.*.activity_id' => 'required|exists:hris_kobin.master_orientation_activities,id',
+            'activities.*.activity_id' => 'required|exists:db_training.master_orientation_activities,id',
             'activities.*.tanggal' => 'required|date',
             'activities.*.waktu_mulai' => 'required',
             'activities.*.waktu_selesai' => 'required',
@@ -301,7 +309,7 @@ class OrientationProgramController extends Controller
         });
 
         return response()->json([
-            'message' => 'Orientation berhasil diperbarui.',
+            'message' => 'Training berhasil diperbarui.',
             'redirect' => route('orientation.index'),
         ]);
     }
@@ -320,8 +328,8 @@ class OrientationProgramController extends Controller
         ]);
 
         $request->validate([
-            'category_id' => 'required|exists:hris_kobin.master_orientation_categories,id', // <-- TAMBAH
-            'plant_id' => 'required|exists:hris_kobin.master_plants,id',
+            'category_id' => 'required|exists:db_training.master_orientation_categories,id', // <-- TAMBAH
+            'plant_id' => 'required|exists:db_training.master_plants,id',
             'hr_pic' => 'required|array|min:1', // <-- TAMBAH
             'hr_pic.*.nik' => 'required|string|max:100',
             'hr_pic.*.nama' => 'required|string|max:255',
@@ -331,7 +339,7 @@ class OrientationProgramController extends Controller
             'participants.*.jabatan' => 'nullable|string|max:255',
             'participants.*.dept' => 'nullable|string|max:255',
             'activities' => 'required|array|min:1',
-            'activities.*.activity_id' => 'required|exists:hris_kobin.master_orientation_activities,id',
+            'activities.*.activity_id' => 'required|exists:db_training.master_orientation_activities,id',
             'activities.*.tanggal' => 'required|date',
             'activities.*.waktu_mulai' => 'required',
             'activities.*.waktu_selesai' => 'required',
@@ -360,7 +368,7 @@ class OrientationProgramController extends Controller
         $orientation = DB::connection($this->dbConnection)->transaction(function () use ($request) {
             $totalPrograms = OrientationProgram::count();
             $nextBatchNumber = $totalPrograms + 1;
-            $batchName = 'Kobin Orientation Program Batch ' . $nextBatchNumber;
+            $batchName = 'Kobin Training Batch ' . $nextBatchNumber;
 
             $orientation = OrientationProgram::create([
                 'category_id' => $request->category_id,        // <-- TAMBAH
@@ -388,7 +396,7 @@ class OrientationProgramController extends Controller
 
         if ($request->expectsJson()) {
             return response()->json([
-                'message' => 'Orientation program berhasil dibuat.',
+                'message' => 'Training program berhasil dibuat.',
                 'redirect' => route('orientation.index'),
                 'id' => $orientation->id,
                 'batch_name' => $orientation->batch_name,
@@ -396,7 +404,7 @@ class OrientationProgramController extends Controller
         }
 
         return redirect()->route('orientation.index')
-            ->with('success', 'Orientation program berhasil dibuat.');
+            ->with('success', 'Training program berhasil dibuat.');
     }
 
     /**
@@ -441,7 +449,7 @@ class OrientationProgramController extends Controller
 
         return redirect()
             ->route('orientation.index')
-            ->with('deleted_success', 'Orientation program berhasil dihapus.');
+            ->with('deleted_success', 'Training program berhasil dihapus.');
     }
 
     /**
@@ -1071,7 +1079,7 @@ class OrientationProgramController extends Controller
     {
         try {
             $request->validate([
-                'id' => 'required|exists:hris_kobin.orientation_activities,id',
+                'id' => 'required|exists:db_training.orientation_activities,id',
                 'score' => 'required|numeric|min:0|max:100',
                 'score_note' => 'nullable|string|max:255',
             ]);
@@ -1104,7 +1112,7 @@ class OrientationProgramController extends Controller
     {
         try {
             $request->validate([
-                'id' => 'required|exists:hris_kobin.orientation_activities,id',
+                'id' => 'required|exists:db_training.orientation_activities,id',
                 'status' => 'required|in:pending,ongoing,completed,cancelled',
             ]);
 
@@ -1184,7 +1192,7 @@ class OrientationProgramController extends Controller
     {
         try {
             $request->validate([
-                'id' => 'required|exists:hris_kobin.orientation_activities,id'
+                'id' => 'required|exists:db_training.orientation_activities,id'
             ]);
 
             $activity = OrientationActivity::find($request->id);

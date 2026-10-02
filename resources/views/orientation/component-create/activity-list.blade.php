@@ -16,6 +16,8 @@
         isLoading: false,
         kegiatanRows: [],
         editingIndex: null,
+        picOpenIndex: null,
+        picSearchText: '',
     
         init() {
             this.selectedPlant = window.selectedPlantData || null;
@@ -80,7 +82,7 @@
         },
     
         filterActivitiesByCategoryAndPlant() {
-            const categoryId = this.selectedCategoryId; // <-- pakai state
+            const categoryId = this.selectedCategoryId;
             const selectedPlant = window.selectedPlantData;
     
             if (!categoryId) {
@@ -89,12 +91,11 @@
             }
     
             this.filteredActivities = this.activities.filter(item => {
-                // Filter by category
-                if (String(item.category_id) !== String(categoryId)) {
+                const categoryIds = (item.category_ids || []).map(String);
+                if (!categoryIds.includes(String(categoryId))) {
                     return false;
                 }
     
-                // Filter by plant (opsional)
                 if (selectedPlant) {
                     let plantIds = item.plants || [];
                     if (typeof plantIds === 'string') {
@@ -184,12 +185,13 @@
         },
     
         filterActivities() {
-            const categoryId = this.selectedCategoryId; // <-- pakai state
+            const categoryId = this.selectedCategoryId;
             const selectedPlant = window.selectedPlantData;
             const query = this.searchActivity.trim().toLowerCase();
     
             this.filteredActivities = this.activities.filter(item => {
-                if (String(item.category_id) !== String(categoryId)) return false;
+                const categoryIds = (item.category_ids || []).map(String);
+                if (!categoryIds.includes(String(categoryId))) return false;
     
                 if (selectedPlant) {
                     let plantIds = item.plants || [];
@@ -266,6 +268,42 @@
                 (item.jabatan && item.jabatan.toLowerCase().includes(query))
             );
         },
+
+        isActivityAdded(activityId, excludeIndex = null) {
+            return this.kegiatanRows.some((row, idx) =>
+                String(row.activity_id) === String(activityId) && idx !== excludeIndex
+            );
+        },
+
+        togglePicDropdown(index) {
+            if (this.picOpenIndex === index) {
+                this.picOpenIndex = null;
+            } else {
+                this.picOpenIndex = index;
+                this.picSearchText = '';
+            }
+        },
+
+        filteredPicsForRow() {
+            if (!this.picSearchText.trim()) {
+                return this.picData;
+            }
+            const query = this.picSearchText.toLowerCase().trim();
+            return this.picData.filter(item =>
+                (item.nama && item.nama.toLowerCase().includes(query)) ||
+                (item.nik && String(item.nik).toLowerCase().includes(query)) ||
+                (item.jabatan && item.jabatan.toLowerCase().includes(query))
+            );
+        },
+
+        selectRowPic(index, user) {
+            if (!user) return;
+            this.kegiatanRows[index].pic_nik = user.nik;
+            this.kegiatanRows[index].pic = user.nama || user.nik;
+            this.kegiatanRows[index].jabatan = user.jabatan || '-';
+            this.picOpenIndex = null;
+            this.picSearchText = '';
+        },
     
         tambahKegiatan() {
             const activityId = window.selectedActivityId;
@@ -280,6 +318,16 @@
     
             if (!activityId) {
                 alert('Silakan pilih kegiatan terlebih dahulu');
+                return;
+            }
+
+            if (this.isActivityAdded(activityId, this.editingIndex)) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Duplikat kegiatan',
+                    text: 'Kegiatan ini sudah ada di daftar. Silakan pilih kegiatan lain.',
+                    confirmButtonColor: '#dc2626'
+                });
                 return;
             }
     
@@ -308,9 +356,7 @@
                 waktu_selesai: endTime,
                 pic: picName,
                 pic_nik: picNik,
-                jabatan: position,
-                icon: this.getRandomIcon(),
-                color: this.getRandomColor()
+                jabatan: position
             };
     
             if (this.editingIndex !== null) {
@@ -371,36 +417,76 @@
             }
         },
     
-        getRandomIcon() {
-            const icons = ['📋', '👨‍🏫', '📦', '📊', '🎯', '💡', '📈', '🔧', '📝', '🎓', '🏆', '⭐'];
-            return icons[Math.floor(Math.random() * icons.length)];
-        },
-    
-        getRandomColor() {
-            const colors = [
-                'bg-red-50 text-red-600',
-                'bg-orange-50 text-orange-600',
-                'bg-green-50 text-green-600',
-                'bg-purple-50 text-purple-600',
-                'bg-blue-50 text-blue-600',
-                'bg-yellow-50 text-yellow-600',
-                'bg-pink-50 text-pink-600',
-                'bg-indigo-50 text-indigo-600'
-            ];
-            return colors[Math.floor(Math.random() * colors.length)];
-        },
-    
-        getInitials(name) {
-            if (!name) return '?';
-            const words = name.trim().split(' ');
-            if (words.length === 1) {
-                return words[0].charAt(0).toUpperCase();
+        generateFromCategory() {
+            if (!this.selectedCategoryId) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Peringatan',
+                    text: 'Silakan pilih kategori terlebih dahulu.',
+                    confirmButtonColor: '#dc2626'
+                });
+                return;
             }
-            const first = words[0].charAt(0).toUpperCase();
-            const last = words[words.length - 1].charAt(0).toUpperCase();
-            return first + last;
+
+            this.filterActivitiesByCategoryAndPlant();
+
+            if (this.filteredActivities.length === 0) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Tidak ada kegiatan',
+                    text: 'Tidak ada kegiatan tersedia untuk kategori yang dipilih.',
+                    confirmButtonColor: '#dc2626'
+                });
+                return;
+            }
+
+            const doGenerate = () => {
+                this.kegiatanRows = this.filteredActivities.map(item => ({
+                    id: Date.now() + Math.random(),
+                    activity_id: item.id,
+                    title: item.activity_name,
+                    description: item.description || '',
+                    tanggal: '',
+                    waktu_mulai: '',
+                    waktu_selesai: '',
+                    pic: '',
+                    pic_nik: '',
+                    jabatan: ''
+                }));
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: this.kegiatanRows.length + ' kegiatan berhasil di-generate.',
+                    timer: 1500,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end'
+                });
+            };
+
+            if (this.kegiatanRows.length > 0) {
+                Swal.fire({
+                    title: 'Generate Ulang?',
+                    text: 'Data kegiatan saat ini akan diganti dengan kegiatan dari kategori yang dipilih.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc2626',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Ya, Generate',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) doGenerate();
+                });
+            } else {
+                doGenerate();
+            }
         },
     
+        isRowComplete(row) {
+            return !!(row && row.tanggal && row.waktu_mulai && row.waktu_selesai && row.pic_nik);
+        },
+
         formatDate(date) {
             if (!date) return '-';
             const d = new Date(date);
@@ -423,11 +509,20 @@
                 </svg>
             </div>
             <div>
-                <h2 class="text-base font-bold text-gray-800">Rincian Kegiatan Orientation</h2>
+                <h2 class="text-base font-bold text-gray-800">Rincian Kegiatan Training</h2>
                 <p class="text-xs text-gray-500" x-text="'Total ' + kegiatanRows.length + ' kegiatan'"></p>
             </div>
         </div>
         <div class="flex items-center gap-2">
+            <button @click="generateFromCategory()"
+                class="inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 shadow-sm transition hover:bg-red-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Generate Otomatis
+            </button>
             <button
                 @click="editingIndex = null; resetActivityForm(); modalTambahBaris = true; $nextTick(() => { filterActivitiesByCategoryAndPlant(); })"
                 class="inline-flex items-center gap-1.5 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700">
@@ -449,7 +544,7 @@
                     <th class="min-w-[200px] px-3 py-2.5 text-left text-xs font-semibold text-gray-600">Kegiatan</th>
                     <th class="w-40 px-3 py-2.5 text-left text-xs font-semibold text-gray-600">Tanggal</th>
                     <th class="w-44 px-3 py-2.5 text-left text-xs font-semibold text-gray-600">Waktu</th>
-                    <th class="min-w-[180px] px-3 py-2.5 text-left text-xs font-semibold text-gray-600">PIC</th>
+                    <th class="min-w-[220px] px-3 py-2.5 text-left text-xs font-semibold text-gray-600">PIC</th>
                     <th class="min-w-[150px] px-3 py-2.5 text-left text-xs font-semibold text-gray-600">Jabatan</th>
                     <th class="w-20 px-3 py-2.5 text-center text-xs font-semibold text-gray-600">Aksi</th>
                 </tr>
@@ -464,39 +559,90 @@
                                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                             <p class="text-sm text-gray-500">Belum ada kegiatan</p>
-                            <p class="text-xs text-gray-400 mt-1">Klik tombol "Tambah Baris" untuk menambahkan</p>
+                            <p class="text-xs text-gray-400 mt-1">Klik "Generate Otomatis" untuk mengisi dari kategori, atau "Tambah Baris" untuk manual</p>
                         </td>
                     </tr>
                 </template>
                 <template x-for="(row, index) in kegiatanRows" :key="row.id">
-                    <tr class="hover:bg-red-50/30 transition group">
+                    <tr class="hover:bg-red-50/30 transition group"
+                        :class="!isRowComplete(row) ? 'bg-amber-50/40' : ''">
                         <td class="px-3 py-3 text-center text-sm font-semibold text-gray-500"
                             x-text="String(index + 1).padStart(2, '0')"></td>
 
                         <td class="px-3 py-3">
-                            <div class="flex items-center gap-2.5">
-                                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-                                    :class="row.color || 'bg-gray-50 text-gray-600'" x-text="row.icon || '📋'">
-                                </div>
-                                <span class="text-sm font-medium text-gray-700" x-text="row.title"></span>
+                            <div class="min-w-0">
+                                <span class="block text-sm font-medium text-gray-700" x-text="row.title"></span>
+                                <span class="block truncate text-xs text-gray-400" x-text="row.description || ''"></span>
+                                <span x-show="!isRowComplete(row)"
+                                    class="mt-0.5 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+                                    Belum lengkap — isi langsung di tabel
+                                </span>
                             </div>
                         </td>
 
                         <td class="px-3 py-3">
-                            <span class="text-sm text-gray-700" x-text="formatDate(row.tanggal)"></span>
+                            <input type="date" x-model="kegiatanRows[index].tanggal"
+                                class="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-sm text-gray-700 focus:border-red-400 focus:ring-2 focus:ring-red-100 focus:outline-none">
                         </td>
 
                         <td class="px-3 py-3">
-                            <span class="text-sm text-gray-700"
-                                x-text="row.waktu_mulai + ' - ' + row.waktu_selesai"></span>
+                            <div class="flex items-center gap-1.5">
+                                <input type="time" x-model="kegiatanRows[index].waktu_mulai"
+                                    class="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-sm text-gray-700 focus:border-red-400 focus:ring-2 focus:ring-red-100 focus:outline-none">
+                                <span class="text-xs text-gray-400">-</span>
+                                <input type="time" x-model="kegiatanRows[index].waktu_selesai"
+                                    class="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-sm text-gray-700 focus:border-red-400 focus:ring-2 focus:ring-red-100 focus:outline-none">
+                            </div>
                         </td>
 
                         <td class="px-3 py-3">
-                            <div class="flex items-center gap-2.5">
-                                <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-200 text-gray-700 text-xs font-semibold"
-                                    x-text="getInitials(row.pic)">
+                            <div class="relative">
+                                <button type="button" @click="togglePicDropdown(index)"
+                                    class="flex w-full items-center justify-between gap-2 rounded-lg border bg-white px-2.5 py-1.5 text-left text-sm transition focus:outline-none"
+                                    :class="picOpenIndex === index ? 'border-red-400 ring-2 ring-red-100' : 'border-gray-200 hover:border-red-300'">
+                                    <span class="truncate" :class="row.pic ? 'text-gray-700 font-medium' : 'text-gray-400'"
+                                        x-text="row.pic || 'Pilih PIC...'"></span>
+                                    <svg class="h-3.5 w-3.5 shrink-0 text-gray-400 transition-transform duration-200"
+                                        :class="picOpenIndex === index ? 'rotate-180' : ''" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="m6 9 6 6 6-6" />
+                                    </svg>
+                                </button>
+
+                                <div x-show="picOpenIndex === index" x-cloak @click.outside="picOpenIndex = null"
+                                    class="mt-1 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
+                                    <div class="border-b border-gray-100 p-1.5">
+                                        <input type="text" x-model="picSearchText" placeholder="Cari nama / NIK / jabatan..."
+                                            class="w-full rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm focus:border-red-400 focus:ring-2 focus:ring-red-100 focus:outline-none">
+                                    </div>
+                                    <div class="max-h-44 overflow-y-auto p-1">
+                                        <template x-for="user in filteredPicsForRow()" :key="user.nik">
+                                            <button type="button" @click="selectRowPic(index, user)"
+                                                class="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left transition hover:bg-red-50"
+                                                :class="row.pic_nik === user.nik ? 'bg-red-50/60' : ''">
+                                                <span class="min-w-0 flex-1">
+                                                    <span class="block truncate text-sm font-medium text-gray-800"
+                                                        x-text="user.nama"></span>
+                                                    <span class="block truncate text-xs text-gray-500"
+                                                        x-text="user.nik + (user.jabatan ? ' • ' + user.jabatan : '')"></span>
+                                                </span>
+                                                <svg x-show="row.pic_nik === user.nik" class="h-4 w-4 shrink-0 text-red-600"
+                                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            </button>
+                                        </template>
+                                        <div x-show="filteredPicsForRow().length === 0" class="px-2 py-3 text-center">
+                                            <p class="text-xs text-gray-500" x-text="picData.length === 0 ? 'Data PIC tidak tersedia. Isi NIK manual di bawah.' : 'PIC tidak ditemukan'"></p>
+                                            <template x-if="picData.length === 0">
+                                                <input type="text" x-model="kegiatanRows[index].pic_nik" placeholder="Ketik NIK manual..."
+                                                    class="mt-1.5 w-full rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm focus:border-red-400 focus:outline-none">
+                                            </template>
+                                        </div>
+                                    </div>
                                 </div>
-                                <span class="text-sm text-gray-700" x-text="row.pic"></span>
                             </div>
                         </td>
 

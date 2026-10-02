@@ -13,7 +13,7 @@
                <div>
                    <h3 class="font-semibold text-amber-900">Informasi</h3>
                    <p class="mt-1 text-sm leading-5 text-amber-800">
-                       Pastikan seluruh kegiatan orientation telah diisi dengan benar. Setiap kegiatan wajib
+                        Pastikan seluruh kegiatan training telah diisi dengan benar. Setiap kegiatan wajib
                        memiliki tanggal, waktu serta PIC yang bertanggung jawab.
                    </p>
                </div>
