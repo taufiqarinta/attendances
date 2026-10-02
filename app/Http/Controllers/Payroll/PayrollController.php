@@ -21,6 +21,13 @@ class PayrollController extends Controller
 
     public function index(Request $request)
     {
+        // Cek akses
+        if (
+            session('comp') !== '0001' ||
+            !in_array(session('nik'), ['20924438', '20425679'])
+        ) {
+            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
+        }
         $periods = PayrollPeriod::orderBy('period_year', 'desc')
             ->orderBy('period_month', 'desc')
             ->get();
@@ -143,6 +150,13 @@ class PayrollController extends Controller
 
     public function generatePage()
     {
+        //cek akses
+        if (
+            session('comp') !== '0001' ||
+            !in_array(session('nik'), ['20924438', '20425679'])
+        ) {
+            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
+        }
         return view('payslip.payslip-management.generate');
     }
 
