@@ -212,7 +212,7 @@
                             </x-dropdown>
                         </div>
                     @endif
-                    {{-- @php
+                    @php
                         $isOrientationAdmin = \App\Models\Orientation\UserAccessOrientation::where(
                             'nik',
                             session('nik'),
@@ -220,8 +220,8 @@
                             ->where('status', 'ACTIVE')
                             ->where('role', 'ADMIN')
                             ->exists();
-                    @endphp --}}
-                    {{-- @if ($isOrientationAdmin)
+                    @endphp
+                    @if ($isOrientationAdmin)
                         <div class="hidden sm:flex sm:items-center sm:ms-10 granitfiesta">
                             <x-dropdown align="right" width="48">
                                 <x-slot name="trigger">
@@ -263,7 +263,7 @@
                                 </x-slot>
                             </x-dropdown>
                         </div>
-                    @endif --}}
+                    @endif
                     {{-- @php
                         $hasOrientationAccess = \App\Models\Orientation\UserAccessOrientation::where(
                             'nik',
@@ -272,19 +272,21 @@
                             ->where('status', 'ACTIVE')
                             ->exists();
                     @endphp
+                    @if ($hasOrientationAccess) --}}
                     <x-nav-link :href="route('orientation.index')" :active="request()->routeIs('orientation.index')" class="text-white"
                         onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='white'">
                         {{ __('Training') }}
                     </x-nav-link>
+                    {{-- @endif --}}
 
-                    {{-- <x-nav-link :href="route('payslip.index')" :active="request()->routeIs('payslip.index')" class="text-white"
+                    <x-nav-link :href="route('payslip.index')" :active="request()->routeIs('payslip.index')" class="text-white"
                         onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='white'">
                         {{ __('Payslip Management') }}
                     </x-nav-link>
                     <x-nav-link :href="route('payslip.view')" :active="request()->routeIs('payslip.view')" class="text-white"
                         onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='white'">
                         {{ __('Payslip') }}
-                    </x-nav-link> --}}
+                    </x-nav-link>
 
                 </div>
 
