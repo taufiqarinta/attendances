@@ -10,7 +10,7 @@
                 </svg>
             </div>
             <div>
-                <h3 class="font-semibold text-gray-800 text-sm">Jadwal & Materi Orientation</h3>
+                <h3 class="font-semibold text-gray-800 text-sm">Jadwal & Materi Training</h3>
                 <p class="text-xs text-gray-500">Daftar kegiatan yang akan maupun telah dilaksanakan</p>
             </div>
         </div>

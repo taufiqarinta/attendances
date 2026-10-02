@@ -1,7 +1,7 @@
 <div x-data="participantModal()" class="space-y-6">
     <!-- Peserta -->
     <div>
-        <label class="mb-1.5 block text-xs font-semibold text-gray-700">Peserta Orientation <span
+        <label class="mb-1.5 block text-xs font-semibold text-gray-700">Peserta Training <span
                 class="text-red-500">*</span></label>
         <button type="button" @click="openModal()"
             class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 transition hover:border-red-300 hover:bg-red-50">
@@ -87,7 +87,7 @@
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-lg font-bold text-gray-800">Pilih Peserta Orientation</h3>
+                        <h3 class="text-lg font-bold text-gray-800">Pilih Peserta Training</h3>
                         <p class="text-xs text-gray-500">Semua karyawan (tanpa filter plant)</p>
                     </div>
                 </div>

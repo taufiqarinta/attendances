@@ -77,11 +77,19 @@ class PayrollController extends Controller
             ->paginate($perPage)
             ->appends($request->all());
 
+        $plantPlaces = $this->plantPlaces();
+        $employees->getCollection()->transform(function ($emp) use ($plantPlaces) {
+            $emp->plant_name = $plantPlaces[$emp->plant] ?? $emp->plant;
+            return $emp;
+        });
+
         $totalAll = (clone $query)->count();
         $totalUploaded = (clone $query)->whereHas('slip', function ($q) {
             $q->where('status', 'ACTIVE');
         })->count();
         $totalNotUploaded = $totalAll - $totalUploaded;
+
+        $grandTotalSlip = PayrollPeriodEmployee::count();
 
         $departments = PayrollPeriodEmployee::select('dept')
             ->distinct()
@@ -129,7 +137,7 @@ class PayrollController extends Controller
         return view('payslip.payslip-management.index', compact(
             'employees', 'periods', 'departments',
             'totalAll', 'totalUploaded', 'totalNotUploaded', 'filters',
-            'hasActiveFilter', 'filterInfo'
+            'hasActiveFilter', 'filterInfo', 'grandTotalSlip'
         ));
     }
 
@@ -264,6 +272,17 @@ class PayrollController extends Controller
             'uploaded_by',
             'uploaded_at',
             'created_at',
+        ];
+    }
+
+    private function plantPlaces()
+    {
+        return [
+            '1000' => 'HO - Manager & Director',
+            '1001' => 'KOBIN',
+            '1002' => 'CAKK',
+            '1003' => 'PK-2',
+            '1004' => 'MISS',
         ];
     }
 

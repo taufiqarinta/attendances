@@ -134,18 +134,12 @@
                             </p>
 
                             <p class="mt-2 text-[27px] font-bold tracking-tight text-gray-900">
-                                {{ $totalAll }}
+                                {{ $grandTotalSlip }}
                             </p>
 
                             <p class="mt-0.5 text-xs text-gray-400">
                                 Dokumen
                             </p>
-
-                            @if ($hasActiveFilter)
-                                <p class="mt-1 text-[11px] font-medium text-red-600" title="{{ $filterInfo }}">
-                                    Sesuai filter aktif
-                                </p>
-                            @endif
 
                         </div>
 
@@ -328,6 +322,61 @@
         ====================================================== -->
             <div class="soft-shadow overflow-hidden rounded-2xl border border-gray-100 bg-white">
 
+
+                <!-- =================================================
+                 TABS
+            ================================================== -->
+                <div class="border-b border-gray-100 px-3 sm:px-5">
+
+                    <div class="flex overflow-x-auto">
+
+                        <button type="button" onclick="switchTab('slip')" id="tabBtnSlip"
+                            class="flex items-center gap-2 whitespace-nowrap border-b-[3px] border-red-600 px-4 py-4 text-sm font-semibold text-red-600">
+
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8"
+                                viewBox="0 0 24 24">
+
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M6 3h8l4 4v14H6a2 2 0 01-2-2V5a2 2 0 012-2z">
+                                </path>
+
+                                <path stroke-linecap="round" d="M14 3v5h5">
+                                </path>
+
+                            </svg>
+
+                            Daftar Slip Gaji
+
+                        </button>
+
+
+                        <button type="button" onclick="switchTab('period')" id="tabBtnPeriod"
+                            class="flex items-center gap-2 whitespace-nowrap border-b-[3px] border-transparent px-4 py-4 text-sm font-medium text-gray-500 transition hover:text-red-600">
+
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8"
+                                viewBox="0 0 24 24">
+
+                                <rect x="3" y="4" width="18" height="17" rx="2">
+                                </rect>
+
+                                <path stroke-linecap="round" d="M16 2v4M8 2v4M3 10h18">
+                                </path>
+
+                            </svg>
+
+                            Daftar Periode
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                 TAB: DAFTAR SLIP GAJI
+            ================================================== -->
+                <div id="tabSlip">
 
                 <!-- =================================================
                  FILTER AREA
@@ -730,7 +779,7 @@
                                         </td>
 
                                         <td class="px-4 py-3.5 text-sm text-gray-600">
-                                            {{ $emp->plant }}
+                                            {{ $emp->plant_name }}
                                         </td>
 
                                         <td class="px-4 py-3.5 text-sm text-gray-600">
@@ -1038,6 +1087,212 @@
                     </div>
 
                 </form>
+
+                </div><!-- /tabSlip -->
+
+
+                <!-- =================================================
+                 TAB: DAFTAR PERIODE
+            ================================================== -->
+                <div id="tabPeriod" class="hidden">
+
+                    <div class="flex flex-col gap-2 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+
+                        <div class="flex items-center gap-3">
+
+                            <h2 class="text-base font-bold text-gray-800">
+                                {{ $periods->count() }}
+                                Periode Slip Gaji
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="overflow-x-auto">
+
+                        <table class="w-full min-w-[1000px]">
+
+                            <thead>
+
+                                <tr class="border-y border-gray-100 bg-gray-50/70">
+
+                                    <th
+                                        class="px-5 py-3.5 text-left text-[11px]
+                                           font-bold uppercase tracking-wider text-gray-400">
+                                        No
+                                    </th>
+
+                                    <th
+                                        class="px-4 py-3.5 text-left text-[11px]
+                                           font-bold uppercase tracking-wider text-gray-400">
+                                        Periode
+                                    </th>
+
+                                    <th
+                                        class="px-4 py-3.5 text-left text-[11px]
+                                           font-bold uppercase tracking-wider text-gray-400">
+                                        Total Karyawan
+                                    </th>
+
+                                    <th
+                                        class="px-4 py-3.5 text-left text-[11px]
+                                           font-bold uppercase tracking-wider text-gray-400">
+                                        Sudah Upload
+                                    </th>
+
+                                    <th
+                                        class="px-4 py-3.5 text-left text-[11px]
+                                           font-bold uppercase tracking-wider text-gray-400">
+                                        Status
+                                    </th>
+
+                                    <th
+                                        class="px-4 py-3.5 text-left text-[11px]
+                                           font-bold uppercase tracking-wider text-gray-400">
+                                        Dibuat Oleh
+                                    </th>
+
+                                    <th
+                                        class="px-4 py-3.5 text-left text-[11px]
+                                           font-bold uppercase tracking-wider text-gray-400">
+                                        Tanggal Dibuat
+                                    </th>
+
+                                    <th
+                                        class="px-5 py-3.5 text-center text-[11px]
+                                           font-bold uppercase tracking-wider text-gray-400">
+                                        Aksi
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody class="divide-y divide-gray-100">
+                                @forelse($periods as $index => $period)
+                                    <tr class="table-row">
+
+                                        <td class="px-5 py-3.5 text-sm text-gray-500">
+                                            {{ $index + 1 }}
+                                        </td>
+
+                                        <td class="px-4 py-3.5 text-sm font-semibold text-gray-700">
+                                            {{ $period->period_name }}
+                                        </td>
+
+                                        <td class="px-4 py-3.5 text-sm text-gray-600">
+                                            {{ $period->total_employees }} karyawan
+                                        </td>
+
+                                        <td class="px-4 py-3.5 text-sm text-gray-600">
+                                            {{ $period->total_uploaded }} karyawan
+                                        </td>
+
+                                        <td class="px-4 py-3.5">
+
+                                            @if ($period->status === 'COMPLETED')
+                                                <span
+                                                    class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-600">
+                                                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                                                    Completed
+                                                </span>
+                                            @elseif($period->status === 'ACTIVE')
+                                                <span
+                                                    class="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-600">
+                                                    <span class="h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+                                                    Active
+                                                </span>
+                                            @elseif($period->status === 'CANCELLED')
+                                                <span
+                                                    class="inline-flex items-center gap-2 rounded-full bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600">
+                                                    <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                                                    Cancelled
+                                                </span>
+                                            @else
+                                                <span
+                                                    class="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-500">
+                                                    <span class="h-1.5 w-1.5 rounded-full bg-gray-400"></span>
+                                                    Draft
+                                                </span>
+                                            @endif
+
+                                        </td>
+
+                                        <td class="px-4 py-3.5 text-sm text-gray-500">
+                                            {{ $period->created_by ?? '-' }}
+                                        </td>
+
+                                        <td class="px-4 py-3.5 text-sm text-gray-500">
+                                            {{ $period->created_at ? $period->created_at->format('d M Y H:i') : '-' }}
+                                        </td>
+
+                                        <td class="px-5 py-3.5">
+
+                                            <div class="flex justify-center">
+
+                                                <button type="button"
+                                                    onclick="deletePeriod('{{ $period->id }}', '{{ addslashes($period->period_name) }}', '{{ $period->total_employees }}')"
+                                                    title="Hapus Periode"
+                                                    class="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600">
+
+                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor"
+                                                        stroke-width="1.8" viewBox="0 0 24 24">
+
+                                                        <path stroke-linecap="round"
+                                                            d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m-9 0l1 13a1 1 0 001 1h8a1 1 0 001-1l1-13">
+                                                        </path>
+
+                                                    </svg>
+
+                                                </button>
+
+                                            </div>
+
+                                        </td>
+
+                                    </tr>
+                                @empty
+                                @endforelse
+                            </tbody>
+
+                        </table>
+
+
+                        @if ($periods->isEmpty())
+                            <div class="px-6 py-20 text-center">
+
+                                <div
+                                    class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100">
+
+                                    <svg class="h-7 w-7 text-gray-400" fill="none" stroke="currentColor"
+                                        stroke-width="1.8" viewBox="0 0 24 24">
+
+                                        <rect x="3" y="4" width="18" height="17" rx="2">
+                                        </rect>
+
+                                        <path stroke-linecap="round" d="M16 2v4M8 2v4M3 10h18">
+                                        </path>
+
+                                    </svg>
+
+                                </div>
+
+                                <h3 class="mt-4 text-sm font-semibold text-gray-700">
+                                    Belum ada periode
+                                </h3>
+
+                                <p class="mt-1 text-sm text-gray-400">
+                                    Buat periode slip gaji terlebih dahulu.
+                                </p>
+
+                            </div>
+                        @endif
+
+                    </div>
+
+                </div><!-- /tabPeriod -->
 
             </div>
 
@@ -2486,6 +2741,107 @@
             document.body.appendChild(a);
             a.click();
             a.remove();
+        }
+
+        function switchTab(tab) {
+            const isSlip = tab === 'slip';
+
+            document.getElementById('tabSlip').classList.toggle('hidden', !isSlip);
+            document.getElementById('tabPeriod').classList.toggle('hidden', isSlip);
+
+            const btnSlip = document.getElementById('tabBtnSlip');
+            const btnPeriod = document.getElementById('tabBtnPeriod');
+
+            btnSlip.className = 'flex items-center gap-2 whitespace-nowrap border-b-[3px] px-4 py-4 text-sm transition ' +
+                (isSlip ? 'border-red-600 font-semibold text-red-600' : 'border-transparent font-medium text-gray-500 hover:text-red-600');
+            btnPeriod.className = 'flex items-center gap-2 whitespace-nowrap border-b-[3px] px-4 py-4 text-sm transition ' +
+                (!isSlip ? 'border-red-600 font-semibold text-red-600' : 'border-transparent font-medium text-gray-500 hover:text-red-600');
+
+            try {
+                localStorage.setItem('payslipActiveTab', tab);
+            } catch (e) {}
+        }
+
+        (function restorePayslipTab() {
+            let tab = 'slip';
+            try {
+                tab = localStorage.getItem('payslipActiveTab') || 'slip';
+            } catch (e) {}
+            if (tab !== 'slip' && tab !== 'period') tab = 'slip';
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function() {
+                    switchTab(tab);
+                });
+            } else {
+                switchTab(tab);
+            }
+        })();
+
+        async function deletePeriod(id, name, totalEmployees) {
+            const confirm = await Swal.fire({
+                title: 'Hapus Periode?',
+                html: '<div class="text-left">' +
+                    '<div class="mb-3 rounded-lg bg-slate-50 p-3">' +
+                    '<p class="text-xs text-slate-500">Periode</p>' +
+                    '<p class="mt-1 text-sm font-semibold text-slate-800">' + name + '</p>' +
+                    '</div>' +
+                    '<div class="rounded-lg border border-red-100 bg-red-50 px-3 py-2.5">' +
+                    '<p class="text-xs leading-5 text-red-700">Seluruh <strong>' + totalEmployees + ' karyawan</strong> dalam periode ini ikut <strong>terhapus permanen</strong>, termasuk file PDF slip gajinya.</p>' +
+                    '</div>' +
+                    '</div>',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#dc2626',
+                reverseButtons: true
+            });
+            if (!confirm.isConfirmed) return;
+
+            Swal.fire({
+                title: 'Menghapus...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            try {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+                const response = await fetch('/payslip/period/' + id, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                });
+                const data = await response.json();
+                if (data.success) {
+                    Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil',
+                            text: data.message,
+                            confirmButtonColor: '#d71920'
+                        })
+                        .then(() => {
+                            window.location.reload();
+                        });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: data.message || 'Gagal menghapus periode.',
+                        confirmButtonColor: '#d71920'
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Terjadi Kesalahan',
+                    text: 'Tidak dapat terhubung ke server.',
+                    confirmButtonColor: '#d71920'
+                });
+            }
         }
 
         async function deleteEmployee(id, nama, hasSlip = true) {

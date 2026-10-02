@@ -24,7 +24,7 @@
                     </div>
                     <div>
                         <h1 class="text-2xl font-bold text-white">Master Topik Training</h1>
-                        <p class="text-sm text-red-100">Kelola master topik training untuk program orientasi karyawan
+                        <p class="text-sm text-red-100">Kelola master topik training untuk program training karyawan
                             baru</p>
                     </div>
                 </div>
@@ -120,7 +120,15 @@
                                         </span>
                                     </td>
                                     <td class="px-4 py-3.5 text-sm text-gray-700">
-                                        {{ optional($activity->category)->category_name ?? '-' }}
+                                        <div class="flex flex-wrap gap-1">
+                                            @forelse($activity->categories as $cat)
+                                                <span class="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 border border-blue-200/50">
+                                                    {{ $cat->category_name }}
+                                                </span>
+                                            @empty
+                                                <span class="text-gray-400">-</span>
+                                            @endforelse
+                                        </div>
                                     </td>
 
                                     <td class="px-4 py-3.5 text-sm font-semibold text-red-700">
@@ -241,12 +249,16 @@
     {{-- ===================================================== --}}
     {{-- MODAL CREATE / EDIT --}}
     {{-- ===================================================== --}}
+    <script>
+        window.__kategoris = @json($categories->map(fn($c) => ['id' => $c->id, 'name' => $c->category_name]));
+    </script>
+    <style>[x-cloak] { display: none !important; }</style>
     <div id="modalOverlay"
         class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] hidden items-center justify-center p-4">
         <div
-            class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto animate-scale-up relative">
+            class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col animate-scale-up relative">
             <div
-                class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl flex items-center justify-between z-10">
+                class="bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl flex items-center justify-between z-10 shrink-0">
                 <h3 id="modalTitle" class="text-lg font-bold text-gray-800">Tambah Kegiatan</h3>
                 <button onclick="closeModal()" class="p-1.5 rounded-lg hover:bg-gray-100 transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none"
@@ -257,23 +269,114 @@
                 </button>
             </div>
 
-            <form id="modalForm" class="p-6 space-y-4" action="{{ route('orientation.master-activity.store') }}"
+            <form id="modalForm" class="p-6 space-y-4 overflow-y-auto flex-1" action="{{ route('orientation.master-activity.store') }}"
                 method="POST">
                 @csrf
                 <input type="hidden" id="formId" name="id" value="">
                 <input type="hidden" name="_method" id="formMethod" value="POST">
-                {{-- Kategori --}}
-                <div>
+                {{-- Kategori (Multi-select Dropdown) --}}
+                <div x-data="{
+                    open: false,
+                    search: '',
+                    selected: [],
+                    categories: window.__kategoris || [],
+                    get filtered() {
+                        if (!this.search.trim()) return this.categories;
+                        const q = this.search.toLowerCase().trim();
+                        return this.categories.filter(c => c.name.toLowerCase().includes(q));
+                    },
+                    toggle(id) {
+                        const idx = this.selected.indexOf(id);
+                        if (idx === -1) { this.selected.push(id); } else { this.selected.splice(idx, 1); }
+                    },
+                    isSelected(id) { return this.selected.includes(id); },
+                    getName(id) { return (this.categories.find(c => c.id === id) || {}).name || ''; },
+                    remove(id) { this.selected = this.selected.filter(s => s !== id); },
+                    reset() { this.selected = []; this.search = ''; this.open = false; },
+                    setSelected(ids) { this.selected = (ids || []).map(Number); }
+                }" id="kategoriDropdownComponent">
                     <label class="block text-sm font-semibold text-gray-700 mb-1.5">Kategori <span
                             class="text-red-500">*</span></label>
-                    <select id="formKategori" name="category_id"
-                        class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-red-500 focus:ring-red-500 focus:outline-none"
-                        required>
-                        <option value="">-- Pilih Kategori --</option>
-                        @foreach ($categories as $category)
-                            <option value="{{ $category->id }}">{{ $category->category_name }}</option>
-                        @endforeach
-                    </select>
+
+                    {{-- Trigger --}}
+                    <button type="button" @click="open = !open; if(open) { search = ''; $nextTick(() => { $refs.kategoriSearch && $refs.kategoriSearch.focus(); }); }"
+                        class="flex w-full items-center justify-between rounded-xl border bg-white px-4 py-2.5 text-left text-sm transition focus:outline-none"
+                        :class="open ? 'border-red-400 ring-2 ring-red-100 rounded-b-none' : 'border-gray-200 hover:border-red-300'">
+                        <span x-show="selected.length === 0" class="text-gray-400">-- Pilih Kategori --</span>
+                        <span x-show="selected.length > 0" class="text-gray-700 font-medium"
+                            x-text="selected.length + ' kategori dipilih'"></span>
+                        <svg class="h-4 w-4 shrink-0 text-gray-400 transition-transform duration-200"
+                            :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" />
+                        </svg>
+                    </button>
+
+                    {{-- Dropdown Panel (inline) --}}
+                    <div x-show="open" x-cloak
+                        x-transition:enter="transition ease-out duration-150"
+                        x-transition:enter-start="opacity-0"
+                        x-transition:enter-end="opacity-100"
+                        x-transition:leave="transition ease-in duration-100"
+                        x-transition:leave-start="opacity-100"
+                        x-transition:leave-end="opacity-0"
+                        class="border border-t-0 rounded-b-xl bg-white overflow-hidden"
+                        :class="open ? 'border-red-400' : 'border-gray-200'">
+
+                        <div class="border-b border-gray-100 p-2">
+                            <div class="relative">
+                                <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-5.2-5.2m1.7-5.3a7 7 0 11-14 0a7 7 0 0114 0z" />
+                                </svg>
+                                <input type="text" x-model="search" x-ref="kategoriSearch" placeholder="Cari kategori..."
+                                    class="w-full rounded-lg border border-gray-200 pl-9 pr-3 py-2 text-sm focus:border-red-400 focus:ring-2 focus:ring-red-100 focus:outline-none">
+                            </div>
+                        </div>
+
+                        <div class="max-h-40 overflow-y-auto p-1">
+                            <template x-for="cat in filtered" :key="cat.id">
+                                <button type="button" @click="toggle(cat.id)"
+                                    class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition hover:bg-red-50"
+                                    :class="isSelected(cat.id) ? 'bg-red-50/60' : ''">
+                                    <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded border transition"
+                                        :class="isSelected(cat.id) ? 'bg-red-600 border-red-600' : 'border-gray-300 bg-white'">
+                                        <svg x-show="isSelected(cat.id)" class="h-3 w-3 text-white" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                                d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </span>
+                                    <span class="flex-1 text-gray-700" x-text="cat.name"></span>
+                                </button>
+                            </template>
+                            <div x-show="filtered.length === 0" class="px-3 py-4 text-center text-sm text-gray-400">
+                                Kategori tidak ditemukan
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Selected Badges --}}
+                    <div x-show="selected.length > 0" class="flex flex-wrap gap-1.5 mt-2">
+                        <template x-for="id in selected" :key="'badge-' + id">
+                            <span class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 border border-red-200/50">
+                                <span x-text="getName(id)"></span>
+                                <button type="button" @click="remove(id)" class="ml-0.5 hover:text-red-900 transition">
+                                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </span>
+                        </template>
+                    </div>
+
+                    {{-- Hidden Inputs --}}
+                    <template x-for="id in selected" :key="'input-' + id">
+                        <input type="hidden" name="category_ids[]" :value="id">
+                    </template>
+
+                    <p id="kategoriError" class="text-xs text-red-500 mt-1 hidden">Pilih minimal 1 kategori</p>
                 </div>
                 {{-- Nama Kegiatan --}}
                 <div>
@@ -473,7 +576,11 @@
         function resetModalForm() {
             document.getElementById('formNama').value = '';
             document.getElementById('formDeskripsi').value = '';
-            document.getElementById('formKategori').value = '';
+            document.getElementById('kategoriError').classList.add('hidden');
+            const dropdown = document.getElementById('kategoriDropdownComponent');
+            if (dropdown) {
+                Alpine.$data(dropdown).reset();
+            }
         }
 
         function fetchActivityData(id) {
@@ -485,8 +592,12 @@
                 .then(data => {
                     document.getElementById('formNama').value = data.activity_name;
                     document.getElementById('formDeskripsi').value = data.description || '';
-                    document.getElementById('formKategori').value = data.category_id || '';
                     document.getElementById('formStatus').value = data.status == 1 ? '1' : '0';
+
+                    const dropdown = document.getElementById('kategoriDropdownComponent');
+                    if (dropdown) {
+                        Alpine.$data(dropdown).setSelected(data.category_ids || []);
+                    }
                 })
                 .catch(error => {
                     console.error('Error fetching activity data:', error);
@@ -509,6 +620,13 @@
         }
 
         function validateForm() {
+            const hiddenInputs = document.querySelectorAll('input[name="category_ids[]"]');
+            const errorEl = document.getElementById('kategoriError');
+            if (hiddenInputs.length === 0) {
+                errorEl.classList.remove('hidden');
+                return false;
+            }
+            errorEl.classList.add('hidden');
             return true;
         }
 

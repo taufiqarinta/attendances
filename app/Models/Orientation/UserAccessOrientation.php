@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class UserAccessOrientation extends Model
 {
     use HasFactory;
-    protected $connection = 'hris_kobin';
+    protected $connection = 'db_training';
 
     protected $table = 'user_access_orientation';
 

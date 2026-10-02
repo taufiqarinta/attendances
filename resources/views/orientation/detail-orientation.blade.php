@@ -38,7 +38,7 @@
                         <div>
                             <div class="flex flex-wrap items-center gap-2 sm:gap-3">
                                 <h1 class="text-lg sm:text-xl lg:text-2xl font-bold text-white">
-                                    {{ $orientation->batch_name ?? 'Kobin Orientation Program' }}</h1>
+                                    {{ $orientation->batch_name ?? 'Kobin Training Program' }}</h1>
                                 @php
                                     $statusColors = [
                                         'active' => 'bg-green-100/90 text-green-700',

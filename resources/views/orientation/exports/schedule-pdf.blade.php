@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Kobin Orientation Program</title>
+    <title>Kobin Training Program</title>
 
     <style>
         * {
@@ -347,7 +347,7 @@
 
                 {{-- TITLE — tepat di sebelah kanan logo --}}
                 <div class="title-section">
-                    <h1>KOBIN ORIENTATION PROGRAM</h1>
+                    <h1>KOBIN TRAINING PROGRAM</h1>
                     <div class="subtitle">{{ $orientation->batch_name ?? 'Batch Name' }}</div>
                 </div>
 
@@ -467,7 +467,7 @@
 
                     <tr>
                         <td colspan="6" style="text-align:center;padding:30px;color:#999;">
-                            <strong>Belum ada jadwal orientation</strong>
+                            <strong>Belum ada jadwal training</strong>
                         </td>
                     </tr>
 
@@ -478,7 +478,7 @@
 
         {{-- ================= PARTICIPANTS ================= --}}
         <div class="participant-section">
-            <div class="section-title">Daftar Peserta Orientation</div>
+            <div class="section-title">Daftar Peserta Training</div>
 
             <table class="participant-table">
                 <thead>
@@ -514,7 +514,7 @@
         <div class="footer">
             <p>
                 Dokumen ini dicetak dari sistem
-                <span>Kobin Orientation</span> •
+                <span>Kobin Training</span> •
                 {{ now()->format('d F Y H:i') }} WIB
             </p>
         </div>

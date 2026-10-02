@@ -15,7 +15,7 @@
                                 d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
                         </svg></div>
                     <div>
-                        <h1 class="text-2xl font-bold text-white">Edit Orientation</h1>
+                        <h1 class="text-2xl font-bold text-white">Edit Training</h1>
                         <p class="text-sm text-red-100">Perbarui peserta dan rincian kegiatan tanpa mengubah plant.</p>
                     </div>
                 </div>
@@ -114,7 +114,7 @@
             <div class="sticky bottom-4 mt-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-lg">
                 <div class="flex flex-col items-center justify-between gap-3 sm:flex-row">
                     <div>
-                        <h3 class="text-sm font-semibold text-gray-800">Simpan perubahan orientation?</h3>
+                        <h3 class="text-sm font-semibold text-gray-800">Simpan perubahan training?</h3>
                         <p class="text-xs text-gray-500">Peserta dan daftar kegiatan akan diperbarui.</p>
                     </div>
                     <div class="flex w-full items-center gap-2 sm:w-auto"><a href="{{ route('orientation.index') }}"
@@ -164,13 +164,13 @@
                     result.message);
                 await Swal.fire({
                     icon: 'success',
-                    title: 'Orientation berhasil diperbarui',
+                    title: 'Training berhasil diperbarui',
                     text: result.message,
                     confirmButtonColor: '#dc2626'
                 });
                 window.location.assign(result.redirect);
             } catch (error) {
-                Swal.fire('Gagal menyimpan', error.message || 'Perubahan orientation gagal disimpan.', 'error');
+                Swal.fire('Gagal menyimpan', error.message || 'Perubahan training gagal disimpan.', 'error');
             } finally {
                 button.disabled = false;
                 button.classList.remove('opacity-60', 'cursor-not-allowed');

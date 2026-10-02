@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class MasterOrientationCategory extends Model
 {
     use HasFactory;
-       protected $connection = 'hris_kobin';
+    protected $connection = 'db_training';
 
     protected $table = 'master_orientation_categories';
 
@@ -23,14 +23,15 @@ class MasterOrientationCategory extends Model
     ];
 
     /**
-     * Satu kategori memiliki banyak orientation activity
+     * Satu kategori memiliki banyak orientation activity (via pivot)
      */
     public function activities()
     {
-        return $this->hasMany(
+        return $this->belongsToMany(
             MasterOrientationActivity::class,
+            'master_orientation_activity_category',
             'category_id',
-            'id'
-        );
+            'activity_id'
+        )->withTimestamps();
     }
 }

@@ -38,8 +38,8 @@
                     </div>
 
                     <div>
-                        <h1 class="text-2xl font-bold text-white">List Orientation</h1>
-                        <p class="text-sm text-red-100">Kelola seluruh sesi orientasi karyawan.</p>
+                        <h1 class="text-2xl font-bold text-white">List Training</h1>
+                        <p class="text-sm text-red-100">Kelola seluruh sesi training karyawan.</p>
                     </div>
 
                 </div>
@@ -177,7 +177,7 @@
                                     </svg>
                                 </div>
                                 <input type="text" name="search" value="{{ $search }}"
-                                    placeholder="Cari program orientasi..."
+                                    placeholder="Cari program training..."
                                     class="h-10 w-full rounded-xl border-gray-200 bg-gray-50/50 pl-10 pr-4 text-sm focus:border-red-500 focus:ring-red-500 focus:ring-2 focus:bg-white transition-all duration-200 placeholder:text-gray-400">
                             </div>
                         </div>
@@ -354,7 +354,7 @@
                     <div class="flex items-center gap-3">
                         <span class="text-sm font-medium text-gray-700">
                             <span class="text-gray-900 font-semibold">{{ $programs->total() }}</span> Program
-                            Orientasi
+                            Training
                         </span>
                         <span class="h-4 w-px bg-gray-300"></span>
                         <span class="text-sm text-gray-500">
@@ -376,7 +376,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                        <p class="text-sm text-gray-500">Tidak ada program orientasi ditemukan</p>
+                        <p class="text-sm text-gray-500">Tidak ada program training ditemukan</p>
                         @if ($canManage)
                             <p class="text-xs text-gray-400 mt-1">Klik tombol "Buat Program" untuk menambahkan</p>
                         @endif
@@ -496,7 +496,7 @@
                                                 <div>
                                                     <div
                                                         class="font-medium text-gray-800 text-sm group-hover:text-red-600 transition">
-                                                        {{ $program->batch_name ?? 'Kobin Orientation' }}
+                                                        {{ $program->batch_name ?? 'Kobin Training' }}
                                                     </div>
                                                     <div class="text-xs text-gray-500">
                                                         Plant:
@@ -601,11 +601,11 @@
                                                 @if ($canManage)
                                                     @if ($isEditLocked)
                                                         <button type="button" onclick="showEditLockedAlert()"
-                                                            aria-label="Edit orientation tidak tersedia"
+                                                            aria-label="Edit training tidak tersedia"
                                                             class="p-1.5 rounded-lg hover:bg-amber-50 text-gray-400 hover:text-amber-600 transition group-hover:opacity-100 opacity-70">
                                                         @else
                                                             <a href="{{ route('orientation.edit', $program) }}"
-                                                                aria-label="Edit orientation"
+                                                                aria-label="Edit training"
                                                                 class="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition group-hover:opacity-100 opacity-70">
                                                     @endif
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"

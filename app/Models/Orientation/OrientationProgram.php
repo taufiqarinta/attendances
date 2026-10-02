@@ -11,7 +11,7 @@ class OrientationProgram extends Model
 {
     use HasFactory;
 
-    protected $connection = 'hris_kobin';
+    protected $connection = 'db_training';
     protected $table = 'orientations';
 
     protected $fillable = [

@@ -23,8 +23,8 @@
                         </svg>
                     </div>
                     <div>
-                        <h1 class="text-2xl font-bold text-white">Master Kategori Training</h1>
-                        <p class="text-sm text-red-100">Kelola master kategori untuk program orientasi karyawan baru</p>
+                        <h1 class="text-2xl font-bold text-white">Master Kurikulum Training</h1>
+                        <p class="text-sm text-red-100">Kelola master kurikulum untuk program training karyawan baru</p>
                     </div>
                 </div>
             </div>
@@ -68,7 +68,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 4v16m8-8H4" />
                             </svg>
-                            Tambah Kategori
+                            Tambah Kurikulum
                         </button>
                     </div>
                 </div>
@@ -85,10 +85,10 @@
                                     No</th>
                                 <th
                                     class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-32">
-                                    Kode Kategori</th>
+                                    Kode Kurikulum</th>
                                 <th
                                     class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider min-w-[200px]">
-                                    Nama Kategori</th>
+                                    Nama Kurikulum</th>
                                 <th
                                     class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-24">
                                     Status</th>
@@ -196,9 +196,9 @@
                                             </div>
                                             <div>
                                                 <p class="text-base font-semibold text-gray-700">Belum ada data
-                                                    kategori</p>
+                                                    Kurikulum</p>
                                                 <p class="text-sm text-gray-400 mt-1">Klik tombol <span
-                                                        class="font-medium text-gray-600">"Tambah Kategori"</span>
+                                                        class="font-medium text-gray-600">"Tambah Kurikulum"</span>
                                                     untuk menambahkan data</p>
                                             </div>
                                         </div>
@@ -232,7 +232,7 @@
             class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto animate-scale-up relative">
             <div
                 class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl flex items-center justify-between z-10">
-                <h3 id="modalTitle" class="text-lg font-bold text-gray-800">Tambah Kategori</h3>
+                <h3 id="modalTitle" class="text-lg font-bold text-gray-800">Tambah Kurikulum</h3>
                 <button onclick="closeModal()" class="p-1.5 rounded-lg hover:bg-gray-100 transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none"
                         viewBox="0 0 24 24" stroke="currentColor">
@@ -248,13 +248,13 @@
                 <input type="hidden" id="formId" name="id" value="">
                 <input type="hidden" name="_method" id="formMethod" value="POST">
 
-                {{-- Nama Kategori --}}
+                {{-- Nama Kurikulum --}}
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nama Kategori <span
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nama Kurikulum <span
                             class="text-red-500">*</span></label>
                     <input type="text" id="formNama" name="category_name"
                         class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-red-500 focus:ring-red-500 focus:outline-none"
-                        placeholder="Masukkan nama kategori" required>
+                        placeholder="Masukkan nama kurikulum" required>
                 </div>
 
                 {{-- Status --}}
@@ -412,7 +412,7 @@
 
             if (type === 'create') {
                 state.isEditMode = false;
-                title.textContent = 'Tambah Kategori';
+                title.textContent = 'Tambah Kurikulum';
                 formId.value = '';
                 formMethod.value = 'POST';
                 form.action = "{{ route('master-category.store') }}";
@@ -420,7 +420,7 @@
             } else if (type === 'edit') {
                 state.isEditMode = true;
                 state.editId = id;
-                title.textContent = 'Edit Kategori';
+                title.textContent = 'Edit Kurikulum';
                 formId.value = id;
                 formMethod.value = 'PUT';
                 form.action = `/orientation/master-category/${id}`;

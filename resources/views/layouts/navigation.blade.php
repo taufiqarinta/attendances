@@ -229,7 +229,7 @@
                                         class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('daftartoko.*') ? 'text-white' : '' }}"
                                         onmouseover="this.style.color='#dc2626'"
                                         onmouseout="this.style.color='white'">
-                                        <div>{{ __('Master Data Orientation') }}</div>
+                                        <div>{{ __('Master Data Training') }}</div>
 
                                         <div class="ml-1">
                                             <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
@@ -252,10 +252,10 @@
                                             ->exists();
                                     @endphp
                                     <x-dropdown-link :href="route('master-reaksi-evaluasi.index')" :active="request()->routeIs('master-reaksi-evaluasi.index')">
-                                        {{ __('Master Reaksi Evaluasi') }}
+                                        {{ __('Reaksi') }}
                                     </x-dropdown-link>
                                     <x-dropdown-link :href="route('master-category.index')" :active="request()->routeIs('master-category.index')">
-                                        {{ __('Kategori Training') }}
+                                        {{ __('Kurikulum Training') }}
                                     </x-dropdown-link>
                                     <x-dropdown-link :href="route('orientation.master-activity.index')" :active="request()->routeIs('orientation.master-activity.index')">
                                         {{ __('Topik Training') }}
@@ -275,18 +275,18 @@
                     @if ($hasOrientationAccess) --}}
                     <x-nav-link :href="route('orientation.index')" :active="request()->routeIs('orientation.index')" class="text-white"
                         onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='white'">
-                        {{ __('Orientasi') }}
+                        {{ __('Training') }}
                     </x-nav-link>
                     {{-- @endif --}}
 
-                    <x-nav-link :href="route('payslip.index')" :active="request()->routeIs('payslip.index')" class="text-white"
+                    {{-- <x-nav-link :href="route('payslip.index')" :active="request()->routeIs('payslip.index')" class="text-white"
                         onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='white'">
                         {{ __('Payslip Management') }}
                     </x-nav-link>
                     <x-nav-link :href="route('payslip.view')" :active="request()->routeIs('payslip.view')" class="text-white"
                         onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='white'">
                         {{ __('Payslip') }}
-                    </x-nav-link>
+                    </x-nav-link> --}}
 
                 </div>
 
@@ -406,7 +406,7 @@
             style="{{ request()->routeIs('orientation.*') ? 'color: #dc2626 !important; border-color: #ef4444;' : 'color: white !important;' }}"
             onmouseover="this.style.color='#dc2626'"
             onmouseout="this.style.color='{{ request()->routeIs('orientation.*') ? '#dc2626' : 'white' }}'">
-            {{ __('Orientasi') }}
+            {{ __('Training') }}
         </x-responsive-nav-link>
         @if (session('comp') == '0001' && session('nik') == '924330')
             <x-responsive-nav-link :href="route('report.index')" :active="request()->routeIs('report.index')"

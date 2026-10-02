@@ -24,8 +24,8 @@
                         </svg>
                     </div>
                     <div>
-                        <h1 class="text-2xl font-bold text-white">Form Create Orientation</h1>
-                        <p class="text-sm text-red-100">Buat sesi orientasi baru untuk karyawan.</p>
+                        <h1 class="text-2xl font-bold text-white">Form Create Training</h1>
+                        <p class="text-sm text-red-100">Buat sesi training baru untuk karyawan.</p>
                     </div>
                 </div>
 
@@ -501,6 +501,17 @@
                 return;
             }
 
+            const incomplete = activities.findIndex(a => !a.tanggal || !a.waktu_mulai || !a.waktu_selesai || !a.pic_nik);
+            if (incomplete !== -1) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Kegiatan belum lengkap',
+                    text: 'Kegiatan baris ke-' + (incomplete + 1) + ' belum ada tanggal, waktu, atau PIC. Silakan lengkapi langsung di tabel.',
+                    confirmButtonColor: '#dc2626'
+                });
+                return;
+            }
+
             const hrPicPayload = [{
                 nik: hrPicNik,
                 nama: hrPic.nama || hrPicNik,
@@ -537,13 +548,13 @@
 
                 if (!response.ok) {
                     const errors = result.errors ? Object.values(result.errors).flat().join('\n') : result.message;
-                    throw new Error(errors || 'Gagal menyimpan orientation.');
+                    throw new Error(errors || 'Gagal menyimpan training.');
                 }
 
                 await Swal.fire({
                     icon: 'success',
-                    title: 'Orientation berhasil dibuat',
-                    text: result.message || 'Data orientation dan kegiatan berhasil disimpan.',
+                    title: 'Training berhasil dibuat',
+                    text: result.message || 'Data training dan kegiatan berhasil disimpan.',
                     confirmButtonText: 'OK',
                     confirmButtonColor: '#dc2626',
                     allowOutsideClick: false
@@ -554,7 +565,7 @@
                 Swal.fire({
                     icon: 'error',
                     title: 'Gagal!',
-                    text: error.message || 'Gagal menyimpan orientation.',
+                    text: error.message || 'Gagal menyimpan training.',
                     confirmButtonColor: '#dc2626'
                 });
             } finally {

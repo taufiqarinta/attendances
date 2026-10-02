@@ -19,7 +19,7 @@ class MasterOrientationActivityController extends Controller
         $search = $request->input('search');
         $status = $request->input('status');
 
-        $query = MasterOrientationActivity::query();
+        $query = MasterOrientationActivity::with('categories');
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -58,21 +58,26 @@ class MasterOrientationActivityController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'category_id' => 'required|exists:hris_kobin.master_orientation_categories,id',
+            'category_ids' => 'required|array|min:1',
+            'category_ids.*' => 'exists:db_training.master_orientation_categories,id',
             'activity_name' => 'required|string|max:150',
             'description' => 'nullable|string',
             'status' => 'required|boolean'
         ]);
 
-        $activity = DB::connection('hris_kobin')->transaction(function () use ($request) {
-            return MasterOrientationActivity::create([
-                'category_id' => $request->category_id,
+        $activity = DB::connection('db_training')->transaction(function () use ($request) {
+            $activity = MasterOrientationActivity::create([
+                'category_id' => $request->category_ids[0],
                 'code_activity' => $this->nextActivityCode(),
                 'activity_name' => $request->activity_name,
                 'description' => $request->description,
-                'plants' => '-', // default
+                'plants' => '-',
                 'status' => $request->status,
             ]);
+
+            $activity->categories()->sync($request->category_ids);
+
+            return $activity;
         });
 
         if ($request->ajax()) {
@@ -90,11 +95,11 @@ class MasterOrientationActivityController extends Controller
 
     public function edit($id)
     {
-        $activity = MasterOrientationActivity::findOrFail($id);
+        $activity = MasterOrientationActivity::with('categories')->findOrFail($id);
 
         return response()->json([
             'id' => $activity->id,
-            'category_id' => $activity->category_id,
+            'category_ids' => $activity->categories->pluck('id')->toArray(),
             'activity_name' => $activity->activity_name,
             'description' => $activity->description,
             'status' => $activity->status,
@@ -104,7 +109,8 @@ class MasterOrientationActivityController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'category_id' => 'required|exists:hris_kobin.master_orientation_categories,id',
+            'category_ids' => 'required|array|min:1',
+            'category_ids.*' => 'exists:db_training.master_orientation_categories,id',
             'activity_name' => 'required|string|max:150',
             'description' => 'nullable|string',
             'status' => 'required|boolean'
@@ -112,13 +118,17 @@ class MasterOrientationActivityController extends Controller
 
         $activity = MasterOrientationActivity::findOrFail($id);
 
-        $activity->update([
-            'category_id' => $request->category_id,
-            'activity_name' => $request->activity_name,
-            'description' => $request->description,
-            'plants' => '-', // default
-            'status' => $request->status
-        ]);
+        DB::connection('db_training')->transaction(function () use ($request, $activity) {
+            $activity->update([
+                'category_id' => $request->category_ids[0],
+                'activity_name' => $request->activity_name,
+                'description' => $request->description,
+                'plants' => '-',
+                'status' => $request->status
+            ]);
+
+            $activity->categories()->sync($request->category_ids);
+        });
 
         if ($request->ajax()) {
             return response()->json([
@@ -136,6 +146,7 @@ class MasterOrientationActivityController extends Controller
     public function destroy($id)
     {
         $activity = MasterOrientationActivity::findOrFail($id);
+        $activity->categories()->detach();
         $activity->delete();
 
         if (request()->ajax()) {

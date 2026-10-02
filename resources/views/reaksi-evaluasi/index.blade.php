@@ -24,7 +24,7 @@
                     </div>
                     <div>
                         <h1 class="text-2xl font-bold text-white">Master Reaksi Evaluasi</h1>
-                        <p class="text-sm text-red-100">Kelola master reaksi evaluasi untuk program orientasi karyawan
+                        <p class="text-sm text-red-100">Kelola master reaksi evaluasi untuk program training karyawan
                             baru</p>
                     </div>
                 </div>
