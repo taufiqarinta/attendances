@@ -153,11 +153,13 @@
             </div> -->
 
             {{-- Welcome & Birthday Section --}}
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {{-- Welcome Section --}}
+            <div class="mb-6">
 
                 {{-- Welcome Card --}}
                 <div class="bg-white shadow-sm rounded-lg p-6">
 
+                    {{-- Header --}}
                     <div class="flex items-start justify-between">
                         <div>
                             <p class="text-sm font-semibold text-red-500 mb-1">
@@ -173,6 +175,7 @@
                             </p>
                         </div>
 
+                        {{-- Clock Icon --}}
                         <div class="hidden sm:flex w-14 h-14 rounded-xl bg-red-50 items-center justify-center">
                             <svg class="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -183,11 +186,9 @@
 
                     {{-- Working Hours Info --}}
                     <div id="workingHoursInfo" class="mt-5 p-3 bg-orange-500 rounded-lg">
-
                         <div class="flex items-center gap-2">
-
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-
+                            <svg class="w-5 h-5 text-white flex-shrink-0" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
@@ -199,19 +200,20 @@
                             <span id="workingHoursText" class="text-white">
                                 Loading...
                             </span>
-
                         </div>
                     </div>
 
+                    {{-- Attendance Information --}}
                     <p class="text-gray-500 mt-4">
                         Sudah kah anda melakukan absensi hari ini?
                     </p>
 
-                    <button onclick="window.location.href='{{ url('/absensi/create') }}'"
-                        class="mt-4 bg-red-500 hover:bg-red-600 transition
+                    {{-- Attendance Button --}}
+                    <button type="button" onclick="window.location.href='{{ url('/absensi/create') }}'"
+                        class="mt-4 bg-red-500 hover:bg-red-600 active:bg-red-700
+                   transition duration-200
                    text-white font-bold py-2.5 px-5 rounded-lg
                    flex items-center gap-2">
-
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                         </svg>
@@ -221,75 +223,7 @@
 
                 </div>
 
-
-                {{-- Birthday Section --}}
-                <div
-                    class="relative overflow-hidden bg-gradient-to-r
-    from-pink-50 to-rose-50
-    border border-pink-100
-    shadow-sm rounded-lg p-6">
-
-                    {{-- Decorative --}}
-                    <div class="absolute -top-8 -right-8 w-32 h-32
-        bg-pink-100 rounded-full opacity-50">
-                    </div>
-
-                    <div class="absolute -bottom-10 -left-10 w-28 h-28
-        bg-rose-100 rounded-full opacity-50">
-                    </div>
-
-                    {{-- Header --}}
-                    <div class="relative flex items-start justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center">
-                                <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c1.657 0 3-1.343 3-3S13.657 2 12 2
-                        9 3.343 9 5s1.343 3 3 3z
-                        M5 22h14M7 22v-5a5 5 0 0110 0v5
-                        M8 12h8" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800">
-                                    Ada yang Berulang Tahun! 🎉
-                                </h3>
-                                <p class="text-sm text-gray-500">
-                                    Yuk, ucapkan selamat & doa terbaik untuk mereka hari ini 💐
-                                </p>
-                            </div>
-                        </div>
-                        <div class="hidden sm:block text-right">
-                            <p class="text-sm font-medium text-gray-500" id="birthdayDate">
-                                {{ now()->translatedFormat('d F Y') }}
-                            </p>
-                        </div>
-                    </div>
-
-                    {{-- Birthday List --}}
-                    <div class="relative mt-6" id="birthdayListContainer">
-                        {{-- Loading state --}}
-                        <div id="birthdayLoading" class="flex items-center justify-center min-h-[130px]">
-                            <div class="text-center">
-                                <svg class="animate-spin h-8 w-8 text-pink-400 mx-auto mb-2"
-                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10"
-                                        stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                    </path>
-                                </svg>
-                                <p class="text-xs text-gray-400">Memuat data ulang tahun...</p>
-                            </div>
-                        </div>
-
-                        {{-- Content akan di-render oleh JavaScript --}}
-                        <div id="birthdayContent" class="hidden"></div>
-                    </div>
-                </div>
-
             </div>
-
             {{-- Admin Section (untuk user dengan comp = 0001 dan roles admin) --}}
             @php
                 $kodeJabatan = session('kode_jabatan');
@@ -468,7 +402,7 @@
         // const API_BASE = 'https://web.kobin.co.id/api/hris/dashboard/get_dashboard.php';
         const API_BASE = '{{ App\Helpers\ApiHelper::getApiUrl('dashboard/get_dashboard.php') }}';
         const API_KONTRAK = '{{ App\Helpers\ApiHelper::getApiUrl('kontrakkerja/get_kontrakkerja_ho_dan_miss.php') }}';
-        const API_BIRTHDAY = '{{ App\Helpers\ApiHelper::getApiUrl('dashboard/get-birthday.php') }}';
+        // const API_BIRTHDAY = '{{ App\Helpers\ApiHelper::getApiUrl('dashboard/get-birthday.php') }}';
 
         // console.log('📡 API URL:', API_BASE);
         const SESSION_NIK = '{{ session('nik') }}';
@@ -528,116 +462,116 @@
         }
 
         // ==================== BIRTHDAY SECTION ====================
-        async function loadBirthdayData() {
-            const loadingEl = document.getElementById('birthdayLoading');
-            const contentEl = document.getElementById('birthdayContent');
-            const dateEl = document.getElementById('birthdayDate');
+        // async function loadBirthdayData() {
+        //     const loadingEl = document.getElementById('birthdayLoading');
+        //     const contentEl = document.getElementById('birthdayContent');
+        //     const dateEl = document.getElementById('birthdayDate');
 
-            if (!contentEl) return;
+        //     if (!contentEl) return;
 
-            try {
-                const response = await fetch(API_BIRTHDAY);
-                const result = await response.json();
+        //     try {
+        //         const response = await fetch(API_BIRTHDAY);
+        //         const result = await response.json();
 
-                if (!result.success) {
-                    throw new Error(result.message || 'Gagal mengambil data ulang tahun');
-                }
+        //         if (!result.success) {
+        //             throw new Error(result.message || 'Gagal mengambil data ulang tahun');
+        //         }
 
-                // Update tanggal
-                if (dateEl && result.date) {
-                    const d = new Date(result.date);
-                    dateEl.textContent = d.toLocaleDateString('id-ID', {
-                        day: '2-digit',
-                        month: 'long',
-                        year: 'numeric'
-                    });
-                }
+        //         // Update tanggal
+        //         if (dateEl && result.date) {
+        //             const d = new Date(result.date);
+        //             dateEl.textContent = d.toLocaleDateString('id-ID', {
+        //                 day: '2-digit',
+        //                 month: 'long',
+        //                 year: 'numeric'
+        //             });
+        //         }
 
-                // Sembunyikan loading
-                if (loadingEl) loadingEl.classList.add('hidden');
+        //         // Sembunyikan loading
+        //         if (loadingEl) loadingEl.classList.add('hidden');
 
-                const birthdays = result.data || [];
+        //         const birthdays = result.data || [];
 
-                if (birthdays.length > 0) {
-                    let html = `
-                <div class="flex gap-6 overflow-x-auto pb-2">
-            `;
+        //         if (birthdays.length > 0) {
+        //             let html = `
+    //         <div class="flex gap-6 overflow-x-auto pb-2">
+    //     `;
 
-                    birthdays.forEach(person => {
-                        const initial = (person.firstname || '?').charAt(0).toUpperCase();
-                        const name = escapeHtml(person.firstname || '-');
-                        const dept = escapeHtml(person.department || '-');
+        //             birthdays.forEach(person => {
+        //                 const initial = (person.firstname || '?').charAt(0).toUpperCase();
+        //                 const name = escapeHtml(person.firstname || '-');
+        //                 const dept = escapeHtml(person.department || '-');
 
-                        html += `
-                    <div class="min-w-[110px] text-center">
-                        <div class="mx-auto w-16 h-16 rounded-full
-                            bg-white border-4 border-white
-                            shadow-md overflow-hidden">
-                            <div class="w-full h-full
-                                flex items-center justify-center
-                                bg-gray-100 text-gray-500
-                                font-bold text-lg">
-                                ${initial}
-                            </div>
-                        </div>
-                        <p class="mt-3 text-sm font-bold text-gray-800 truncate" title="${name}">
-                            ${name}
-                        </p>
-                        <p class="text-xs text-gray-500 truncate" title="${dept}">
-                            ${dept}
-                        </p>
-                    </div>
-                `;
-                    });
+        //                 html += `
+    //             <div class="min-w-[110px] text-center">
+    //                 <div class="mx-auto w-16 h-16 rounded-full
+    //                     bg-white border-4 border-white
+    //                     shadow-md overflow-hidden">
+    //                     <div class="w-full h-full
+    //                         flex items-center justify-center
+    //                         bg-gray-100 text-gray-500
+    //                         font-bold text-lg">
+    //                         ${initial}
+    //                     </div>
+    //                 </div>
+    //                 <p class="mt-3 text-sm font-bold text-gray-800 truncate" title="${name}">
+    //                     ${name}
+    //                 </p>
+    //                 <p class="text-xs text-gray-500 truncate" title="${dept}">
+    //                     ${dept}
+    //                 </p>
+    //             </div>
+    //         `;
+        //             });
 
-                    html += `
-                </div>
-                <div class="mt-4 pt-4 border-t border-pink-100 text-center">
-                    <p class="text-sm font-medium text-gray-600">
-                        🎂 Have a great year ahead!
-                    </p>
-                </div>
-            `;
+        //             html += `
+    //         </div>
+    //         <div class="mt-4 pt-4 border-t border-pink-100 text-center">
+    //             <p class="text-sm font-medium text-gray-600">
+    //                 🎂 Have a great year ahead!
+    //             </p>
+    //         </div>
+    //     `;
 
-                    contentEl.innerHTML = html;
-                } else {
-                    contentEl.innerHTML = `
-                <div class="flex items-center justify-center min-h-[130px]">
-                    <div class="text-center">
-                        <div class="text-4xl mb-2">🎂</div>
-                        <p class="text-sm font-semibold text-gray-700">
-                            Belum ada yang ulang tahun hari ini
-                        </p>
-                        <p class="text-xs text-gray-400 mt-1">
-                            Semoga hari ini tetap menyenangkan!
-                        </p>
-                    </div>
-                </div>
-            `;
-                }
+        //             contentEl.innerHTML = html;
+        //         } else {
+        //             contentEl.innerHTML = `
+    //         <div class="flex items-center justify-center min-h-[130px]">
+    //             <div class="text-center">
+    //                 <div class="text-4xl mb-2">🎂</div>
+    //                 <p class="text-sm font-semibold text-gray-700">
+    //                     Belum ada yang ulang tahun hari ini
+    //                 </p>
+    //                 <p class="text-xs text-gray-400 mt-1">
+    //                     Semoga hari ini tetap menyenangkan!
+    //                 </p>
+    //             </div>
+    //         </div>
+    //     `;
+        //         }
 
-                contentEl.classList.remove('hidden');
+        //         contentEl.classList.remove('hidden');
 
-            } catch (err) {
-                console.error('Error loading birthday data:', err);
-                if (loadingEl) loadingEl.classList.add('hidden');
+        //     } catch (err) {
+        //         console.error('Error loading birthday data:', err);
+        //         if (loadingEl) loadingEl.classList.add('hidden');
 
-                contentEl.innerHTML = `
-            <div class="flex items-center justify-center min-h-[130px]">
-                <div class="text-center">
-                    <div class="text-4xl mb-2">🎂</div>
-                    <p class="text-sm font-semibold text-gray-700">
-                        Gagal memuat data ulang tahun
-                    </p>
-                    <p class="text-xs text-gray-400 mt-1">
-                        ${escapeHtml(err.message)}
-                    </p>
-                </div>
-            </div>
-        `;
-                contentEl.classList.remove('hidden');
-            }
-        }
+        //         contentEl.innerHTML = `
+    //     <div class="flex items-center justify-center min-h-[130px]">
+    //         <div class="text-center">
+    //             <div class="text-4xl mb-2">🎂</div>
+    //             <p class="text-sm font-semibold text-gray-700">
+    //                 Gagal memuat data ulang tahun
+    //             </p>
+    //             <p class="text-xs text-gray-400 mt-1">
+    //                 ${escapeHtml(err.message)}
+    //             </p>
+    //         </div>
+    //     </div>
+    // `;
+        //         contentEl.classList.remove('hidden');
+        //     }
+        // }
 
         // Helper untuk escape HTML
         function escapeHtml(str) {
