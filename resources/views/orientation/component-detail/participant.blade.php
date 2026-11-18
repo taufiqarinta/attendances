@@ -94,6 +94,7 @@
                     @foreach ($participantDetails as $index => $participant)
                         @php
                             $nik = $participant['nik'] ?? '';
+                            $rowKey = $participant['row_key'] ?? ($nik !== '' ? $nik : 'row-' . $index);
                             $hadir = $participant['hadir_count'] ?? 0;
                             $total = $participant['total_activities'] ?? 0;
                             $percent = $participant['attendance_percentage'] ?? 0;
@@ -142,10 +143,10 @@
                         <tr class="participant-row border-b border-gray-100 hover:bg-blue-50/30 transition-colors"
                             data-search="{{ strtolower(($participant['nama'] ?? '') . ' ' . $nik . ' ' . ($participant['jabatan'] ?? '')) }}">
                             <td class="px-3 py-3 text-center">
-                                <button @click="toggleExpand('{{ $nik }}')" type="button"
+                                <button @click="toggleExpand('{{ $rowKey }}')" type="button"
                                     class="p-1 rounded hover:bg-gray-100 transition">
                                     <svg class="h-4 w-4 text-gray-400 transition-transform duration-200"
-                                        :class="expandedRows.includes('{{ $nik }}') ? 'rotate-90' : ''"
+                                        :class="expandedRows.includes('{{ $rowKey }}') ? 'rotate-90' : ''"
                                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M9 5l7 7-7 7" />
@@ -263,7 +264,7 @@
                                 @endif
                             </td>
                             <td class="px-3 py-3 text-center">
-                                <button type="button" @click="openDetailByNik('{{ $nik }}')"
+                                <button type="button" @click="openDetailByNik('{{ $rowKey }}')"
                                     class="inline-flex items-center gap-1 rounded-lg border border-blue-300 bg-blue-50 px-2 py-1 text-[10px] font-medium text-blue-700 hover:bg-blue-100 transition">
                                     <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -277,7 +278,7 @@
                         </tr>
 
                         {{-- EXPANDED ROW --}}
-                        <tr x-show="expandedRows.includes('{{ $nik }}')" x-cloak>
+                        <tr x-show="expandedRows.includes('{{ $rowKey }}')" x-cloak>
                             <td colspan="9" class="p-0 bg-blue-50/30 border-b border-blue-100">
                                 <div class="p-4">
                                     <div class="text-xs font-semibold text-gray-600 mb-2">
@@ -517,8 +518,8 @@
                     else this.expandedRows.push(nik);
                 },
 
-                openDetailByNik(nik) {
-                    this.selectedParticipant = this.participants.find(p => p.nik === nik) || null;
+                openDetailByNik(key) {
+                    this.selectedParticipant = this.participants.find(p => (p.row_key || p.nik) === key) || null;
                     this.showDetailModal = true;
                 },
 

@@ -16,7 +16,7 @@
                         </svg></div>
                     <div>
                         <h1 class="text-2xl font-bold text-white">Edit Training</h1>
-                        <p class="text-sm text-red-100">Perbarui peserta dan rincian kegiatan tanpa mengubah plant.</p>
+                        <p class="text-sm text-red-100">Perbarui plant, peserta, dan rincian kegiatan.</p>
                     </div>
                 </div>
             </div>
@@ -48,27 +48,9 @@
                             </div>
                         </div>
 
-                        {{-- Plant (Readonly) --}}
+                        {{-- Plant Dropdown --}}
                         <div>
-                            <label class="mb-1.5 block text-xs font-semibold text-gray-700">Plant</label>
-                            <div
-                                class="flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
-                                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50">
-                                    <svg class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24"
-                                        stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 11H5m14-4H5m14 8H5" />
-                                    </svg>
-                                </div>
-                                <div class="text-left">
-                                    <div class="text-sm font-medium text-gray-800">
-                                        {{ $orientation->plant?->name_plant ?? '-' }}
-                                    </div>
-                                    <div class="text-xs text-gray-500">
-                                        Kode: {{ $orientation->plant?->code ?? '-' }} · Plant tidak dapat diubah
-                                    </div>
-                                </div>
-                            </div>
+                            @include('orientation.component-create.dropdwon-plant')
                         </div>
 
                         {{-- HR PIC (Readonly) --}}
@@ -105,6 +87,7 @@
             </div>
 
             <script>
+                window.orientationEditMode = true;
                 window.selectedPlantId = @json($orientation->master_plants_id);
                 window.selectedPlantData = @json($orientation->plant);
             </script>
@@ -137,6 +120,8 @@
                 'warning');
             if (!activities.length) return Swal.fire('Kegiatan belum tersedia', 'Tambahkan minimal satu kegiatan.',
                 'warning');
+            if (!window.selectedPlantId) return Swal.fire('Plant belum dipilih', 'Pilih plant terlebih dahulu.',
+                'warning');
 
             const button = document.querySelector('[onclick="submitOrientation()"]');
             button.disabled = true;
@@ -150,9 +135,10 @@
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                     },
                     body: JSON.stringify({
+                        plant_id: Number(window.selectedPlantId) || null,
                         participants: participants.map(item => ({
-                            nik: String(item.nik),
-                            nama: item.nama || String(item.nik),
+                            nik: item.nik ? String(item.nik) : null,
+                            nama: item.nama || null,
                             jabatan: item.jabatan || null,
                             dept: item.dept || null
                         })),

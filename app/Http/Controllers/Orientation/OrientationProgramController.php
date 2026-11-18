@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Orientation;
 
+use App\Exports\OrientationParticipantTemplateExport;
 use App\Http\Controllers\Controller;
+use App\Imports\OrientationParticipantImport;
 use App\Models\Orientation\MasterOrientationActivity;
 use App\Models\Orientation\MasterOrientationCategory;
 use App\Models\Orientation\MasterPlant;
@@ -17,6 +19,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
 
 class OrientationProgramController extends Controller
 {
@@ -190,7 +193,7 @@ class OrientationProgramController extends Controller
     }
 
     /**
-     * Form edit orientation. Plant tidak dapat diubah setelah program dibuat.
+     * Form edit orientation.
      */
     public function edit(OrientationProgram $orientation)
     {
@@ -203,6 +206,8 @@ class OrientationProgramController extends Controller
         }
 
         $orientation->load(['plant', 'activities.masterActivity', 'category']);
+
+        $plants = MasterPlant::orderBy('name_plant', 'asc')->get();
 
         // Ambil semua NIK PIC dari kegiatan untuk diambil datanya sekaligus
         $niks = $orientation->activities->pluck('pic_employee_id')->filter()->unique()->values()->all();
@@ -246,12 +251,13 @@ class OrientationProgramController extends Controller
             'initialParticipants',
             'kegiatanRows',
             'hrPic',
-            'category'
+            'category',
+            'plants'
         ));
     }
 
     /**
-     * Perbarui peserta dan rincian kegiatan tanpa mengubah plant program.
+     * Perbarui peserta dan rincian kegiatan.
      */
     public function update(Request $request, OrientationProgram $orientation)
     {
@@ -268,9 +274,10 @@ class OrientationProgramController extends Controller
         $request->merge(['participants' => $this->normalizeParticipants($request->input('participants', []))]);
 
         $request->validate([
+            'plant_id' => 'required|exists:db_training.master_plants,id',
             'participants' => 'required|array|min:1',
-            'participants.*.nik' => 'required|string|max:100',
-            'participants.*.nama' => 'required|string|max:255',
+            'participants.*.nik' => 'nullable|string|max:100',
+            'participants.*.nama' => 'nullable|string|max:255',
             'participants.*.jabatan' => 'nullable|string|max:255',
             'participants.*.dept' => 'nullable|string|max:255',
             'activities' => 'required|array|min:1',
@@ -291,8 +298,29 @@ class OrientationProgramController extends Controller
             return response()->json(['message' => 'Terdapat kegiatan yang tidak valid.'], 422);
         }
 
+        // Pastikan setiap kegiatan tersedia untuk plant yang dipilih.
+        // Daftar plants kosong dianggap berlaku untuk semua plant.
+        $plantId = (int) $request->plant_id;
+        $invalidForPlant = MasterOrientationActivity::whereIn('id', $activityIds)
+            ->get(['id', 'plants'])
+            ->filter(function ($activity) use ($plantId) {
+                $plantIds = $this->normalizePlantIds($activity->plants);
+
+                return !empty($plantIds) && !in_array($plantId, $plantIds, true);
+            });
+
+        if ($invalidForPlant->isNotEmpty()) {
+            return response()->json([
+                'message' => 'Terdapat kegiatan yang tidak tersedia untuk plant yang dipilih.',
+            ], 422);
+        }
+
         DB::connection($this->dbConnection)->transaction(function () use ($request, $orientation) {
-            $orientation->update(['participants' => array_values($request->participants)]);
+            $orientation->update([
+                'participants' => array_values($request->participants),
+                'batch_name' => $this->resolveProgramName($request->activities),
+                'master_plants_id' => $request->plant_id,
+            ]);
             $orientation->activities()->delete();
 
             foreach ($request->activities as $activity) {
@@ -334,8 +362,8 @@ class OrientationProgramController extends Controller
             'hr_pic.*.nik' => 'required|string|max:100',
             'hr_pic.*.nama' => 'required|string|max:255',
             'participants' => 'required|array|min:1',
-            'participants.*.nik' => 'required|string|max:100',
-            'participants.*.nama' => 'required|string|max:255',
+            'participants.*.nik' => 'nullable|string|max:100',
+            'participants.*.nama' => 'nullable|string|max:255',
             'participants.*.jabatan' => 'nullable|string|max:255',
             'participants.*.dept' => 'nullable|string|max:255',
             'activities' => 'required|array|min:1',
@@ -366,13 +394,9 @@ class OrientationProgramController extends Controller
         }
 
         $orientation = DB::connection($this->dbConnection)->transaction(function () use ($request) {
-            $totalPrograms = OrientationProgram::count();
-            $nextBatchNumber = $totalPrograms + 1;
-            $batchName = 'Kobin Training Batch ' . $nextBatchNumber;
-
             $orientation = OrientationProgram::create([
                 'category_id' => $request->category_id,        // <-- TAMBAH
-                'batch_name' => $batchName,
+                'batch_name' => $this->resolveProgramName($request->activities),
                 'master_plants_id' => $request->plant_id,
                 'participants' => array_values($request->participants),
                 'hr_pic' => array_values($request->hr_pic),    // <-- TAMBAH
@@ -405,6 +429,62 @@ class OrientationProgramController extends Controller
 
         return redirect()->route('orientation.index')
             ->with('success', 'Training program berhasil dibuat.');
+    }
+
+    /**
+     * Baca peserta dari file Excel/CSV (belum disimpan ke database).
+     * Hasilnya dipakai form create/edit untuk mengisi daftar peserta.
+     */
+    public function importParticipants(Request $request)
+    {
+        $this->authorizeOrientationManager();
+
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv,txt|max:5120',
+        ], [
+            'file.required' => 'Silakan pilih file yang akan diimport.',
+            'file.mimes' => 'Format file harus Excel (.xlsx/.xls) atau CSV.',
+            'file.max' => 'Ukuran file maksimal 5 MB.',
+        ]);
+
+        try {
+            $import = new OrientationParticipantImport();
+            Excel::import($import, $request->file('file'));
+
+            $participants = $import->participants();
+            $totalRows = $import->totalRows();
+
+            return response()->json([
+                'message' => count($participants) > 0
+                    ? 'Berhasil membaca ' . count($participants) . ' peserta dari file.'
+                    : 'Tidak ada data peserta yang dapat dibaca dari file.',
+                'participants' => $participants,
+                'summary' => [
+                    'total_rows' => $totalRows,
+                    'imported' => count($participants),
+                    'skipped' => max($totalRows - count($participants), 0),
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Import peserta orientation gagal: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Gagal membaca file: ' . $e->getMessage(),
+            ], 422);
+        }
+    }
+
+    /**
+     * Contoh file Excel untuk import peserta.
+     */
+    public function downloadParticipantTemplate()
+    {
+        $this->authorizeOrientationManager();
+
+        return Excel::download(
+            new OrientationParticipantTemplateExport(),
+            'template-import-peserta-training.xlsx'
+        );
     }
 
     /**
@@ -467,6 +547,54 @@ class OrientationProgramController extends Controller
     }
 
     /**
+     * Normalisasi daftar plant id kegiatan menjadi array integer.
+     * Nilai seperti null, "-", atau string non-JSON diperlakukan sebagai kosong
+     * (artinya kegiatan berlaku untuk semua plant).
+     */
+    private function normalizePlantIds(mixed $value): array
+    {
+        if (is_array($value)) {
+            return array_map('intval', $value);
+        }
+
+        if (is_string($value) && trim($value) !== '') {
+            $decoded = json_decode($value, true);
+
+            if (is_array($decoded)) {
+                return array_map('intval', $decoded);
+            }
+        }
+
+        return [];
+    }
+
+    /**
+     * Nama program otomatis diambil dari kegiatan pertama yang diinput.
+     */
+    private function resolveProgramName(mixed $activities): string
+    {
+        $first = is_array($activities) ? collect($activities)->first() : null;
+
+        if (!is_array($first)) {
+            return 'Training Program';
+        }
+
+        $activityId = $first['activity_id'] ?? null;
+
+        if ($activityId) {
+            $name = trim((string) MasterOrientationActivity::whereKey($activityId)->value('activity_name'));
+
+            if ($name !== '') {
+                return $name;
+            }
+        }
+
+        $fallback = trim((string) ($first['title'] ?? ''));
+
+        return $fallback !== '' ? $fallback : 'Training Program';
+    }
+
+    /**
      * Simpan snapshot peserta agar nama dapat ditampilkan tanpa memanggil API.
      */
     private function normalizeParticipants(mixed $participants): array
@@ -475,23 +603,56 @@ class OrientationProgramController extends Controller
             return [];
         }
 
-        return collect($participants)
-            ->map(function ($participant) {
-                if (is_string($participant) || is_numeric($participant)) {
-                    return ['nik' => (string) $participant, 'nama' => (string) $participant];
-                }
+        $normalized = [];
+        $seenNiks = [];
 
-                return [
-                    'nik' => (string) ($participant['nik'] ?? ''),
-                    'nama' => (string) ($participant['nama'] ?? ''),
-                    'jabatan' => $participant['jabatan'] ?? null,
-                    'dept' => $participant['dept'] ?? null,
-                ];
-            })
-            ->filter(fn(array $participant) => $participant['nik'] !== '')
-            ->unique('nik')
-            ->values()
-            ->all();
+        foreach ($participants as $participant) {
+            if (is_string($participant) || is_numeric($participant)) {
+                $participant = ['nik' => $participant, 'nama' => $participant];
+            }
+
+            if (!is_array($participant)) {
+                continue;
+            }
+
+            $row = [
+                'nik' => $this->nullIfEmpty($participant['nik'] ?? null),
+                'nama' => $this->nullIfEmpty($participant['nama'] ?? null),
+                'jabatan' => $this->nullIfEmpty($participant['jabatan'] ?? null),
+                'dept' => $this->nullIfEmpty($participant['dept'] ?? null),
+            ];
+
+            // Lewati baris yang benar-benar kosong (semua field nullable).
+            if ($row['nik'] === null && $row['nama'] === null && $row['jabatan'] === null && $row['dept'] === null) {
+                continue;
+            }
+
+            // Peserta dengan NIK hanya boleh muncul sekali.
+            if ($row['nik'] !== null) {
+                if (isset($seenNiks[$row['nik']])) {
+                    continue;
+                }
+                $seenNiks[$row['nik']] = true;
+            }
+
+            $normalized[] = $row;
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * Ubah nilai kosong menjadi null agar konsisten dengan field nullable.
+     */
+    private function nullIfEmpty(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $value = trim((string) $value);
+
+        return $value === '' ? null : $value;
     }
 
     /**
@@ -558,7 +719,7 @@ class OrientationProgramController extends Controller
         // ============================================================
         $totalActivities = $orientation->activities->count();
 
-        $participantDetails = collect($participantsFromDb)->map(function ($participant) use (
+        $participantDetails = collect($participantsFromDb)->map(function ($participant, $index) use (
             $allParticipantData,
             $orientation,
             $totalActivities,
@@ -616,11 +777,37 @@ class OrientationProgramController extends Controller
                 $status = 'active';
             }
 
+            $stored = is_array($participant) ? $participant : [];
+            $nikValue = $this->nullIfEmpty($nik);
+
+            // Nilai API kadang hanya placeholder (NIK atau '-') saat karyawan
+            // tidak ditemukan, sehingga tidak boleh menimpa data input manual.
+            $apiName = $this->nullIfEmpty($data['nama'] ?? null);
+            if ($apiName !== null && $apiName === $nikValue) {
+                $apiName = null;
+            }
+
+            $apiJabatan = $this->nullIfEmpty($data['jabatan'] ?? null);
+            if ($apiJabatan === '-') {
+                $apiJabatan = null;
+            }
+
+            $apiDept = $this->nullIfEmpty($data['dept'] ?? null);
+            if ($apiDept === '-') {
+                $apiDept = null;
+            }
+
+            $participantName = $apiName
+                ?? $this->nullIfEmpty($stored['nama'] ?? null)
+                ?? $nikValue
+                ?? 'Tanpa Nama';
+
             return [
                 'nik' => $nik,
-                'nama' => $data['nama'] ?? ($participant['nama'] ?? $nik),
-                'jabatan' => $data['jabatan'] ?? ($participant['jabatan'] ?? '-'),
-                'dept' => $data['dept'] ?? ($participant['dept'] ?? '-'),
+                'row_key' => $nikValue ?? ('manual-' . $index),
+                'nama' => $participantName,
+                'jabatan' => $apiJabatan ?? $this->nullIfEmpty($stored['jabatan'] ?? null) ?? '-',
+                'dept' => $apiDept ?? $this->nullIfEmpty($stored['dept'] ?? null) ?? '-',
                 'email' => $data['email'] ?? ($participant['email'] ?? '-'),
                 'join_date' => is_array($participant) ? ($participant['join_date'] ?? null) : null,
 

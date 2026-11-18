@@ -536,8 +536,8 @@
                         plant_id: plantId,
                         hr_pic: hrPicPayload,
                         participants: participants.map(participant => ({
-                            nik: String(participant.nik),
-                            nama: participant.nama || String(participant.nik),
+                            nik: participant.nik ? String(participant.nik) : null,
+                            nama: participant.nama || null,
                             jabatan: participant.jabatan || null,
                             dept: participant.dept || null
                         })),
