@@ -110,6 +110,14 @@
                  initPlants(plants) {
                      this.plants = plants;
                      this.filteredPlants = plants;
+
+                     // Preselect plant (mis. saat mode edit)
+                     if (window.selectedPlantId) {
+                         const current = plants.find(p => p.id === window.selectedPlantId);
+                         if (current) {
+                             this.selectedPlant = current;
+                         }
+                     }
                  },
 
                  toggleDropdown() {

@@ -33,7 +33,9 @@
             // Watch perubahan Plant
             window.addEventListener('orientation-plant-selected', (event) => {
                 this.selectedPlant = event.detail;
-                if (this.kegiatanRows.length > 0) this.kegiatanRows = [];
+                const isEdit = window.orientationEditMode === true;
+                // Saat edit, pertahankan baris kegiatan yang sudah ada
+                if (!isEdit && this.kegiatanRows.length > 0) this.kegiatanRows = [];
                 this.selectedActivity = null;
                 this.selectedActivityId = '';
                 this.activityDropdownOpen = false;

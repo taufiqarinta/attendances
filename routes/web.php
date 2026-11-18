@@ -171,6 +171,12 @@ Route::middleware(['web', 'check.api.session'])->group(function () {
             Route::post('/', 'store')
                 ->name('orientation.store');
 
+            Route::post('/import-participants', 'importParticipants')
+                ->name('orientation.import.participants');
+
+            Route::get('/import-participants/template', 'downloadParticipantTemplate')
+                ->name('orientation.participants.template');
+
             Route::get('/{orientation}/edit', 'edit')
                 ->name('orientation.edit');
 
