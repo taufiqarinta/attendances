@@ -82,13 +82,32 @@ return [
             ]) : [],
         ],
 
-        'dev_test' => [
+        'db_payslip' => [
             'driver' => 'mysql',
-            'host' => env('DEV_TESTDB_HOST', '192.168.80.227'),
-            'port' => env('DEV_TESTDB_PORT', '3306'),
-            'database' => env('DEV_TESTDB_DATABASE', 'dev_test'),
-            'username' => env('DEV_TESTDB_USERNAME', 'reza_stg_db'),
-            'password' => env('DEV_TESTDB_PASSWORD', ''),
+            'host' => env('DB_PAYSIP_HOST', '192.168.80.227'),
+            'port' => env('DB_PAYSIP_PORT', '3306'),
+            'database' => env('DB_PAYSIP_DATABASE', 'attendance_db_payslip'),
+            'username' => env('DB_PAYSIP_USERNAME', 'reza_stg_db'),
+            'password' => env('DB_PAYSIP_PASSWORD', ''),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+        
+        'db_training' => [
+            'driver' => 'mysql',
+            'host' => env('DB_TRAINING_HOST', '192.168.80.227'),
+            'port' => env('DB_TRAINING_PORT', '3306'),
+            'database' => env('DB_TRAINING_DATABASE', 'attendance_db_training'),
+            'username' => env('DB_TRAINING_USERNAME', 'reza_stg_db'),
+            'password' => env('DB_TRAINING_PASSWORD', ''),
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',

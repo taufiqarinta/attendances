@@ -1,5 +1,5 @@
      <div x-data="plantDropdown()" x-init="initPlants({{ json_encode($plants) }})" class="relative">
-         <label class="mb-1.5 block text-xs font-semibold text-gray-700">Plant</label>
+         <label class="mb-1.5 block text-xs font-semibold text-gray-700">Plant <span class="text-red-500">*</span></label>
 
          {{-- Tombol Dropdown --}}
          <button type="button" @click="toggleDropdown()"
@@ -110,6 +110,14 @@
                  initPlants(plants) {
                      this.plants = plants;
                      this.filteredPlants = plants;
+
+                     // Preselect plant (mis. saat mode edit)
+                     if (window.selectedPlantId) {
+                         const current = plants.find(p => p.id === window.selectedPlantId);
+                         if (current) {
+                             this.selectedPlant = current;
+                         }
+                     }
                  },
 
                  toggleDropdown() {
@@ -146,9 +154,12 @@
                      this.selectedPlant = plant;
                      this.isOpen = false;
                      console.log('Plant selected:', plant);
-                     // Simpan ke global variable untuk akses di submit
                      window.selectedPlantId = plant.id;
                      window.selectedPlantData = plant;
+
+                     // TIDAK mereset peserta — peserta tetap bebas
+                     // window.selectedParticipants tidak disentuh
+
                      window.dispatchEvent(new CustomEvent('orientation-plant-selected', {
                          detail: plant
                      }));

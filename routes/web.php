@@ -17,6 +17,8 @@ use App\Http\Controllers\MasterLokasiEventController;
 use App\Http\Controllers\MasterTargetController;
 use App\Http\Controllers\OrderGatheringController;
 use App\Http\Controllers\Orientation\MasterOrientationActivityController;
+use App\Http\Controllers\Orientation\MasterOrientationCategoryController;
+use App\Http\Controllers\Orientation\MasterReaksiEvaluasiController;
 use App\Http\Controllers\Orientation\OrientationProgramController;
 use App\Http\Controllers\PeringkatController;
 use App\Http\Controllers\ProfileController;
@@ -28,6 +30,7 @@ use App\Http\Controllers\SuratPesananBarangController;
 use App\Http\Controllers\User\PermintaanController;
 use App\Http\Controllers\User\WelcomeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\Payroll\PayrollController;
 use App\Http\Controllers\WilayahController;
 use Illuminate\Support\Facades\Route;
 use Maatwebsite\Excel\Facades\Excel;
@@ -114,7 +117,19 @@ Route::middleware(['web', 'check.api.session'])->group(function () {
     Route::get('/history', function () {
         return view('history.index');
     })->name('history.index');
+
+
+    Route::prefix('orientation')->name('master-reaksi-evaluasi.')->group(function () {
+        Route::get('/master-reaksi-evaluasi', [MasterReaksiEvaluasiController::class, 'index'])->name('index');
+        Route::post('/master-reaksi-evaluasi', [MasterReaksiEvaluasiController::class, 'store'])->name('store');
+        Route::get('/master-reaksi-evaluasi/{id}/edit', [MasterReaksiEvaluasiController::class, 'edit'])->name('edit');
+        Route::put('/master-reaksi-evaluasi/{id}', [MasterReaksiEvaluasiController::class, 'update'])->name('update');
+        Route::delete('/master-reaksi-evaluasi/{id}', [MasterReaksiEvaluasiController::class, 'destroy'])->name('destroy');
+    });
     Route::prefix('orientation')->group(function () {
+        Route::resource('master-category', MasterOrientationCategoryController::class)
+            ->except(['show', 'create']);
+
 
         /*
     |--------------------------------------------------------------------------
@@ -156,6 +171,12 @@ Route::middleware(['web', 'check.api.session'])->group(function () {
             Route::post('/', 'store')
                 ->name('orientation.store');
 
+            Route::post('/import-participants', 'importParticipants')
+                ->name('orientation.import.participants');
+
+            Route::get('/import-participants/template', 'downloadParticipantTemplate')
+                ->name('orientation.participants.template');
+
             Route::get('/{orientation}/edit', 'edit')
                 ->name('orientation.edit');
 
@@ -167,6 +188,15 @@ Route::middleware(['web', 'check.api.session'])->group(function () {
 
             Route::get('/detail/{orientation}', 'show')
                 ->name('orientation.detail');
+
+            Route::post('/activity/attendance', 'saveAttendance')
+                ->name('orientation.activity.attendance');
+
+            Route::post('/activity/reaction', [OrientationProgramController::class, 'saveReaction'])
+                ->name('orientation.activity.reaction');
+
+            Route::get('/activity/{activityId}/reactions', [OrientationProgramController::class, 'getReactions'])
+                ->name('orientation.activity.reactions');
 
             /*
         |--------------------------------------------------------------------------
@@ -205,6 +235,25 @@ Route::middleware(['web', 'check.api.session'])->group(function () {
                 ->name('orientation.export.participants');
         });
     });
+
+    /*
+        |--------------------------------------------------------------------------
+        | Payslip Management 
+        |--------------------------------------------------------------------------
+    */
+    Route::get('/payslip', [PayrollController::class, 'index'])->name('payslip.index');
+    Route::get('/payslip/generate', [PayrollController::class, 'generatePage'])->name('payslip.generate');
+    Route::post('/payslip/generate', [PayrollController::class, 'generate'])->name('payslip.generate.store');
+    Route::get('/payslip/employees', [PayrollController::class, 'getEmployees'])->name('payslip.employees');
+    Route::get('/payslip/periods', [PayrollController::class, 'getPeriods'])->name('payslip.periods');
+    Route::get('/payslip/summary', [PayrollController::class, 'getSummary'])->name('payslip.summary');
+    Route::delete('/payslip/period/{id}', [PayrollController::class, 'deletePeriod'])->name('payslip.period.delete');
+    Route::delete('/payslip/employee/{id}', [PayrollController::class, 'deleteEmployee'])->name('payslip.employee.delete');
+    Route::post('/payslip/upload', [PayrollController::class, 'uploadSlip'])->name('payslip.upload');
+    Route::post('/payslip/slip/preview', [PayrollController::class, 'previewSlip'])->name('payslip.slip.preview')->middleware('throttle:10,1');
+    Route::delete('/payslip/slip/{id}', [PayrollController::class, 'deleteSlip'])->name('payslip.slip.delete');
+    
+    Route::get('/payslip-view', [PayrollController::class, 'payslipView'])->name('payslip.view');
 });
 
 Route::fallback(function () {

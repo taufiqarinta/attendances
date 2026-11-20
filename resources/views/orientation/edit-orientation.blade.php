@@ -15,39 +15,79 @@
                                 d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
                         </svg></div>
                     <div>
-                        <h1 class="text-2xl font-bold text-white">Edit Orientation</h1>
-                        <p class="text-sm text-red-100">Perbarui peserta dan rincian kegiatan tanpa mengubah plant.</p>
+                        <h1 class="text-2xl font-bold text-white">Edit Training</h1>
+                        <p class="text-sm text-red-100">Perbarui plant, peserta, dan rincian kegiatan.</p>
                     </div>
                 </div>
             </div>
 
             <div class="mt-4 rounded-2xl border border-gray-100 bg-white shadow-sm">
                 <div class="p-5">
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+
+                        {{-- Kategori (Readonly) --}}
                         <div>
-                            <label class="mb-1.5 block text-xs font-semibold text-gray-700">Plant</label>
+                            <label class="mb-1.5 block text-xs font-semibold text-gray-700">Kategori</label>
                             <div
                                 class="flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
-                                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50"><svg
-                                        class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24"
+                                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50">
+                                    <svg class="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24"
                                         stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 11H5m14-4H5m14 8H5" />
-                                    </svg></div>
+                                            d="M7 7h.01M7 3h5a2 2 0 012 2v5.586a1 1 0 01-.293.707l-7.414 7.414a1 1 0 01-1.414 0L2.293 15.12a1 1 0 010-1.414L9.707 6.293A1 1 0 0110.414 6H13a1 1 0 001-1V3z" />
+                                    </svg>
+                                </div>
                                 <div class="text-left">
                                     <div class="text-sm font-medium text-gray-800">
-                                        {{ $orientation->plant?->name_plant }}</div>
-                                    <div class="text-xs text-gray-500">Kode: {{ $orientation->plant?->code }} · Plant
-                                        tidak dapat diubah</div>
+                                        {{ $category->category_name ?? 'Tidak ada kategori' }}
+                                    </div>
+                                    <div class="text-xs text-gray-500">
+                                        Kode: {{ $category->code_category ?? '-' }} · Kategori tidak dapat diubah
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
+                        {{-- Plant Dropdown --}}
+                        <div>
+                            @include('orientation.component-create.dropdwon-plant')
+                        </div>
+
+                        {{-- HR PIC (Readonly) --}}
+                        <div>
+                            <label class="mb-1.5 block text-xs font-semibold text-gray-700">HR PIC</label>
+                            <div
+                                class="flex w-full items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+                                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50">
+                                    <svg class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                </div>
+                                <div class="text-left">
+                                    <div class="text-sm font-medium text-gray-800">
+                                        {{ $hrPic['nama'] ?? 'Tidak ada HR PIC' }}
+                                    </div>
+                                    <div class="text-xs text-gray-500">
+                                        NIK: {{ $hrPic['nik'] ?? '-' }} · {{ $hrPic['jabatan'] ?? '-' }} · Tidak dapat
+                                        diubah
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    {{-- Peserta (Full width, di bawah) --}}
+                    <div class="mt-4">
                         @include('orientation.component-create.participant-modal')
                     </div>
                 </div>
             </div>
 
             <script>
+                window.orientationEditMode = true;
                 window.selectedPlantId = @json($orientation->master_plants_id);
                 window.selectedPlantData = @json($orientation->plant);
             </script>
@@ -57,7 +97,7 @@
             <div class="sticky bottom-4 mt-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-lg">
                 <div class="flex flex-col items-center justify-between gap-3 sm:flex-row">
                     <div>
-                        <h3 class="text-sm font-semibold text-gray-800">Simpan perubahan orientation?</h3>
+                        <h3 class="text-sm font-semibold text-gray-800">Simpan perubahan training?</h3>
                         <p class="text-xs text-gray-500">Peserta dan daftar kegiatan akan diperbarui.</p>
                     </div>
                     <div class="flex w-full items-center gap-2 sm:w-auto"><a href="{{ route('orientation.index') }}"
@@ -80,6 +120,8 @@
                 'warning');
             if (!activities.length) return Swal.fire('Kegiatan belum tersedia', 'Tambahkan minimal satu kegiatan.',
                 'warning');
+            if (!window.selectedPlantId) return Swal.fire('Plant belum dipilih', 'Pilih plant terlebih dahulu.',
+                'warning');
 
             const button = document.querySelector('[onclick="submitOrientation()"]');
             button.disabled = true;
@@ -93,9 +135,10 @@
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                     },
                     body: JSON.stringify({
+                        plant_id: Number(window.selectedPlantId) || null,
                         participants: participants.map(item => ({
-                            nik: String(item.nik),
-                            nama: item.nama || String(item.nik),
+                            nik: item.nik ? String(item.nik) : null,
+                            nama: item.nama || null,
                             jabatan: item.jabatan || null,
                             dept: item.dept || null
                         })),
@@ -107,13 +150,13 @@
                     result.message);
                 await Swal.fire({
                     icon: 'success',
-                    title: 'Orientation berhasil diperbarui',
+                    title: 'Training berhasil diperbarui',
                     text: result.message,
                     confirmButtonColor: '#dc2626'
                 });
                 window.location.assign(result.redirect);
             } catch (error) {
-                Swal.fire('Gagal menyimpan', error.message || 'Perubahan orientation gagal disimpan.', 'error');
+                Swal.fire('Gagal menyimpan', error.message || 'Perubahan training gagal disimpan.', 'error');
             } finally {
                 button.disabled = false;
                 button.classList.remove('opacity-60', 'cursor-not-allowed');

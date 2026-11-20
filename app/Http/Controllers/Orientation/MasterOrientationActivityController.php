@@ -4,48 +4,39 @@ namespace App\Http\Controllers\Orientation;
 
 use App\Http\Controllers\Controller;
 use App\Models\Orientation\MasterOrientationActivity;
-use App\Models\Orientation\MasterPlant;
+use App\Models\Orientation\MasterOrientationCategory; 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class MasterOrientationActivityController extends Controller
 {
-    /**
-     * Display a listing of the resource with server-side pagination.
-     */
     public function index(Request $request)
     {
-        $plants = MasterPlant::orderBy('name_plant')->get();
-        
-        // Server-side pagination
+        $categories = MasterOrientationCategory::orderBy('category_name')->get();
+
         $perPage = $request->input('per_page', 10);
         $search = $request->input('search');
         $status = $request->input('status');
-        
-        $query = MasterOrientationActivity::query();
-        
-        // Filter by search
+
+        $query = MasterOrientationActivity::with('categories');
+
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('activity_name', 'LIKE', "%{$search}%")
-                  ->orWhere('code_activity', 'LIKE', "%{$search}%")
-                  ->orWhere('description', 'LIKE', "%{$search}%");
+                    ->orWhere('code_activity', 'LIKE', "%{$search}%")
+                    ->orWhere('description', 'LIKE', "%{$search}%");
             });
         }
-        
-        // Filter by status
+
         if ($status !== null && $status !== '') {
             $query->where('status', $status);
         }
-        
-        // Order by
+
         $query->orderBy('created_at', 'desc');
-        
-        // Paginate
+
         $activities = $query->paginate($perPage);
-        
-        // Jika request AJAX, return JSON
+
         if ($request->ajax()) {
             return response()->json([
                 'data' => $activities->items(),
@@ -60,33 +51,33 @@ class MasterOrientationActivityController extends Controller
                 'links' => (string) $activities->links()
             ]);
         }
-        
-        return view('activity-orientation.index', compact('activities', 'plants'));
+
+        return view('activity-orientation.index', compact('activities', 'categories'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
+            'category_ids' => 'required|array|min:1',
+            'category_ids.*' => 'exists:db_training.master_orientation_categories,id',
             'activity_name' => 'required|string|max:150',
             'description' => 'nullable|string',
-            'plant_ids' => 'required|string',
             'status' => 'required|boolean'
         ]);
 
-        $plantIds = explode(',', $request->plant_ids);
-        $plantIds = array_map('intval', $plantIds);
-        
-        $activity = DB::connection('hris_kobin')->transaction(function () use ($request, $plantIds) {
-            return MasterOrientationActivity::create([
+        $activity = DB::connection('db_training')->transaction(function () use ($request) {
+            $activity = MasterOrientationActivity::create([
+                'category_id' => $request->category_ids[0],
                 'code_activity' => $this->nextActivityCode(),
                 'activity_name' => $request->activity_name,
                 'description' => $request->description,
-                'plants' => $plantIds,
+                'plants' => '-',
                 'status' => $request->status,
             ]);
+
+            $activity->categories()->sync($request->category_ids);
+
+            return $activity;
         });
 
         if ($request->ajax()) {
@@ -102,45 +93,42 @@ class MasterOrientationActivityController extends Controller
             ->with('success', 'Kegiatan berhasil ditambahkan!');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit($id)
     {
-        $activity = MasterOrientationActivity::findOrFail($id);
-        
+        $activity = MasterOrientationActivity::with('categories')->findOrFail($id);
+
         return response()->json([
             'id' => $activity->id,
+            'category_ids' => $activity->categories->pluck('id')->toArray(),
             'activity_name' => $activity->activity_name,
             'description' => $activity->description,
             'status' => $activity->status,
-            'plants' => $activity->plants ?? []
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, $id)
     {
         $request->validate([
+            'category_ids' => 'required|array|min:1',
+            'category_ids.*' => 'exists:db_training.master_orientation_categories,id',
             'activity_name' => 'required|string|max:150',
             'description' => 'nullable|string',
-            'plant_ids' => 'required|string',
             'status' => 'required|boolean'
         ]);
 
         $activity = MasterOrientationActivity::findOrFail($id);
-        
-        $plantIds = explode(',', $request->plant_ids);
-        $plantIds = array_map('intval', $plantIds);
-        
-        $activity->update([
-            'activity_name' => $request->activity_name,
-            'description' => $request->description,
-            'plants' => $plantIds,
-            'status' => $request->status
-        ]);
+
+        DB::connection('db_training')->transaction(function () use ($request, $activity) {
+            $activity->update([
+                'category_id' => $request->category_ids[0],
+                'activity_name' => $request->activity_name,
+                'description' => $request->description,
+                'plants' => '-',
+                'status' => $request->status
+            ]);
+
+            $activity->categories()->sync($request->category_ids);
+        });
 
         if ($request->ajax()) {
             return response()->json([
@@ -155,12 +143,10 @@ class MasterOrientationActivityController extends Controller
             ->with('success', 'Kegiatan berhasil diperbarui!');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy($id)
     {
         $activity = MasterOrientationActivity::findOrFail($id);
+        $activity->categories()->detach();
         $activity->delete();
 
         if (request()->ajax()) {
@@ -175,9 +161,6 @@ class MasterOrientationActivityController extends Controller
             ->with('success', 'Kegiatan berhasil dihapus!');
     }
 
-    /**
-     * Membuat kode kegiatan berformat ACT01, ACT02, dan seterusnya.
-     */
     private function nextActivityCode(): string
     {
         $lastCode = MasterOrientationActivity::query()

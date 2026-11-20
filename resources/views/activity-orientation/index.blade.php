@@ -23,8 +23,9 @@
                         </svg>
                     </div>
                     <div>
-                        <h1 class="text-2xl font-bold text-white">Master Kegiatan</h1>
-                        <p class="text-sm text-red-100">Kelola master kegiatan orientation.</p>
+                        <h1 class="text-2xl font-bold text-white">Master Topik Training</h1>
+                        <p class="text-sm text-red-100">Kelola master topik training untuk program training karyawan
+                            baru</p>
                     </div>
                 </div>
             </div>
@@ -68,7 +69,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 4v16m8-8H4" />
                             </svg>
-                            Tambah Kegiatan
+                            Tambah Training
                         </button>
                     </div>
                 </div>
@@ -84,17 +85,17 @@
                                     class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-12">
                                     No</th>
                                 <th
+                                    class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider min-w-[150px]">
+                                    Kategori</th>
+                                <th
                                     class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-28">
-                                    Kode</th>
+                                    Kode Training</th>
                                 <th
                                     class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider min-w-[150px]">
-                                    Nama Kegiatan</th>
+                                    Nama Training</th>
                                 <th
                                     class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider hidden md:table-cell min-w-[200px]">
                                     Deskripsi</th>
-                                <th
-                                    class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider hidden lg:table-cell min-w-[180px]">
-                                    Plant</th>
                                 <th
                                     class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-24">
                                     Status</th>
@@ -117,6 +118,17 @@
                                             class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-xs font-semibold text-gray-600">
                                             {{ $no++ }}
                                         </span>
+                                    </td>
+                                    <td class="px-4 py-3.5 text-sm text-gray-700">
+                                        <div class="flex flex-wrap gap-1">
+                                            @forelse($activity->categories as $cat)
+                                                <span class="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 border border-blue-200/50">
+                                                    {{ $cat->category_name }}
+                                                </span>
+                                            @empty
+                                                <span class="text-gray-400">-</span>
+                                            @endforelse
+                                        </div>
                                     </td>
 
                                     <td class="px-4 py-3.5 text-sm font-semibold text-red-700">
@@ -145,35 +157,6 @@
                                         <div class="max-w-xs truncate">
                                             {{ $activity->description ?? '-' }}
                                         </div>
-                                    </td>
-
-                                    <td class="px-4 py-3.5 hidden lg:table-cell">
-                                        @php
-                                            $plantNames = $activity->plant_names ?? collect();
-                                            $plantCount = $plantNames->count();
-                                            $maxDisplay = 3;
-                                        @endphp
-
-                                        @if ($plantCount > 0)
-                                            <div class="flex flex-wrap items-center gap-1">
-                                                @foreach ($plantNames->take($maxDisplay) as $plant)
-                                                    <span
-                                                        class="inline-flex items-center rounded-md bg-slate-100 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-slate-200 transition-colors">
-                                                        {{ Str::limit($plant->name_plant, 12) }}
-                                                    </span>
-                                                @endforeach
-
-                                                @if ($plantCount > $maxDisplay)
-                                                    <span
-                                                        class="inline-flex items-center rounded-md bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-600 cursor-help hover:bg-blue-100 transition-colors"
-                                                        title="{{ $plantNames->pluck('name_plant')->implode(', ') }}">
-                                                        +{{ $plantCount - $maxDisplay }} lagi
-                                                    </span>
-                                                @endif
-                                            </div>
-                                        @else
-                                            <span class="text-sm text-gray-400">-</span>
-                                        @endif
                                     </td>
 
                                     <td class="px-4 py-3.5">
@@ -224,7 +207,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-4 py-16 text-center">
+                                    <td colspan="6" class="px-4 py-16 text-center">
                                         <div class="flex flex-col items-center gap-4">
                                             <div
                                                 class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center">
@@ -266,12 +249,16 @@
     {{-- ===================================================== --}}
     {{-- MODAL CREATE / EDIT --}}
     {{-- ===================================================== --}}
+    <script>
+        window.__kategoris = @json($categories->map(fn($c) => ['id' => $c->id, 'name' => $c->category_name]));
+    </script>
+    <style>[x-cloak] { display: none !important; }</style>
     <div id="modalOverlay"
         class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] hidden items-center justify-center p-4">
         <div
-            class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto animate-scale-up relative">
+            class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col animate-scale-up relative">
             <div
-                class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl flex items-center justify-between z-10">
+                class="bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl flex items-center justify-between z-10 shrink-0">
                 <h3 id="modalTitle" class="text-lg font-bold text-gray-800">Tambah Kegiatan</h3>
                 <button onclick="closeModal()" class="p-1.5 rounded-lg hover:bg-gray-100 transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none"
@@ -282,12 +269,115 @@
                 </button>
             </div>
 
-            <form id="modalForm" class="p-6 space-y-4" action="{{ route('orientation.master-activity.store') }}"
+            <form id="modalForm" class="p-6 space-y-4 overflow-y-auto flex-1" action="{{ route('orientation.master-activity.store') }}"
                 method="POST">
                 @csrf
                 <input type="hidden" id="formId" name="id" value="">
                 <input type="hidden" name="_method" id="formMethod" value="POST">
+                {{-- Kategori (Multi-select Dropdown) --}}
+                <div x-data="{
+                    open: false,
+                    search: '',
+                    selected: [],
+                    categories: window.__kategoris || [],
+                    get filtered() {
+                        if (!this.search.trim()) return this.categories;
+                        const q = this.search.toLowerCase().trim();
+                        return this.categories.filter(c => c.name.toLowerCase().includes(q));
+                    },
+                    toggle(id) {
+                        const idx = this.selected.indexOf(id);
+                        if (idx === -1) { this.selected.push(id); } else { this.selected.splice(idx, 1); }
+                    },
+                    isSelected(id) { return this.selected.includes(id); },
+                    getName(id) { return (this.categories.find(c => c.id === id) || {}).name || ''; },
+                    remove(id) { this.selected = this.selected.filter(s => s !== id); },
+                    reset() { this.selected = []; this.search = ''; this.open = false; },
+                    setSelected(ids) { this.selected = (ids || []).map(Number); }
+                }" id="kategoriDropdownComponent">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Kategori <span
+                            class="text-red-500">*</span></label>
 
+                    {{-- Trigger --}}
+                    <button type="button" @click="open = !open; if(open) { search = ''; $nextTick(() => { $refs.kategoriSearch && $refs.kategoriSearch.focus(); }); }"
+                        class="flex w-full items-center justify-between rounded-xl border bg-white px-4 py-2.5 text-left text-sm transition focus:outline-none"
+                        :class="open ? 'border-red-400 ring-2 ring-red-100 rounded-b-none' : 'border-gray-200 hover:border-red-300'">
+                        <span x-show="selected.length === 0" class="text-gray-400">-- Pilih Kategori --</span>
+                        <span x-show="selected.length > 0" class="text-gray-700 font-medium"
+                            x-text="selected.length + ' kategori dipilih'"></span>
+                        <svg class="h-4 w-4 shrink-0 text-gray-400 transition-transform duration-200"
+                            :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6" />
+                        </svg>
+                    </button>
+
+                    {{-- Dropdown Panel (inline) --}}
+                    <div x-show="open" x-cloak
+                        x-transition:enter="transition ease-out duration-150"
+                        x-transition:enter-start="opacity-0"
+                        x-transition:enter-end="opacity-100"
+                        x-transition:leave="transition ease-in duration-100"
+                        x-transition:leave-start="opacity-100"
+                        x-transition:leave-end="opacity-0"
+                        class="border border-t-0 rounded-b-xl bg-white overflow-hidden"
+                        :class="open ? 'border-red-400' : 'border-gray-200'">
+
+                        <div class="border-b border-gray-100 p-2">
+                            <div class="relative">
+                                <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-5.2-5.2m1.7-5.3a7 7 0 11-14 0a7 7 0 0114 0z" />
+                                </svg>
+                                <input type="text" x-model="search" x-ref="kategoriSearch" placeholder="Cari kategori..."
+                                    class="w-full rounded-lg border border-gray-200 pl-9 pr-3 py-2 text-sm focus:border-red-400 focus:ring-2 focus:ring-red-100 focus:outline-none">
+                            </div>
+                        </div>
+
+                        <div class="max-h-40 overflow-y-auto p-1">
+                            <template x-for="cat in filtered" :key="cat.id">
+                                <button type="button" @click="toggle(cat.id)"
+                                    class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition hover:bg-red-50"
+                                    :class="isSelected(cat.id) ? 'bg-red-50/60' : ''">
+                                    <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded border transition"
+                                        :class="isSelected(cat.id) ? 'bg-red-600 border-red-600' : 'border-gray-300 bg-white'">
+                                        <svg x-show="isSelected(cat.id)" class="h-3 w-3 text-white" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                                d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </span>
+                                    <span class="flex-1 text-gray-700" x-text="cat.name"></span>
+                                </button>
+                            </template>
+                            <div x-show="filtered.length === 0" class="px-3 py-4 text-center text-sm text-gray-400">
+                                Kategori tidak ditemukan
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Selected Badges --}}
+                    <div x-show="selected.length > 0" class="flex flex-wrap gap-1.5 mt-2">
+                        <template x-for="id in selected" :key="'badge-' + id">
+                            <span class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 border border-red-200/50">
+                                <span x-text="getName(id)"></span>
+                                <button type="button" @click="remove(id)" class="ml-0.5 hover:text-red-900 transition">
+                                    <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                            d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </span>
+                        </template>
+                    </div>
+
+                    {{-- Hidden Inputs --}}
+                    <template x-for="id in selected" :key="'input-' + id">
+                        <input type="hidden" name="category_ids[]" :value="id">
+                    </template>
+
+                    <p id="kategoriError" class="text-xs text-red-500 mt-1 hidden">Pilih minimal 1 kategori</p>
+                </div>
                 {{-- Nama Kegiatan --}}
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nama Kegiatan <span
@@ -303,30 +393,6 @@
                     <textarea id="formDeskripsi" name="description" rows="3"
                         class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-red-500 focus:ring-red-500 focus:outline-none"
                         placeholder="Masukkan deskripsi kegiatan"></textarea>
-                </div>
-
-                {{-- Plant (Multiple Select) --}}
-                <div class="relative" style="z-index: 100;">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Plant <span
-                            class="text-red-500">*</span></label>
-                    <div class="relative">
-                        <div id="plantDropdown"
-                            class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm bg-white cursor-pointer focus:border-red-500 focus:ring-red-500 focus:outline-none"
-                            onclick="togglePlantDropdown()">
-                            <div id="selectedPlants" class="flex flex-wrap gap-1.5 min-h-[24px] pr-6">
-                                <span class="text-gray-400 text-sm" id="placeholderText">Pilih Plant</span>
-                            </div>
-                            <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-                    <input type="hidden" id="formPlant" name="plant_ids" value="">
-                    <p class="text-xs text-gray-500 mt-1">* Pilih satu atau lebih plant</p>
                 </div>
 
                 {{-- Status --}}
@@ -351,26 +417,6 @@
                 </div>
             </form>
         </div>
-    </div>
-
-    {{-- ===================================================== --}}
-    {{-- PLANT DROPDOWN (DI LUAR MODAL) --}}
-    {{-- ===================================================== --}}
-    <div id="plantOptionsContainer"
-        class="hidden fixed z-[99999] bg-white border border-gray-200 rounded-xl shadow-2xl max-h-56 overflow-y-auto"
-        style="min-width: 200px;">
-        <div class="sticky top-0 bg-white border-b border-gray-100 px-4 py-2">
-            <span class="text-xs font-semibold text-gray-500">PILIH PLANT</span>
-        </div>
-        @foreach ($plants as $plant)
-            <label
-                class="flex items-center gap-2 px-4 py-2.5 hover:bg-red-50 cursor-pointer border-b border-gray-100 transition">
-                <input type="checkbox" value="{{ $plant->id }}"
-                    class="plant-checkbox rounded border-gray-300 text-red-600 focus:ring-red-500"
-                    onchange="updateSelectedPlants()">
-                <span class="text-sm text-gray-700">{{ $plant->name_plant }}</span>
-            </label>
-        @endforeach
     </div>
 
     {{-- ===================================================== --}}
@@ -485,88 +531,12 @@
         // STATE MANAGEMENT
         // =====================================================
         const state = {
-            isPlantDropdownOpen: false,
-            currentPage: 1,
-            rowsPerPage: parseInt(document.getElementById('perPage')?.value || 10),
             currentSearch: '',
             currentStatus: 'all',
             isModalOpen: false,
             isEditMode: false,
             editId: null
         };
-
-        // =====================================================
-        // PLANT DROPDOWN MULTIPLE SELECT
-        // =====================================================
-        function togglePlantDropdown() {
-            const dropdown = document.getElementById('plantDropdown');
-            const container = document.getElementById('plantOptionsContainer');
-
-            if (state.isPlantDropdownOpen) {
-                closePlantDropdown();
-            } else {
-                openPlantDropdown(dropdown, container);
-            }
-        }
-
-        function openPlantDropdown(dropdown, container) {
-            const rect = dropdown.getBoundingClientRect();
-            container.style.left = rect.left + 'px';
-            container.style.top = (rect.bottom + 4) + 'px';
-            container.style.width = rect.width + 'px';
-            container.classList.remove('hidden');
-            state.isPlantDropdownOpen = true;
-        }
-
-        function closePlantDropdown() {
-            const container = document.getElementById('plantOptionsContainer');
-            container.classList.add('hidden');
-            state.isPlantDropdownOpen = false;
-        }
-
-        function updateSelectedPlants() {
-            const checkboxes = document.querySelectorAll('.plant-checkbox:checked');
-            const selectedContainer = document.getElementById('selectedPlants');
-            const hiddenInput = document.getElementById('formPlant');
-
-            selectedContainer.innerHTML = '';
-
-            if (checkboxes.length === 0) {
-                selectedContainer.innerHTML = '<span class="text-gray-400 text-sm">Pilih Plant</span>';
-                hiddenInput.value = '';
-                return;
-            }
-
-            const plantNames = {};
-            @foreach ($plants as $plant)
-                plantNames['{{ $plant->id }}'] = '{{ $plant->name_plant }}';
-            @endforeach
-
-            const selectedValues = [];
-            checkboxes.forEach((checkbox) => {
-                const value = checkbox.value;
-                selectedValues.push(value);
-
-                const badge = document.createElement('span');
-                badge.className =
-                    'inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-700';
-                badge.innerHTML = `
-                ${plantNames[value] || value}
-                <span class="cursor-pointer hover:text-red-900" onclick="removePlant('${value}')">×</span>
-            `;
-                selectedContainer.appendChild(badge);
-            });
-
-            hiddenInput.value = selectedValues.join(',');
-        }
-
-        function removePlant(value) {
-            const checkbox = document.querySelector(`.plant-checkbox[value="${value}"]`);
-            if (checkbox) {
-                checkbox.checked = false;
-                updateSelectedPlants();
-            }
-        }
 
         // =====================================================
         // MODAL FUNCTIONS
@@ -601,14 +571,16 @@
             overlay.classList.add('flex');
             document.body.style.overflow = 'hidden';
             state.isModalOpen = true;
-            closePlantDropdown();
         }
 
         function resetModalForm() {
             document.getElementById('formNama').value = '';
             document.getElementById('formDeskripsi').value = '';
-            document.querySelectorAll('.plant-checkbox').forEach(cb => cb.checked = false);
-            updateSelectedPlants();
+            document.getElementById('kategoriError').classList.add('hidden');
+            const dropdown = document.getElementById('kategoriDropdownComponent');
+            if (dropdown) {
+                Alpine.$data(dropdown).reset();
+            }
         }
 
         function fetchActivityData(id) {
@@ -622,12 +594,10 @@
                     document.getElementById('formDeskripsi').value = data.description || '';
                     document.getElementById('formStatus').value = data.status == 1 ? '1' : '0';
 
-                    if (data.plants && data.plants.length > 0) {
-                        document.querySelectorAll('.plant-checkbox').forEach(cb => {
-                            cb.checked = data.plants.includes(parseInt(cb.value));
-                        });
+                    const dropdown = document.getElementById('kategoriDropdownComponent');
+                    if (dropdown) {
+                        Alpine.$data(dropdown).setSelected(data.category_ids || []);
                     }
-                    updateSelectedPlants();
                 })
                 .catch(error => {
                     console.error('Error fetching activity data:', error);
@@ -647,33 +617,16 @@
             overlay.classList.remove('flex');
             document.body.style.overflow = '';
             state.isModalOpen = false;
-            closePlantDropdown();
         }
 
         function validateForm() {
-            const selectedPlants = document.getElementById('formPlant').value;
-
-            if (!selectedPlants) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Peringatan',
-                    text: 'Silakan pilih minimal satu plant!',
-                    confirmButtonColor: '#dc2626'
-                });
+            const hiddenInputs = document.querySelectorAll('input[name="category_ids[]"]');
+            const errorEl = document.getElementById('kategoriError');
+            if (hiddenInputs.length === 0) {
+                errorEl.classList.remove('hidden');
                 return false;
             }
-
-            const plantArray = selectedPlants.split(',');
-            if (plantArray.length === 0 || (plantArray.length === 1 && plantArray[0] === '')) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Peringatan',
-                    text: 'Silakan pilih minimal satu plant!',
-                    confirmButtonColor: '#dc2626'
-                });
-                return false;
-            }
-
+            errorEl.classList.add('hidden');
             return true;
         }
 
@@ -703,9 +656,9 @@
             form.method = 'POST';
             form.action = `/orientation/master-activity/${id}`;
             form.innerHTML = `
-            @csrf
-            @method('DELETE')
-        `;
+        @csrf
+        @method('DELETE')
+    `;
             document.body.appendChild(form);
             form.submit();
         }
@@ -736,8 +689,10 @@
                 if (searchTerm) {
                     const name = row.getAttribute('data-name') || '';
                     const code = row.getAttribute('data-code') || '';
-                    const description = row.querySelector('td:nth-child(4)')?.textContent?.toLowerCase() || '';
-                    if (!name.includes(searchTerm) && !code.includes(searchTerm) && !description.includes(searchTerm)) {
+                    const description = row.querySelector('td:nth-child(5)')?.textContent?.toLowerCase() || '';
+
+                    if (!name.includes(searchTerm) && !code.includes(searchTerm) && !description.includes(
+                            searchTerm)) {
                         show = false;
                     }
                 }
@@ -751,151 +706,12 @@
 
                 row.style.display = show ? '' : 'none';
             });
-
-            state.currentPage = 1;
-            updatePagination();
-        }
-
-        // =====================================================
-        // PAGINATION FUNCTIONS
-        // =====================================================
-        function updatePagination() {
-            const rows = document.querySelectorAll('.activity-row:not([style*="display: none"])');
-            const totalRows = rows.length;
-            const totalPages = Math.max(1, Math.ceil(totalRows / state.rowsPerPage));
-
-            if (state.currentPage > totalPages) {
-                state.currentPage = totalPages;
-            }
-
-            const paginationInfo = document.getElementById('paginationInfo');
-            const pageNumbers = document.getElementById('pageNumbers');
-            const prevBtn = document.getElementById('prevPage');
-            const nextBtn = document.getElementById('nextPage');
-
-            if (totalRows === 0) {
-                paginationInfo.innerHTML = 'Tidak ada data yang ditampilkan';
-                pageNumbers.innerHTML = '';
-                prevBtn.disabled = true;
-                nextBtn.disabled = true;
-                return;
-            }
-
-            const start = (state.currentPage - 1) * state.rowsPerPage;
-            const end = Math.min(start + state.rowsPerPage, totalRows);
-
-            rows.forEach((row, index) => {
-                row.style.display = (index >= start && index < end) ? '' : 'none';
-            });
-
-            // Update pagination info
-            document.getElementById('startCount').textContent = start + 1;
-            document.getElementById('endCount').textContent = end;
-            document.getElementById('totalCount').textContent = totalRows;
-
-            // Update page buttons
-            updatePageButtons(totalPages);
-
-            // Update prev/next buttons
-            prevBtn.disabled = state.currentPage === 1;
-            nextBtn.disabled = state.currentPage === totalPages;
-        }
-
-        function updatePageButtons(totalPages) {
-            const container = document.getElementById('pageNumbers');
-            container.innerHTML = '';
-
-            let startPage = Math.max(1, state.currentPage - 2);
-            let endPage = Math.min(totalPages, state.currentPage + 2);
-
-            if (totalPages > 5) {
-                if (state.currentPage <= 3) {
-                    endPage = 5;
-                } else if (state.currentPage >= totalPages - 2) {
-                    startPage = totalPages - 4;
-                }
-            }
-
-            if (startPage > 1) {
-                container.appendChild(createPageButton(1));
-                if (startPage > 2) {
-                    container.appendChild(createDots());
-                }
-            }
-
-            for (let i = startPage; i <= endPage; i++) {
-                container.appendChild(createPageButton(i));
-            }
-
-            if (endPage < totalPages) {
-                if (endPage < totalPages - 1) {
-                    container.appendChild(createDots());
-                }
-                container.appendChild(createPageButton(totalPages));
-            }
-        }
-
-        function createPageButton(page) {
-            const button = document.createElement('button');
-            const isActive = page === state.currentPage;
-
-            button.className = `flex h-9 w-9 items-center justify-center rounded-xl font-semibold text-sm transition ${
-            isActive 
-                ? 'bg-red-600 text-white shadow-sm cursor-default' 
-                : 'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-red-300'
-        }`;
-            button.textContent = page;
-            button.onclick = () => goToPage(page);
-
-            return button;
-        }
-
-        function createDots() {
-            const dots = document.createElement('span');
-            dots.className = 'px-2 text-gray-400 select-none';
-            dots.textContent = '...';
-            return dots;
-        }
-
-        function goToPage(page) {
-            const rows = document.querySelectorAll('.activity-row:not([style*="display: none"])');
-            const totalPages = Math.max(1, Math.ceil(rows.length / state.rowsPerPage));
-
-            if (page >= 1 && page <= totalPages) {
-                state.currentPage = page;
-                updatePagination();
-
-                document.getElementById('activityTable')?.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        }
-
-        function changePage(delta) {
-            const rows = document.querySelectorAll('.activity-row:not([style*="display: none"])');
-            const totalPages = Math.max(1, Math.ceil(rows.length / state.rowsPerPage));
-            const newPage = state.currentPage + delta;
-
-            if (newPage >= 1 && newPage <= totalPages) {
-                goToPage(newPage);
-            }
-        }
-
-        function changePerPage() {
-            const select = document.getElementById('perPage');
-            state.rowsPerPage = parseInt(select.value);
-            state.currentPage = 1;
-            updatePagination();
         }
 
         // =====================================================
         // EVENT LISTENERS
         // =====================================================
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize pagination
-            updatePagination();
-
             // Modal form submit
             document.getElementById('modalForm').addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -916,20 +732,7 @@
                 if (e.key === 'Escape' && state.isModalOpen) {
                     closeModal();
                 }
-
-                if (e.ctrlKey) {
-                    if (e.key === 'ArrowLeft') {
-                        e.preventDefault();
-                        changePage(-1);
-                    } else if (e.key === 'ArrowRight') {
-                        e.preventDefault();
-                        changePage(1);
-                    }
-                }
             });
-
-            // Per page change
-            document.getElementById('perPage').addEventListener('change', changePerPage);
 
             // Search with debounce
             let searchTimeout;
@@ -939,33 +742,6 @@
                     searchActivities();
                 }, 300);
             });
-
-            // Close plant dropdown on outside click
-            document.addEventListener('click', function(e) {
-                const dropdown = document.getElementById('plantDropdown');
-                const container = document.getElementById('plantOptionsContainer');
-
-                if (dropdown && container && state.isPlantDropdownOpen) {
-                    if (!dropdown.contains(e.target) && !container.contains(e.target)) {
-                        closePlantDropdown();
-                    }
-                }
-            });
-
-            // Update dropdown position on scroll/resize
-            function updateDropdownPosition() {
-                if (state.isPlantDropdownOpen) {
-                    const dropdown = document.getElementById('plantDropdown');
-                    const container = document.getElementById('plantOptionsContainer');
-                    const rect = dropdown.getBoundingClientRect();
-                    container.style.left = rect.left + 'px';
-                    container.style.top = (rect.bottom + 4) + 'px';
-                    container.style.width = rect.width + 'px';
-                }
-            }
-
-            window.addEventListener('scroll', updateDropdownPosition);
-            window.addEventListener('resize', updateDropdownPosition);
 
             console.log('Master Kegiatan page initialized');
         });
@@ -986,7 +762,6 @@
         }
 
         function refreshData() {
-            state.currentPage = 1;
             state.currentSearch = '';
             state.currentStatus = 'all';
 
@@ -996,18 +771,50 @@
             applyFilters();
         }
 
+        // =====================================================
+        // FLASH MESSAGE (SUCCESS / ERROR)
+        // =====================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            @if (session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: "{{ session('success') }}",
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true,
+                    background: 'white',
+                    toast: true,
+                    position: 'top-end'
+                });
+            @endif
+
+            @if (session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: "{{ session('error') }}",
+                    showConfirmButton: true,
+                    confirmButtonColor: '#dc2626'
+                });
+            @endif
+
+            @if ($errors->any())
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validasi Gagal!',
+                    html: `{!! implode('<br>', $errors->all()) !!}`,
+                    confirmButtonColor: '#dc2626'
+                });
+            @endif
+        });
+
         // Export functions
         window.openModal = openModal;
         window.closeModal = closeModal;
         window.confirmDelete = confirmDelete;
         window.searchActivities = searchActivities;
         window.filterActivities = filterActivities;
-        window.goToPage = goToPage;
-        window.changePage = changePage;
-        window.changePerPage = changePerPage;
-        window.togglePlantDropdown = togglePlantDropdown;
-        window.removePlant = removePlant;
-        window.updateSelectedPlants = updateSelectedPlants;
         window.refreshData = refreshData;
         window.showToast = showToast;
     </script>

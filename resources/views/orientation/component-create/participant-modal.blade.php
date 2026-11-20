@@ -1,7 +1,8 @@
 <div x-data="participantModal()" class="space-y-6">
     <!-- Peserta -->
     <div>
-        <label class="mb-1.5 block text-xs font-semibold text-gray-700">Peserta Orientation</label>
+        <label class="mb-1.5 block text-xs font-semibold text-gray-700">Peserta Training <span
+                class="text-red-500">*</span></label>
         <button type="button" @click="openModal()"
             class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 transition hover:border-red-300 hover:bg-red-50">
             <div class="flex items-center gap-3">
@@ -31,7 +32,8 @@
                     <div class="flex h-6 w-6 items-center justify-center rounded-full bg-red-200 text-red-700 text-xs font-semibold"
                         x-text="getInitials(participant.nama)">
                     </div>
-                    <span class="text-sm font-medium text-gray-700" x-text="participant.nama"></span>
+                    <span class="text-sm font-medium text-gray-700"
+                        x-text="participant.nama || participant.nik || 'Tanpa Nama'"></span>
                     <button @click="removeParticipant(index)"
                         class="ml-1 rounded-full p-0.5 hover:bg-red-100 transition">
                         <svg class="h-3.5 w-3.5 text-gray-400 hover:text-red-600" fill="none" stroke="currentColor"
@@ -86,9 +88,8 @@
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-lg font-bold text-gray-800">Pilih Peserta Orientation</h3>
-                        <p class="text-xs text-gray-500"
-                            x-text="'Plant: ' + (selectedPlant ? selectedPlant.code : 'Belum dipilih')"></p>
+                        <h3 class="text-lg font-bold text-gray-800">Pilih Peserta Training</h3>
+                        <p class="text-xs text-gray-500">Semua karyawan (tanpa filter plant)</p>
                     </div>
                 </div>
                 <button @click="closeModal()" class="p-2 rounded-xl hover:bg-gray-100 transition">
@@ -101,6 +102,97 @@
 
             {{-- Modal Body - Scrollable --}}
             <div class="flex-1 overflow-y-auto px-8 py-6">
+
+                {{-- Aksi peserta: input manual & import Excel --}}
+                <div class="mb-4 flex flex-wrap items-center gap-2">
+                    <button type="button" @click="toggleManualForm()"
+                        class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition hover:border-red-300 hover:bg-red-50">
+                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Tambah Manual
+                    </button>
+
+                    <button type="button" @click="$refs.importFile.click()" :disabled="importing"
+                        class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition hover:border-red-300 hover:bg-red-50 disabled:opacity-60">
+                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5-5m0 0l5 5m-5-5v12" />
+                        </svg>
+                        <span x-text="importing ? 'Mengimport...' : 'Import Excel'"></span>
+                    </button>
+                    <input type="file" x-ref="importFile" class="hidden" accept=".xlsx,.xls,.csv"
+                        @change="handleImportFile($event)">
+
+                    <a href="{{ route('orientation.participants.template') }}"
+                        class="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition hover:border-red-300 hover:bg-red-50">
+                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V3" />
+                        </svg>
+                        Download Template
+                    </a>
+                </div>
+
+                {{-- Notifikasi import / manual --}}
+                <p x-show="importMessage" class="mb-4 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700"
+                    x-text="importMessage"></p>
+                <p x-show="importError" class="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700"
+                    x-text="importError"></p>
+
+                {{-- Form input manual (semua kolom opsional) --}}
+                <div x-show="showManualForm" class="mb-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
+                    <p class="mb-3 text-xs font-semibold text-gray-700">
+                        Tambah Peserta Manual
+                        <span class="font-normal text-gray-400">(semua kolom opsional)</span>
+                    </p>
+                    <div class="grid gap-2 sm:grid-cols-2">
+                        <input type="text" x-model="manualForm.nik" placeholder="NIK"
+                            class="w-full rounded-lg border-gray-200 px-3 py-2 text-sm focus:border-red-500 focus:ring-red-500">
+                        <input type="text" x-model="manualForm.nama" placeholder="Nama"
+                            class="w-full rounded-lg border-gray-200 px-3 py-2 text-sm focus:border-red-500 focus:ring-red-500">
+                        <input type="text" x-model="manualForm.jabatan" placeholder="Jabatan"
+                            class="w-full rounded-lg border-gray-200 px-3 py-2 text-sm focus:border-red-500 focus:ring-red-500">
+                        <input type="text" x-model="manualForm.dept" placeholder="Dept"
+                            class="w-full rounded-lg border-gray-200 px-3 py-2 text-sm focus:border-red-500 focus:ring-red-500">
+                    </div>
+                    <div class="mt-3 flex items-center gap-2">
+                        <button type="button" @click="addManualParticipant()"
+                            class="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-red-700">
+                            Tambahkan
+                        </button>
+                        <button type="button" @click="cancelManualForm()"
+                            class="rounded-lg px-3 py-2 text-xs font-medium text-gray-600 transition hover:bg-gray-200">
+                            Batal
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Peserta hasil input manual / import Excel --}}
+                <div x-show="manualParticipants.length > 0" class="mb-4">
+                    <p class="mb-2 text-xs font-semibold text-gray-700">
+                        Peserta manual / import (<span x-text="manualParticipants.length"></span>)
+                    </p>
+                    <div class="space-y-2">
+                        <template x-for="item in manualParticipants" :key="item._uid">
+                            <div class="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-3 py-2">
+                                <div class="min-w-0">
+                                    <p class="truncate text-xs font-medium text-gray-800"
+                                        x-text="item.nama || item.nik || 'Tanpa Nama'"></p>
+                                    <p class="truncate text-[11px] text-gray-400"
+                                        x-text="[item.nik, item.jabatan, item.dept].filter(Boolean).join(' • ') || 'Data lain kosong'"></p>
+                                </div>
+                                <button type="button" @click="removeManualParticipant(item._uid)"
+                                    class="rounded-lg p-1.5 text-gray-400 transition hover:bg-red-50 hover:text-red-600">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+                </div>
 
                 {{-- Search Input --}}
                 <div class="mb-6">
@@ -209,7 +301,8 @@
                                     class="cursor-pointer transition-all duration-150 hover:bg-red-50/30 group"
                                     :class="item.selected ? 'bg-red-50/40 hover:bg-red-50/60' : ''">
                                     <td class="px-4 py-3.5 text-center" @click.stop>
-                                        <input type="checkbox" x-model="item.selected" @change="updateSelectedParticipants()"
+                                        <input type="checkbox" x-model="item.selected"
+                                            @change="updateSelectedParticipants()"
                                             class="rounded border-gray-300 text-red-600 focus:ring-red-500 focus:ring-2 h-4 w-4 cursor-pointer transition-all"
                                             :class="item.selected ? 'scale-105' : ''">
                                     </td>
@@ -344,6 +437,13 @@
             selectedParticipants: [],
             initialParticipants: @json($initialParticipants ?? []),
             initialParticipantNiks: [],
+            manualParticipants: [],
+            manualPrimed: false,
+            showManualForm: false,
+            manualForm: { nik: '', nama: '', jabatan: '', dept: '' },
+            importing: false,
+            importMessage: '',
+            importError: '',
             loading: false,
             errorMessage: '',
             selectedPlant: null,
@@ -363,27 +463,16 @@
                         };
                     }
 
-                    return {nik: String(participant), nama: String(participant), jabatan: '', dept: ''};
+                    return {
+                        nik: String(participant),
+                        nama: String(participant),
+                        jabatan: '',
+                        dept: ''
+                    };
                 });
-                // Listen for plant selection from the plant dropdown
-                this.selectedPlant = window.selectedPlantData || null;
 
-                // Pada halaman edit, tampilkan nama peserta lama tanpa perlu membuka modal.
-                if (this.initialParticipantNiks.length > 0 && this.selectedPlant) {
-                    this.fetchParticipants();
-                }
-
-                // Set up a mutation observer or use a setInterval to check for plant changes
-                setInterval(() => {
-                    if (window.selectedPlantData && this.selectedPlant?.id !== window
-                        .selectedPlantData?.id) {
-                        this.selectedPlant = window.selectedPlantData;
-                        // Reset participants when plant changes
-                        this.pesertaData = [];
-                        this.selectedParticipants = [];
-                        this.errorMessage = '';
-                    }
-                }, 500);
+                // Hapus setInterval plant watch
+                // Tidak ada reset peserta saat plant berubah
             },
 
             async initParticipants() {
@@ -391,24 +480,17 @@
             },
 
             async openModal() {
-                // Check if plant is selected
-                if (!window.selectedPlantData) {
-                    this.errorMessage = 'Silakan pilih Plant terlebih dahulu!';
-                    return;
-                }
-
-                this.selectedPlant = window.selectedPlantData;
-                this.errorMessage = '';
-
-                // Reset search when opening modal
+                // Tidak perlu cek plant lagi
                 this.searchPeserta = '';
                 this.currentPage = 1;
                 this.selectAll = false;
 
-                // If no data, fetch from API
+                // Jika belum ada data, fetch dari API
                 if (this.pesertaData.length === 0) {
                     await this.fetchParticipants();
                 }
+
+                this.primeManualParticipants();
 
                 this.modalPeserta = true;
             },
@@ -422,19 +504,12 @@
             },
 
             async fetchParticipants() {
-                if (!this.selectedPlant) {
-                    this.errorMessage = 'Plant belum dipilih';
-                    return;
-                }
-
                 this.loading = true;
                 this.errorMessage = '';
 
                 try {
-                    const plantCode = this.selectedPlant.code || this.selectedPlant.id ||
-                        '1000';
-                    const url =
-                        `https://web.kobin.co.id/api/attendance/live/api_get_users.php?plant=${plantCode}`;
+                    // Tidak pakai parameter plant lagi
+                    const url = 'https://web.kobin.co.id/api/attendance/live/api_get_users.php';
 
                     const response = await fetch(url);
 
@@ -445,7 +520,6 @@
                     const result = await response.json();
 
                     if (result.success && result.data) {
-                        // Map API data to match component structure
                         const selectedNiks = this.initialParticipantNiks.map(String);
                         this.pesertaData = result.data.map(user => ({
                             nik: user.nik || '',
@@ -463,7 +537,6 @@
                             selected: selectedNiks.includes(String(user.nik))
                         }));
 
-                        // Mengganti placeholder NIK dengan nama peserta dari API.
                         this.updateSelectedParticipants();
                     } else {
                         throw new Error(result.message || 'Gagal mengambil data peserta');
@@ -548,26 +621,213 @@
             },
 
             updateSelectedParticipants() {
-                this.selectedParticipants = this.pesertaData.filter(p => p.selected);
+                const merged = [];
+                const seenNiks = new Set();
+
+                this.pesertaData.filter(p => p.selected).forEach(p => {
+                    const nik = p.nik ? String(p.nik) : '';
+                    if (nik) seenNiks.add(nik);
+                    merged.push({
+                        nik: nik,
+                        nama: p.nama || '',
+                        jabatan: p.jabatan || '',
+                        dept: p.dept || '',
+                        _manual: false,
+                        _uid: nik ? 'api-' + nik : this.makeUid(),
+                    });
+                });
+
+                this.manualParticipants.forEach(p => {
+                    const nik = p.nik ? String(p.nik) : '';
+                    if (nik && seenNiks.has(nik)) return;
+                    if (nik) seenNiks.add(nik);
+                    merged.push({ ...p, nik: nik });
+                });
+
+                this.selectedParticipants = merged;
             },
 
             removeParticipant(index) {
                 const participant = this.selectedParticipants[index];
-                if (participant) {
-                    const originalItem = this.pesertaData.find(p => p.nik === participant.nik);
-                    if (originalItem) {
-                        originalItem.selected = false;
-                    }
-                    this.updateSelectedParticipants();
+                if (!participant) return;
+
+                if (participant._manual) {
+                    this.removeManualParticipant(participant._uid);
+                    return;
                 }
+
+                const nik = String(participant.nik || '');
+                const originalItem = this.pesertaData.find(p => String(p.nik || '') === nik);
+                if (originalItem) {
+                    originalItem.selected = false;
+                }
+
+                this.updateSelectedParticipants();
+            },
+
+            removeManualParticipant(uid) {
+                this.manualParticipants = this.manualParticipants.filter(p => p._uid !== uid);
+                this.updateSelectedParticipants();
             },
 
             clearAllParticipants() {
                 this.pesertaData.forEach(item => {
                     item.selected = false;
                 });
+                this.manualParticipants = [];
                 this.updateSelectedParticipants();
                 this.selectAll = false;
+            },
+
+            makeUid() {
+                return 'p-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+            },
+
+            /**
+             * Peserta lama yang tidak ada di data karyawan (mis. hasil import)
+             * tetap ditampilkan sebagai peserta manual.
+             */
+            primeManualParticipants() {
+                if (this.manualPrimed) return;
+                this.manualPrimed = true;
+
+                const apiNiks = new Set(this.pesertaData.map(p => String(p.nik || '')));
+
+                this.manualParticipants = this.initialParticipants
+                    .map(p => (typeof p === 'object' && p !== null) ? p : { nik: String(p), nama: String(p) })
+                    .filter(p => {
+                        const nik = p.nik ? String(p.nik) : '';
+                        return !nik || !apiNiks.has(nik);
+                    })
+                    .map(p => ({
+                        nik: p.nik ? String(p.nik) : '',
+                        nama: p.nama || '',
+                        jabatan: p.jabatan || '',
+                        dept: p.dept || '',
+                        _manual: true,
+                        _uid: this.makeUid(),
+                    }));
+
+                this.updateSelectedParticipants();
+            },
+
+            toggleManualForm() {
+                this.showManualForm = !this.showManualForm;
+                this.importMessage = '';
+                this.importError = '';
+            },
+
+            cancelManualForm() {
+                this.showManualForm = false;
+                this.manualForm = { nik: '', nama: '', jabatan: '', dept: '' };
+            },
+
+            addManualParticipant() {
+                const row = {
+                    nik: (this.manualForm.nik || '').trim(),
+                    nama: (this.manualForm.nama || '').trim(),
+                    jabatan: (this.manualForm.jabatan || '').trim(),
+                    dept: (this.manualForm.dept || '').trim(),
+                };
+
+                if (!row.nik && !row.nama && !row.jabatan && !row.dept) {
+                    this.importError = 'Isi minimal salah satu data peserta.';
+                    return;
+                }
+
+                const apiItem = row.nik
+                    ? this.pesertaData.find(p => String(p.nik || '') === row.nik)
+                    : null;
+
+                if (apiItem) {
+                    apiItem.selected = true;
+                } else if (!row.nik || !this.manualParticipants.some(p => p.nik === row.nik)) {
+                    this.manualParticipants.push({ ...row, _manual: true, _uid: this.makeUid() });
+                }
+
+                this.importError = '';
+                this.importMessage = 'Peserta manual ditambahkan.';
+                this.cancelManualForm();
+                this.updateSelectedParticipants();
+            },
+
+            async handleImportFile(event) {
+                const file = event.target.files && event.target.files[0];
+                if (!file) return;
+
+                this.importing = true;
+                this.importError = '';
+                this.importMessage = '';
+
+                try {
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    const response = await fetch('{{ route('orientation.import.participants') }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                            'Accept': 'application/json',
+                        },
+                        body: formData,
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        const errors = result.errors ? Object.values(result.errors).flat().join(' ') : null;
+                        throw new Error(errors || result.message || 'Gagal mengimport file.');
+                    }
+
+                    const existingNiks = new Set(
+                        this.selectedParticipants
+                            .map(p => String(p.nik || ''))
+                            .filter(Boolean)
+                    );
+
+                    let added = 0;
+                    let duplicate = 0;
+
+                    (result.participants || []).forEach(row => {
+                        const nik = row.nik ? String(row.nik) : '';
+
+                        if (nik && existingNiks.has(nik)) {
+                            duplicate++;
+                            return;
+                        }
+                        if (nik) existingNiks.add(nik);
+
+                        const apiItem = nik
+                            ? this.pesertaData.find(p => String(p.nik || '') === nik)
+                            : null;
+
+                        if (apiItem) {
+                            apiItem.selected = true;
+                        } else {
+                            this.manualParticipants.push({
+                                nik: nik,
+                                nama: row.nama || '',
+                                jabatan: row.jabatan || '',
+                                dept: row.dept || '',
+                                _manual: true,
+                                _uid: this.makeUid(),
+                            });
+                        }
+
+                        added++;
+                    });
+
+                    this.updateSelectedParticipants();
+
+                    this.importMessage = added > 0
+                        ? added + ' peserta ditambahkan' + (duplicate > 0 ? ', ' + duplicate + ' duplikat dilewati.' : '.')
+                        : (result.message || 'Tidak ada peserta baru pada file.');
+                } catch (error) {
+                    this.importError = error.message || 'Gagal mengimport file.';
+                } finally {
+                    this.importing = false;
+                    event.target.value = '';
+                }
             },
 
             saveParticipants() {

@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Data Peserta Orientation</title>
+    <title>Data Peserta Training</title>
 
     <style>
         * {
@@ -218,7 +218,7 @@
 
                 <!-- TITLE -->
                 <div class="title-section">
-                    <h1>KOBIN ORIENTATION PROGRAM</h1>
+                    <h1>KOBIN TRAINING PROGRAM</h1>
                     <div class="subtitle">{{ $orientation->batch_name ?? 'Batch Name' }}</div>
                 </div>
 
@@ -298,7 +298,7 @@
         <div class="footer">
             <p>
                 Dokumen ini dicetak dari sistem
-                <span>Kobin Orientation</span> •
+                <span>Kobin Training</span> •
                 {{ now()->format('d F Y H:i') }} WIB
             </p>
         </div>
