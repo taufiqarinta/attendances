@@ -200,7 +200,7 @@
 
             const params = new URLSearchParams({
                 page: 1,
-                limit: 9999,
+                limit: 0,
                 user_nik: '{{ session('nik') }}'
             });
             if (serverStartDate) params.append('start_date', serverStartDate);
